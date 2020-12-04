@@ -33,8 +33,8 @@ const INPUTS = [
 // If the answer function requires other parameters, write an anonymous function that takes input
 // i.e. (input) => fn(input, extraParam)
 const ANSWERS = {
-  "1-1": () => console.log("Day 1 - Puzzle 1"),
-  "1-2": () => console.log("Day 1 - Puzzle 2"),
+  "1-1": day1Puzzle1,
+  "1-2": day1Puzzle2,
   "2-1": () => console.log("Day 2 - Puzzle 1"),
   "2-2": () => console.log("Day 2 - Puzzle 2"),
   "3-1": () => console.log("Day 3 - Puzzle 1"),

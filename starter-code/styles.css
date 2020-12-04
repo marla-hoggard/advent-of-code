@@ -2,6 +2,12 @@ h2 {
   text-align: center;
 }
 
+.yearLinks {
+  text-align: center;
+  padding-bottom: 20px;
+  font-weight: bold;
+}
+
 #puzzles {
   width: 100%;
   justify-content: center;

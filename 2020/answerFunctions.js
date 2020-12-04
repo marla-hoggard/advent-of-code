@@ -30,7 +30,8 @@ const INPUTS = [
 // Which function to run to display the answer to a given puzzle
 // Key: {day}-{puzzle}
 // The function is passed one parameter, INPUT[day]
-// If the answer function requires other parameters, write an anonymous function that takes input (i.e. 2-1)
+// If the answer function requires other parameters, write an anonymous function that takes input
+// i.e. (input) => fn(input, extraParam)
 const ANSWERS = {
   "1-1": input => day1Solution2(input, 2),
   "1-2": input => day1Solution2(input, 3),
