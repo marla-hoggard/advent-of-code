@@ -1,0 +1,76 @@
+h2 {
+  text-align: center;
+}
+
+#puzzles {
+  width: 100%;
+  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  grid-gap: 10px;
+}
+
+.puzzle {
+  background: #2196f3a3;
+  border: 2px solid blue;
+  padding: 5px;
+  text-align: center;
+}
+
+#day8,
+#day11,
+#day17 {
+  display: none;
+  text-align: center;
+  margin: 10px;
+}
+
+.dayTitle {
+  font-weight: bold;
+}
+
+#day8visualization,
+#day11visualization,
+#day17visualization {
+  border: 1px solid black;
+  margin: auto;
+  margin-top: 10px;
+}
+
+.day8row,
+.day11row,
+.day17row {
+  display: flex;
+  height: 10px;
+  margin: auto;
+}
+
+#day8visualization,
+.day8row {
+  width: 250px;
+}
+
+#day11visualization
+.day11row {
+  width: 430px;
+}
+
+#day17visualization
+.day17row {
+  width: 600px;
+}
+
+.day8cell,
+.day11cell,
+.day17cell {
+  width: 10px;
+}
+
+
+.black {
+  background-color: black;
+}
+
+.red {
+  background-color: red;
+}

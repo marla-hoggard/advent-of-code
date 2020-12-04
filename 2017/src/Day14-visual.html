@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Advent of Code 2017</title>
+	<script type="text/javascript" src="Day10-Puzzle2.js"></script>
+	<script type="text/javascript" src="Day12-Puzzle1.js"></script>
+	<script type="text/javascript" src="Day12-Puzzle2.js"></script>
+	<script type="text/javascript" src="Day14-Puzzle1.js"></script>
+	<script type="text/javascript" src="Day14-Puzzle2.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<style>
+		#container {
+			border: 1px solid black;
+			width: 1280px;
+		}
+
+		.box {
+			width: 10px;
+			height: 10px;
+		}
+
+		.row {
+			display: flex;
+		}
+	</style>
+
+</head>
+
+<body>
+	<div id="title">Day 14 Visualization</div>
+	<div id="container">
+		<script>
+			$(document).ready(() => {
+				let HTML = makeVisualGrid("hxtvlmkl");
+				$('#container').append(HTML);
+			})
+		</script>
+	</div>
+</body>
+
+</html>
