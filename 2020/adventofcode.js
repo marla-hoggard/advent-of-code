@@ -227,3 +227,38 @@ const isValidDay2 = passport => {
 
   return true;
 }
+
+// ---------- DAY 5 -------------
+// Takes a string like "FBFBFBFRLR" and returns a seat ID
+// Convert the first seven letters to binary where F = 0 and B = 1 to get the row
+// Convert the last three letters to binary where L = 0 and R = 1 to get the column
+// The seat ID is row * 8 + col
+const calculateSeatID = seat => {
+  const row = parseInt(seat.slice(0,7).split("").map(el => el === 'B' ? "1" : "0").join(""), 2);
+  const col = parseInt(seat.slice(7).split("").map(el => el === 'R' ? "1" : "0").join(""), 2);
+  return row * 8 + col;
+}
+
+// Day 5 - Puzzle 1
+// Takes a list of seat strings and returns the seat with the highest ID
+const highestSeatID = input => {
+  return input.split("\n").reduce((max, seat) => {
+    const ID = calculateSeatID(seat);
+    return ID > max ? ID : max;
+  }, 0);
+}
+
+// Day 5 - Puzzle 2
+// Finds the missing seat ID out of a list of (unordered) consecutive seats
+// The missing seat will be between two existing seats, off by +1 and -1
+const missingSeatID = input => {
+  const allSeats = input.split("\n")
+    .map(calculateSeatID)
+    .sort();
+  for (let i = 1; i < allSeats.length - 1; i++) {
+    if (allSeats[i] - 1 !== allSeats[i - 1]) {
+      return allSeats[i] - 1;
+    }
+  }
+  return 0;
+}
