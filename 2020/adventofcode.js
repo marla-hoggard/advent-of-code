@@ -82,33 +82,33 @@ const day1Solution2 = (input, n) => {
 // Given a list of passwords and their rules, return the number of passwords that are valid
 // Each row in the input is in the format "#-# x: password"
 // What the two numbers represent differs in each puzzle
+const numValidPasswords = (input, parser, validator) => {
+  return input.split("\n").map(parser).filter(validator).length;
+}
 
 // Day 2 - Puzzle 1
 // Format: `min-max letter: password`
-// Valid if @letter occurs between @min and @max times in @password
-const numValidPasswords1 = input => {
-  return input.split("\n").map(row => {
-    const [min, max, letter, password] = row.split(/[-\s:]+/).map(el => isNaN(el) ? el : +el);
-    return { min, max, letter, password }
-  }).reduce((numValid, el) => isValid1(el) ? numValid + 1 : numValid, 0);
+const parsePassword1 = row => {
+  const [min, max, letter, password] = row.split(/[-\s:]+/);
+  return { min: +min, max: +max, letter, password }
 }
 
-const isValid1 = ({ min, max, letter, password}) => {
+// Valid if @letter occurs between @min and @max times in @password
+const isValidPassword1 = ({ min, max, letter, password}) => {
   const found = numOccurrences(password, letter);
   return found >= min && found <= max;
 }
 
 // Day 2 - Puzzle 2
 // Format: `index1-index2 letter: password`
-// Valid if @letter occurs at @index1 OR @index2 of @password but not both, where indices are 1-based
-const numValidPasswords2 = input => {
-  return input.split("\n").map(row => {
-    const [first, second, letter, password] = row.split(/[-\s:]+/).map(el => isNaN(el) ? el : +el);
-    return { first: first - 1, second: second - 1, letter, password }
-  }).reduce((numValid, el) => isValid2(el) ? numValid + 1 : numValid, 0);
+// Indices provided are 1-based, so convert to 0-based
+const parsePassword2 = row => {
+  const [first, second, letter, password] = row.split(/[-\s:]+/);
+  return { first: +first - 1, second: +second - 1, letter, password }
 }
 
-const isValid2 = ({ first, second, letter, password}) => {
+// Valid if @letter occurs at @index1 OR @index2 of @password but not both
+const isValidPassword2 = ({ first, second, letter, password}) => {
   return (password[first] === letter || password[second] === letter)
     && password[first] !== password[second];
 }
@@ -150,18 +150,24 @@ const numTreesAnyDiagonal = (rows, right, down) => {
 }
 
 // --------- DAY 4 -------------
-const validatePassports = (input, validationMethod) => {
+// Returns the number of valid passports given
+// @input -> A list of "passports" separated by blank lines,
+//    whose values are space/line separated "key:value" pairs
+// @validationMethod: (password: string) => boolean
+const numValidPassports = (input, validationMethod) => {
   return input.split("\n\n").filter(validationMethod).length;
 }
 
-const isValidDay1 = passport => {
+// Verifies that all required keys are present
+const isValidPassport1 = passport => {
   const keys = passport.split(/\s/).map(el => el.split(":")[0]);
   return ['byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'].every(field => keys.includes(field));
 }
 
-const isValidDay2 = passport => {
+// Verifies that all required keys are present and their values are valid
+const isValidPassport2 = passport => {
   // First verify all required fields are present
-  if (!isValidDay1(passport)) {
+  if (!isValidPassport1(passport)) {
     return false;
   }
 
