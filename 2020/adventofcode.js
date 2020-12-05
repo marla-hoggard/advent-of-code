@@ -148,3 +148,82 @@ const numTreesAnyDiagonal = (rows, right, down) => {
     }
   return numTrees;
 }
+
+// --------- DAY 4 -------------
+const validatePassports = (input, validationMethod) => {
+  return input.split("\n\n").filter(validationMethod).length;
+}
+
+const isValidDay1 = passport => {
+  const keys = passport.split(/\s/).map(el => el.split(":")[0]);
+  return ['byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'].every(field => keys.includes(field));
+}
+
+const isValidDay2 = passport => {
+  // First verify all required fields are present
+  if (!isValidDay1(passport)) {
+    return false;
+  }
+
+  const {
+    byr,
+    iyr,
+    eyr,
+    hgt,
+    hcl,
+    ecl,
+    pid
+  } = passport.split(/\s/).reduce((obj, el) => {
+    const [key, val] = el.split(":");
+    obj[key] = val;
+    return obj;
+  }, {});
+
+  // Birth year (byr) -> 4 digit number from 1920-2002
+  if (byr.length !== 4 || isNaN(byr) || +byr < 1920 || +byr > 2002) {
+    return false;
+  }
+
+  // Issue year (iyr) -> 4 digit number from 2010-2020
+  if (iyr.length !== 4 || isNaN(iyr) || +iyr < 2010 || +iyr > 2020) {
+    return false;
+  }
+
+  // Expiration year (eyr) -> 4 digit number from 2020-2030
+  if (eyr.length !== 4 || isNaN(eyr) || +eyr < 2020 || +eyr > 2030) {
+    return false;
+  }
+
+  // Height (hgt) -> 150-193cm or 59-76in
+  const [fullMatch, num, unit] = hgt.match(/(\d{2,3})(cm|in)/) || []
+  if (fullMatch !== hgt) {
+    return false
+  }
+  if (unit === 'cm') {
+    if (+num < 150 || +num > 193) {
+      return false;
+    }
+  } else if (unit === 'in') {
+    if (+num < 59 || +num > 76) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+
+  // Hair Color (hcl) -> valid hex code i.e. #abc123
+  if (hcl.length !== 7 || !(/#[a-f0-9]{6}/.test(hcl))) {
+    return false;
+  }
+
+  // Eye Color (ecl) -> one of: amb blu brn gry grn hzl oth
+  if (!['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'].includes(ecl)) {
+    return false;
+  }
+  // Passport ID (pid) -> 9 digit number, including leading zeros
+  if (pid.length !== 9 || /[^0-9]/.test(pid)) {
+    return false;
+  }
+
+  return true;
+}
