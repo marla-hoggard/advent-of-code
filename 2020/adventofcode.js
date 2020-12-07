@@ -268,3 +268,34 @@ const missingSeatID = input => {
   }
   return 0;
 }
+
+// ---------- DAY 6 -----------------
+
+// Day 6 - Puzzle 1
+// Given a list of "answers" broken up into groups (separated by blank line),
+// where each group consists strings of lower case letters (separated by line break),
+// find the total number of unique letters in each group,
+// and return the sum of the group totals
+const numUniqueAnswers = input => {
+  return input
+    .split("\n\n")
+    .map(el => new Set(el.replace(/\s/g, "").split("")).size)
+    .reduce((total, cur) => total + cur, 0);
+}
+
+// Day 6 - Puzzle 2
+// Rather than return how many letters appear anywhere in a given group,
+// count how many letters appear in every line of a given group.
+// Again, return the sum of the group totals
+const numUnanimousAnswers = input => {
+  return input
+    .split("\n\n")
+    .map(group => {
+      // Create an array of the unique letters found in @group,
+      // then iterate through to find which letters are in all lines of @group
+      return Array.from(new Set(group.replace(/\s/g, "".split(""))))
+        .filter(letter => group.split("\n").every(answer => answer.includes(letter)))
+        .length;
+    })
+    .reduce((total, cur) => total + cur, 0);
+}
