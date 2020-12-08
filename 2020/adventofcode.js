@@ -299,3 +299,91 @@ const numUnanimousAnswers = input => {
     })
     .reduce((total, cur) => total + cur, 0);
 }
+
+// ------------ Day 7 --------------
+
+// ------------ Day 8 --------------
+// Day 8 - Puzzle 1
+// Return the accumulator value right when a particular step
+// is about to be run for the second time
+const handheldInfiniteLoop = input => {
+  const parsedInput = input.split("\n").map(data => {
+    const [op, amt] = data.split(" ");
+    return {
+      op,
+      amt: Number(amt),
+      done: false,
+    };
+  });
+
+  let accumulator = 0;
+  let i = 0;
+  while (true) {
+    const step = parsedInput[i];
+    if (step.done) {
+      return accumulator;
+    }
+    if (step.op === "acc") {
+      accumulator += step.amt;
+      i++;
+    } else if (step.op === "jmp") {
+      i += step.amt;
+    } else {
+      // nop
+      i++;
+    }
+    step.done = true;
+  }
+}
+
+// Day 8 - Puzzle 2
+// Change one instruction from nop to jmp or jmp to nop
+// to resolve infinite loop
+// Return the accumulator value when the program terminates
+// Termination happens when attempting to run the step after the final instruction
+handheldFixInfiniteLoop = input => {
+  let parsedInput = input.split("\n").map(data => {
+    const [op, amt] = data.split(" ");
+    return {
+      op,
+      amt: Number(amt),
+      done: false,
+      fixAttempted: false,
+    };
+  });
+
+  let accumulator = 0;
+  let i = 0;
+  let fixed = false;
+
+  const resetValues = () => {
+    parsedInput = parsedInput.map(el => ({ ...el, done: false }));
+    accumulator = 0;
+    i = 0;
+    fixed = false;
+  }
+
+  while (i < parsedInput.length) {
+    const step = parsedInput[i];
+    if (step.done) {
+      // Found an infinite loop, start over (but keep step.fixAttempted values)
+      resetValues();
+      continue;
+    } else if (step.op === "acc") {
+      accumulator += step.amt;
+      i++;
+    } else if (!fixed && !step.fixAttempted) {
+      // If we've never tried to fix this step
+      // and we haven't fixed another step on this run
+      // try swapping 'nop' and 'jmp'
+      fixed = true;
+      step.fixAttempted = true;
+      i += step.op === "nop" ? step.amt : 1;
+    } else {
+      i += step.op === "jmp" ? step.amt : 1;
+    }
+    step.done = true;
+  }
+
+  return accumulator;
+}
