@@ -301,6 +301,79 @@ const numUnanimousAnswers = input => {
 }
 
 // ------------ Day 7 --------------
+// Returns the number of bag colors that could contain (directly or indirectly)
+// a shiny gold bag
+const shinyGoldParents = input => {
+  // Create an array where each key is a bag color
+  // and its value is an array of the bag colors that could be its direct parent
+  const bags = {};
+  input.split("\n").forEach(rule => {
+    const pieces = rule.split(" bags contain ");
+    const parent = pieces[0];
+    const children = pieces[1].split(", ").map(el => el.replace(/\sbags?\.?/g, "").replace(/\d+\s/, ""));
+    children.forEach(child => {
+      if (child === "no other") return;
+      if (bags.hasOwnProperty(child)) {
+        if (!bags[child].includes(parent)) {
+          bags[child].push(parent);
+        }
+      } else {
+        bags[child] = [parent];
+      }
+    })
+  });
+
+  const parents = [...bags["shiny gold"]];
+  let i = 0;
+  while (i < parents.length) {
+    const currentColor = parents[i];
+    if (bags[currentColor]) {
+      bags[currentColor].forEach(color => {
+        if (!parents.includes(color)) {
+          parents.push(color);
+        }
+      });
+    }
+    i++;
+  }
+  return parents.length;
+}
+
+// Day 7 - Puzzle 2
+// Returns how many bags must be inside a shiny gold bag
+const shinyGoldChildren = input => {
+  const bags = {};
+  input.split("\n").forEach(rule => {
+    const pieces = rule.split(" bags contain ");
+    const parent = pieces[0];
+    if (pieces[1].includes("no other bags.")) {
+      bags[parent] = null;
+      return;
+    }
+    bags[parent] = pieces[1].split(", ").map(el => {
+      const color = el.replace(/\sbags?\.?/g, "").replace(/\d+\s/, "");
+      const number = parseInt(el);
+      return { color, number };
+    });
+  });
+
+  const insides = [...bags["shiny gold"]];
+  let i = 0;
+  while (i < insides.length) {
+    const { color, number } = insides[i];
+    if (bags[color]) {
+      bags[color].forEach(child => {
+        insides.push({
+          color: child.color,
+          number: child.number * number,
+        });
+      });
+    }
+    i++;
+  }
+
+  return insides.reduce((total, cur) => total + cur.number, 0);
+}
 
 // ------------ Day 8 --------------
 // Day 8 - Puzzle 1
