@@ -539,6 +539,130 @@ function fullDecompress(input) {
 	return decomLength + string.length;
 }
 
+// Day 10 - Puzzle 1
+// Follows all instructions for microchip passing between bots
+// Returns which bot has the val1 and val2 microchip at some point
+const botMicrochips = (input, val1 = 17, val2 = 61) => {
+	const initialSteps = input.split("\n").filter(el => el.startsWith("value"));
+	const divvySteps = input.split("\n").filter(el => !el.startsWith("value"));
+	const bots = {};
+	const output = [];
+
+	initialSteps.forEach(step => {
+		const match = step.match(/value (?<value>\d+) goes to bot (?<bot>\d+)/);
+		if (match) {
+			const bot = +match.groups.bot;
+			const value = +match.groups.value;
+			if (bots[bot]) {
+				bots[bot].push(value);
+			} else {
+				bots[bot] = [value];
+			}
+		}
+	});
+
+	let found = Object.keys(bots).find(key => bots[key].includes(val1) && bots[key].includes(val2));
+	if (found) return found;
+
+	for (let i = 0; i < divvySteps.length; i++) {
+		const match = divvySteps[i].match(/bot (?<bot>\d+) gives low to (?<low>(bot|output) \d+) and high to (?<high>(bot|output) \d+)/);
+		if (!match) {
+			console.log("bad instruction?", divvySteps[i]);
+			return;
+		}
+
+		// If the giver doesn't have two yet,
+		// put the instruction at the end of the list to retry later
+		const giver = bots[match.groups.bot];
+		if (!giver || giver.length !== 2) {
+			divvySteps.push(divvySteps[i]);
+			continue;
+		}
+
+		const lowValue = giver[0] < giver[1] ? giver[0] : giver[1];
+
+		const [lowLocation, lowIndex] = match.groups.low.split(" ");
+		if (lowLocation === "output") {
+			output[+lowIndex] = lowValue;
+		} else {
+			bots[+lowIndex] ? bots[+lowIndex].push(lowValue) : bots[+lowIndex] = [lowValue];
+			if (bots[+lowIndex].includes(val1) && bots[+lowIndex].includes(val2)) {
+				return lowIndex;
+			}
+		}
+
+		const highValue = giver[0] > giver[1] ? giver[0] : giver[1];
+		const [highLocation, highIndex] = match.groups.high.split(" ");
+		if (highLocation === "output") {
+			output[+highIndex] = highValue;
+		} else {
+			bots[+highIndex] ? bots[+highIndex].push(highValue) : bots[+highIndex] = [highValue];
+			if (bots[+highIndex].includes(val1) && bots[+highIndex].includes(val2)) {
+				return highIndex;
+			}
+		}
+	}
+	console.log("Completed all steps without finding it");
+}
+
+// Day 10 - Puzzle 1
+// Follows all instructions for microchip passing between bots
+// Returns the product of the values at output 0, 1 and 2
+const botMicrochipsOutput = (input) => {
+	const initialSteps = input.split("\n").filter(el => el.startsWith("value"));
+	const divvySteps = input.split("\n").filter(el => !el.startsWith("value"));
+	const bots = {};
+	const output = [];
+
+	initialSteps.forEach(step => {
+		const match = step.match(/value (?<value>\d+) goes to bot (?<bot>\d+)/);
+		if (match) {
+			const bot = +match.groups.bot;
+			const value = +match.groups.value;
+			if (bots[bot]) {
+				bots[bot].push(value);
+			} else {
+				bots[bot] = [value];
+			}
+		}
+	});
+
+	for (let i = 0; i < divvySteps.length; i++) {
+		const match = divvySteps[i].match(/bot (?<bot>\d+) gives low to (?<low>(bot|output) \d+) and high to (?<high>(bot|output) \d+)/);
+		if (!match) {
+			console.log("bad instruction?", divvySteps[i]);
+			return;
+		}
+
+		// If the giver doesn't have two yet,
+		// put the instruction at the end of the list to retry later
+		// TODO: Use logic to process in the correct order instead - Is that actually faster though?
+		const giver = bots[match.groups.bot];
+		if (!giver || giver.length !== 2) {
+			divvySteps.push(divvySteps[i]);
+			continue;
+		}
+
+		const lowValue = giver[0] < giver[1] ? giver[0] : giver[1];
+
+		const [lowLocation, lowIndex] = match.groups.low.split(" ");
+		if (lowLocation === "output") {
+			output[+lowIndex] = lowValue;
+		} else {
+			bots[+lowIndex] ? bots[+lowIndex].push(lowValue) : bots[+lowIndex] = [lowValue];
+		}
+
+		const highValue = giver[0] > giver[1] ? giver[0] : giver[1];
+		const [highLocation, highIndex] = match.groups.high.split(" ");
+		if (highLocation === "output") {
+			output[+highIndex] = highValue;
+		} else {
+			bots[+highIndex] ? bots[+highIndex].push(highValue) : bots[+highIndex] = [highValue];
+		}
+	}
+	return output[0] * output[1] * output[2];
+}
+
 
 
 
