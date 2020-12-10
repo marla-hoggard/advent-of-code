@@ -460,3 +460,52 @@ handheldFixInfiniteLoop = input => {
 
   return accumulator;
 }
+
+// ------------- DAY 9 ------------
+// Day 9 - Puzzle 1
+// Return the value of the first element that is not valid
+// Valid = the number is the sum of two unequal elements in the 25 elements preceding it
+const firstNotValid = input => {
+  const numbers = input.split("\n").map(el => +el);
+  for (let i = 25; i < numbers.length; i++) {
+    if (!hasPairSumTotal(numbers.slice(i - 25, i), numbers[i])) {
+      return numbers[i];
+    }
+  }
+  return "not found";
+}
+
+// Almost identical to Day 1 Puzzle 2 except
+// 1. Only searches for two numbers
+// 2. The two numbers must differ from each other
+// 3. Returns true/false based on whether the pair is found
+// params:
+//  @array: array of numbers
+//  @total: the total the numbers must sum to
+const hasPairSumTotal = (array, total) => {
+  for (let i = 0; i < array.length; i++) {
+    const remainingValue = total - array[i];
+    if (remainingValue !== array[i] && array.slice(i+1).includes(remainingValue)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Day 9 - Puzzle 2
+// Find a set of at least two contiguous elements that sum to firstNotValid(input)
+// Return the sum of the smallest and largest elements in that set
+const sumToInvalid = input => {
+  const value = firstNotValid(input);
+  const numbers = input.split("\n").map(el => +el);
+  for (let len = 2; len < numbers.length; len++) {
+    for (let start = 0; start < numbers.length - len; start++) {
+      const set = numbers.slice(start, start + len);
+      if (sum(set) === value) {
+        console.log(set);
+        return Math.min(...set) + Math.max(...set);
+      }
+    }
+  }
+  return "not found";
+}
