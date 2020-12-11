@@ -509,3 +509,43 @@ const sumToInvalid = input => {
   }
   return "not found";
 }
+
+// ------- DAY 10 ----------
+// Day 10 - Puzzle 1
+const joltageDiff = input => {
+  const adapters = input.split("\n").map(el => +el).sort((a,b) => a - b);
+  const diffs = { 1: 0, 2: 0, 3: 1};
+  for (let i = 0; i < adapters.length; i++) {
+    if (i === 0) {
+      diffs[adapters[i]]++;
+    } else {
+      diffs[adapters[i] - adapters[i-1]]++;
+    }
+  }
+  return diffs[1] * diffs[3];
+}
+
+// Day 10 - Puzzle 2
+const joltageChains = input => {
+  return input.split("\n")
+    .map(el => +el).sort((a,b) => a - b)
+    .map((el, i, arr) => i === 0 ? el : el - arr[i-1])
+    .concat(3)
+    .join("")
+    .split("3")
+    .map(el => {
+      switch(el.length) {
+          case 0:
+          case 1:
+              return 1;
+          case 2:
+              return 2;
+          case 3:
+              return 4;
+          case 4:
+          default:
+              return 7;
+      }
+    })
+    .reduce((prod, next) => prod * next, 1);
+}
