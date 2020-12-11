@@ -549,3 +549,257 @@ const joltageChains = input => {
     })
     .reduce((prod, next) => prod * next, 1);
 }
+
+// ------------ DAY 11 -----------
+// Day 11 - Puzzle 1
+// Calculate how the seat map changes based on the adjacent seats
+// Return number of occupied seats (#) after map settles
+const seatMap = input => {
+  let seats = input.split("\n").map(row => row.split(""));
+  let numChanged = 1;
+  while (numChanged > 0) {
+    numChanged = 0;
+    seats = seats.map((row, whichRow) => {
+      return row.map((seat, whichCol) => {
+        if (seat === ".") {
+          return ".";
+        } else if (seat === "L") {
+          if (whichRow > 0) {
+            if (whichCol > 0 && seats[whichRow - 1][whichCol - 1] === "#") {
+              return "L";
+            }
+            if (seats[whichRow - 1][whichCol] === "#") {
+              return "L";
+            }
+            if (whichCol < row.length - 1 && seats[whichRow - 1][whichCol + 1] === "#") {
+              return "L";
+            }
+          }
+          if (whichCol > 0 && seats[whichRow][whichCol - 1] === "#") {
+            return "L";
+          }
+          if (whichCol < row.length - 1 && seats[whichRow][whichCol + 1] === "#") {
+            return "L";
+          }
+          if (whichRow < seats.length - 1) {
+            if (whichCol > 0 && seats[whichRow + 1][whichCol - 1] === "#") {
+              return "L";
+            }
+            if (seats[whichRow + 1][whichCol] === "#") {
+              return "L";
+            }
+            if (whichCol < row.length - 1 && seats[whichRow + 1][whichCol + 1] === "#") {
+              return "L";
+            }
+          }
+          numChanged++;
+          return "#";
+        } else {
+          let numOccuped = 0;
+          if (whichRow > 0) {
+            if (whichCol > 0 && seats[whichRow - 1][whichCol - 1] === "#") {
+              numOccuped++;
+            }
+            if (seats[whichRow - 1][whichCol] === "#") {
+              numOccuped++;
+            }
+            if (whichCol < row.length - 1 && seats[whichRow - 1][whichCol + 1] === "#") {
+              numOccuped++;
+            }
+          }
+          if (whichCol > 0 && seats[whichRow][whichCol - 1] === "#") {
+            numOccuped++;
+          }
+          if (whichCol < row.length - 1 && seats[whichRow][whichCol + 1] === "#") {
+            numOccuped++;
+          }
+          if (whichRow < seats.length - 1) {
+            if (whichCol > 0 && seats[whichRow + 1][whichCol - 1] === "#") {
+              numOccuped++;
+            }
+            if (seats[whichRow + 1][whichCol] === "#") {
+              numOccuped++;
+            }
+            if (whichCol < row.length - 1 && seats[whichRow + 1][whichCol + 1] === "#") {
+              numOccuped++;
+            }
+          }
+          if (numOccuped >= 4) {
+            numChanged++;
+            return "L";
+          } else {
+            return "#";
+          }
+        }
+      })
+    })
+  }
+  return sum(seats.map(row => numOccurrences(row, "#")));
+}
+
+// Day 11 - Puzzle 2
+// Calculate how the seat map changes based on the nearest visible seats
+// Return number of occupied seats (#) after map settles
+const seatMap2 = input => {
+  let seats = input.split("\n").map(row => row.split(""));
+  let numChanged = 1;
+  while (numChanged > 0) {
+    numChanged = 0;
+    seats = seats.map((row, whichRow) => {
+      return row.map((seat, whichCol) => {
+        if (seat === ".") {
+          return ".";
+        } else if (seat === "L") {
+          // Up Left
+          let r = whichRow - 1;
+          let c = whichCol - 1;
+          while (r >= 0 && c >= 0 && seats[r][c] === ".") {
+            r--;
+            c--;
+          }
+          if (r >= 0 && c >= 0 && seats[r][c] === "#") return "L";
+
+          // Straight up
+          r = whichRow - 1;
+          c = whichCol;
+          while (r >= 0 && seats[r][c] === ".") {
+            r--;
+          }
+          if (r >= 0 && seats[r][c] === "#") return "L";
+
+          // Up right
+          r = whichRow - 1;
+          c = whichCol + 1;
+          while (r >= 0 && c < row.length && seats[r][c] === ".") {
+            r--;
+            c++;
+          }
+          if (r >= 0 && c < row.length && seats[r][c] === "#") return "L";
+
+          // Left
+          r = whichRow;
+          c = whichCol - 1;
+          while (c >= 0 && seats[r][c] === ".") {
+            c--;
+          }
+          if (c >= 0 && seats[r][c] === "#") return "L";
+
+          // Right
+          r = whichRow;
+          c = whichCol + 1;
+          while (c < row.length && seats[r][c] === ".") {
+            c++;
+          }
+          if (c < row.length && seats[r][c] === "#") return "L";
+
+          // Down Left
+          r = whichRow + 1;
+          c = whichCol - 1;
+          while (r < seats.length && c >= 0 && seats[r][c] === ".") {
+            r++;
+            c--;
+          }
+          if (r < seats.length && c >= 0 && seats[r][c] === "#") return "L";
+
+          // Straight down
+          r = whichRow + 1;
+          c = whichCol;
+          while (r < seats.length && seats[r][c] === ".") {
+            r++;
+          }
+          if (r < seats.length && seats[r][c] === "#") return "L";
+
+          // Down right
+          r = whichRow + 1;
+          c = whichCol + 1;
+          while (r < seats.length && c < row.length && seats[r][c] === ".") {
+            r++;
+            c++;
+          }
+          if (r < seats.length && c < row.length && seats[r][c] === "#") return "L";
+
+          numChanged++;
+          return "#";
+        } else {
+          let numOccupied = 0;
+
+          // Up Left
+          r = whichRow - 1;
+          c = whichCol - 1;
+          while (r >= 0 && c >= 0 && seats[r][c] === ".") {
+            r--;
+            c--;
+          }
+          if (r >= 0 && c >= 0 && seats[r][c] === "#") numOccupied++;
+
+          // Straight up
+          r = whichRow - 1;
+          c = whichCol;
+          while (r >= 0 && seats[r][c] === ".") {
+            r--;
+          }
+          if (r >= 0 && seats[r][c] === "#") numOccupied++;
+
+          // Up right
+          r = whichRow - 1;
+          c = whichCol + 1;
+          while (r >= 0 && c < row.length && seats[r][c] === ".") {
+            r--;
+            c++;
+          }
+          if (r >= 0 && c < row.length && seats[r][c] === "#") numOccupied++;
+
+          // Left
+          r = whichRow;
+          c = whichCol - 1;
+          while (c >= 0 && seats[r][c] === ".") {
+            c--;
+          }
+          if (c >= 0 && seats[r][c] === "#") numOccupied++;
+
+          // Right
+          r = whichRow;
+          c = whichCol + 1;
+          while (c < row.length && seats[r][c] === ".") {
+            c++;
+          }
+          if (c < row.length && seats[r][c] === "#") numOccupied++;
+
+          // Down Left
+          r = whichRow + 1;
+          c = whichCol - 1;
+          while (r < seats.length && c >= 0 && seats[r][c] === ".") {
+            r++;
+            c--;
+          }
+          if (r < seats.length && c >= 0 && seats[r][c] === "#") numOccupied++;
+
+          // Straight down
+          r = whichRow + 1;
+          c = whichCol;
+          while (r < seats.length && seats[r][c] === ".") {
+            r++;
+          }
+          if (r < seats.length && seats[r][c] === "#") numOccupied++;
+
+          // Down right
+          r = whichRow + 1;
+          c = whichCol + 1;
+          while (r < seats.length && c < row.length && seats[r][c] === ".") {
+            r++;
+            c++;
+          }
+          if (r < seats.length && c < row.length && seats[r][c] === "#") numOccupied++;
+
+          if (numOccupied >= 5) {
+            numChanged++;
+            return "L";
+          } else {
+            return "#";
+          }
+        }
+      })
+    })
+  }
+  return sum(seats.map(row => numOccurrences(row, "#")));
+}
