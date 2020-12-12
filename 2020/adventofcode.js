@@ -803,3 +803,84 @@ const seatMap2 = input => {
   }
   return sum(seats.map(row => numOccurrences(row, "#")));
 }
+
+// ---------- DAY 12 -----------
+// Day 12 - Puzzle 1
+const shipDirections = input => {
+  const instructions = input.split("\n").map(el => ({
+    dir: el[0],
+    amt: Number(el.slice(1)),
+  }));
+
+  let facing = 1; // ['N', 'E', 'S', 'W'];
+  let horiz = 0;
+  let vert = 0;
+
+  instructions.forEach(({ dir, amt }) => {
+    if (dir === 'N' || (dir === 'F' && facing === 0)) {
+      vert += amt;
+    } else if (dir === 'S' || (dir === 'F' && facing === 2)) {
+      vert -= amt;
+    } else if (dir === 'E' || (dir === 'F' && facing === 1)) {
+      horiz += amt;
+    } else if (dir === 'W' || (dir === 'F' && facing === 3)) {
+      horiz -= amt;
+    } else if (dir === 'L') {
+      // Add 4 first since negative mod doesn't work the way we want
+      facing = (facing + 4 - (amt / 90)) % 4;
+    } else if (dir === 'R') {
+      facing = (facing + (amt / 90)) % 4;
+    }
+  });
+  console.log({ horiz, vert });
+  return Math.abs(horiz) + Math.abs(vert);
+}
+
+// Day 12 - Puzzle 2
+const waypointDirections = input => {
+  let ship = {
+    horiz: 0,
+    vert: 0,
+  }
+
+  let waypoint = {
+    horiz: 10,
+    vert: 1,
+  }
+
+  input.split("\n").forEach(instr => {
+    const dir = instr[0];
+    const amt = Number(instr.slice(1));
+    if (dir === 'N') {
+      waypoint.vert += amt;
+    } else if (dir === 'S') {
+      waypoint.vert -= amt;
+    } else if (dir === 'E') {
+      waypoint.horiz += amt;
+    } else if (dir === 'W') {
+      waypoint.horiz -= amt;
+    } else if (dir === 'F') {
+      ship.horiz += waypoint.horiz * amt;
+      ship.vert += waypoint.vert * amt;
+    } else if (amt === 180) {
+      waypoint = {
+        horiz: -waypoint.horiz,
+        vert: -waypoint.vert,
+      }
+    } else if (instr === 'R90' || instr === 'L270') {
+      waypoint = {
+        horiz: waypoint.vert,
+        vert: -waypoint.horiz,
+      }
+    } else if (instr === 'L90' || instr === 'R270') {
+      waypoint = {
+        horiz: -waypoint.vert,
+        vert: waypoint.horiz,
+      }
+    } else {
+      console.log("unexpected instruction", instr);
+    }
+  });
+  console.log({ ship, waypoint });
+  return Math.abs(ship.horiz) + Math.abs(ship.vert);
+}
