@@ -884,3 +884,46 @@ const waypointDirections = input => {
   console.log({ ship, waypoint });
   return Math.abs(ship.horiz) + Math.abs(ship.vert);
 }
+
+// --------- DAY 13 ------------
+const earliestBus = input => {
+  const [time, buses] = input.split("\n");
+  const waitTimes = buses
+    .split(",")
+    .filter(el => el !== 'x')
+    .map(id => ({
+      id: Number(id),
+      wait: id - (time % id),
+    }));
+  const minWait = Math.min(...waitTimes.map(el => el.wait));
+  const bestBus = waitTimes.find(bus => bus.wait === minWait);
+  return bestBus.id * bestBus.wait;
+}
+
+const busesInARow = input => {
+  const buses = input.split("\n")[1]
+    .split(",")
+    .map((el, i) => ({
+      offset: i % el,
+      id: Number(el),
+    }))
+    .filter(el => !isNaN(el.id));
+
+  console.log({ buses });
+
+  let i = 1;
+  let t = buses[0].id;
+  let product = t;
+  while (i < buses.length) {
+    const { offset, id } = buses[i];
+    const offBy = id - (t % id);
+    if (offBy === (offset)) {
+      console.log({ t, id, offset, product })
+      product *= buses[i].id;
+      i++;
+    } else {
+      t += product;
+    }
+  }
+  return t;
+}
