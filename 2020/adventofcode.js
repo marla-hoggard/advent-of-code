@@ -927,3 +927,93 @@ const busesInARow = input => {
   }
   return t;
 }
+
+// --------- DAY 14 ---------
+// Day 14 - Puzzle 1
+const bitMask = input => {
+  let memory = {};
+  let mask = "X".repeat(36);
+  input.split("\n").forEach(command => {
+    const [type, value] = command.split(" = ");
+    if (type === "mask") {
+      mask = value;
+    } else {
+      const location = Number(type.slice(4, -1));
+      const bitValue = Number(value).toString(2).padStart(36, "0");
+      const maskedValue = masked(bitValue, mask);
+      memory[location] = parseInt(maskedValue, 2);
+    }
+  });
+  return sum(Object.values(memory));
+}
+
+// For each 0 or 1 in @mask, overwrites the corresponding digit in @value with that value
+const masked = (value, mask) => {
+  return value.split("")
+    .map((digit, i) => mask[i] === 'X' ? digit : mask[i])
+    .join("");
+}
+
+const bitMask2 = input => {
+let memory = {};
+  let mask = "0".repeat(36);
+  input.split("\n").forEach(command => {
+    const [type, value] = command.split(" = ");
+    if (type === "mask") {
+      mask = value;
+    } else {
+      const location = Number(type.slice(4, -1));
+      const bitLocation = location.toString(2).padStart(36, "0");
+      const maskedLocations = masked2(bitLocation, mask);
+      maskedLocations.forEach(loc => memory[loc] = Number(value));
+    }
+  });
+  return sum(Object.values(memory));
+}
+
+// For each char in @mask:
+// 0 - @value is unchanged
+// 1 - @value is overwritten with 1
+// X - Duplicate all values to include that digit as a 0 and as a 1
+// Returns an array of all masked values
+const masked2 = (value, mask) => {
+  let values = [""];
+  mask.split("").forEach((char, i) => {
+    if (char === "0") {
+      values = values.map(el => el + value[i]);
+    } else if (char === "1") {
+      values = values.map(el => el + "1");
+    } else {
+      values = values.map(el => el + "0").concat(values.map(el => el + "1"));
+    }
+  });
+  return values.map(val => parseInt(val, 2));
+}
+
+// ---------- DAY 15 -----------
+const numberGame = (input, numTurns) => {
+  const turns = {};
+  let last;
+  const addValue = (val, index) => {
+    if (turns[val]) {
+      turns[val].unshift(index);
+      turns[val] = turns[val].slice(0,2);
+    } else {
+      turns[val] = [index];
+    }
+    last = val;
+  }
+
+  input.split(",").forEach((starter, i) => addValue(starter, i));
+  for (let i = input.split(",").length; i < numTurns; i++) {
+    if (i % 1000000 === 0) {
+      console.log(i);
+    }
+    if (turns[last].length === 1) {
+      addValue(0, i);
+    } else {
+      addValue(turns[last][0] - turns[last][1], i);
+    }
+  }
+  return last;
+}
