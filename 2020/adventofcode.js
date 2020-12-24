@@ -1017,3 +1017,308 @@ const numberGame = (input, numTurns) => {
   }
   return last;
 }
+
+// ---------- DAY 16 ------------
+// Day 16 - Puzzle 1
+const invalidTicketNumbers = input => {
+  const [fields, myTicket, otherTickets] = input.split("\n\n");
+  const validNumbers = new Set();
+  let invalidNumbers = 0;
+  fields.split("\n").forEach(field => {
+    const match = field.match(/[a-z\s]+: (\d+-\d+) or (\d+-\d+)/i);
+    if (match && match.length === 3) {
+      const [full, range1, range2] = match;
+      const [start1, end1] = range1.split("-").map(el => +el);
+      for (let i = start1; i <= end1; i++) {
+        validNumbers.add(i);
+      }
+      const [start2, end2] = range2.split("-").map(el => +el);
+      for (let i = start2; i <= end2; i++) {
+        validNumbers.add(i);
+      }
+    }
+  });
+
+  otherTickets.split("\n").slice(1).forEach(ticket => {
+    const numbers = ticket.split(",");
+    for (let i = 0; i < numbers.length; i++) {
+      const number = +numbers[i];
+      if (!validNumbers.has(number)) {
+        invalidNumbers += number;
+        break;
+      }
+    }
+  });
+
+  return invalidNumbers;
+}
+
+// Day 16 - Puzzle 2
+const decodeTickets = input => {
+  const [fields, myTicket, otherTickets] = input.split("\n\n");
+  const validNumbers = new Set();
+  const rules = {};
+
+  // Parse the fields into rules, each of which has key: field name, value: set of valid numbers
+  // Additionally, create the overall set of valid numbers
+  fields.split("\n").forEach(row => {
+    const match = row.match(/([a-z\s]+): (\d+-\d+) or (\d+-\d+)/i);
+    if (match && match.length === 4) {
+      const [full, field, range1, range2] = match;
+      rules[field] = new Set();
+      const [start1, end1] = range1.split("-").map(el => +el);
+      for (let i = start1; i <= end1; i++) {
+        validNumbers.add(i);
+        rules[field].add(i);
+      }
+      const [start2, end2] = range2.split("-").map(el => +el);
+      for (let i = start2; i <= end2; i++) {
+        validNumbers.add(i);
+        rules[field].add(i);
+      }
+    }
+  });
+
+  // Throw out all the invalid tickets
+  let mine = myTicket.split("\n")[1];
+  const validTickets = otherTickets.split("\n").slice(1).filter(ticket => {
+    const numbers = ticket.split(",");
+    return numbers.every(n => validNumbers.has(+n));
+  }).concat(mine);
+
+  // Iterate through each index and create a list of all possible fields for each index
+  let possibleMapping = [];
+  mine.split(",").forEach((number, i) => {
+    Object.entries(rules).forEach(([rule, range]) => {
+      if (validTickets.map(t => t.split(",")[i]).every(n => range.has(+n))) {
+        if (possibleMapping[i]) {
+          possibleMapping[i].push(rule);
+        } else {
+          possibleMapping[i] = [rule];
+        }
+      }
+    })
+  });
+
+  // Iterate through the possible mapping, finding the index who only has one possible rule
+  // Set that rule in finalMap, then remove that rule from all other indices
+  // After each round, another index should be down to one possibility
+  const finalMap = {};
+  let index = possibleMapping.findIndex(el => el.length === 1);
+  while (index !== -1) {
+    const rule = possibleMapping[index][0];
+    finalMap[rule] = index;
+    possibleMapping = [...possibleMapping.map(el => el.filter(r => r !== rule))]
+    index = possibleMapping.findIndex(el => el.length === 1);
+  }
+
+  // Now that all the fields are determined, find the fields whose name starts with "departure"
+  // Return the product of the corresponding numbers in my ticket
+  let product = 1;
+  Object.entries(finalMap)
+    .filter(([rule, i]) => rule.startsWith("departure"))
+    .forEach(([rule, i]) => {
+      value = +mine.split(",")[i];
+      product *= value;
+    });
+  return product;
+}
+
+// ---------- DAY 17 ------------
+// Day 17 - Puzzle 1
+const conwayCubes = (input, cycles) => {
+  let plane = [input.split("\n").map(row => row.split(""))];
+  for (let i = 0; i < cycles; i++) {
+    let newPlane = [];
+    const depth = plane.length;
+    const height = plane[0].length;
+    const width = plane[0][0].length;
+    for (let z = 0; z < depth + 2; z++) {
+      for (let y = 0; y < height + 2; y++) {
+        for (let x = 0; x < width + 2; x++) {
+          safeSetValue(newPlane, x, y, z, cyclePoint(plane, x - 1, y - 1, z - 1));
+        }
+      }
+    }
+    plane = newPlane;
+  }
+  return numOccurrences(plane, '#');
+}
+// Returns array[z][y][x] if it exists
+// Otherwise returns fallback
+const safeGetValue = (array, x, y, z, fallback = '.') => {
+  if (array[z] != undefined && array[z][y] != undefined && array[z][y][x] != undefined) {
+    return array[z][y][x];
+  } else {
+    return fallback;
+  }
+}
+const safeSetValue = (array, x, y, z, value = '.') => {
+  if (!array[z]) {
+    array[z] = []
+  }
+  if (!array[z][y]) {
+    array[z][y] = [];
+  }
+  array[z][y][x] = value;
+}
+
+// Checks the 26 points adjacent to (x,y,z)
+// and returns whether (x,y,z) should be '.' or '#'
+const cyclePoint = (array, x, y, z) => {
+  let active = 0;
+  for (let i = x - 1; i <= x + 1; i++) {
+    for (let j = y - 1; j <= y + 1; j++) {
+      for (let k = z - 1; k <= z + 1; k++) {
+        const val = safeGetValue(array, i, j, k);
+        if (val === '#') {
+          active++;
+        } else {
+          // Set the value to expand the area
+          // (may or may not already be '.')
+          safeSetValue(array, i, j, k, '.');
+        }
+      }
+    }
+  }
+
+  if (safeGetValue(array, x, y, z) === '#') {
+    // Rule is 2 or 3 but the count above includes (x,y,z) so check 3 or 4
+    return active === 3 || active === 4 ? '#' : '.';
+  }
+  else if (active === 3) {
+    return '#';
+  }
+  return '.';
+}
+
+// Day 17 - Puzzle 2
+const conwayHypercubes = (input, cycles) => {
+  let plane = [[input.split("\n").map(row => row.split(""))]];
+  for (let i = 0; i < cycles; i++) {
+    let newPlane = [];
+    const hyperdepth = plane.length;
+    const depth = plane[0].length;
+    const height = plane[0][0].length;
+    const width = plane[0][0][0].length;
+    for (let w = 0; w < hyperdepth + 2; w++) {
+      for (let z = 0; z < depth + 2; z++) {
+        for (let y = 0; y < height + 2; y++) {
+          for (let x = 0; x < width + 2; x++) {
+            safeSetValue2(newPlane, x, y, z, w, cyclePoint2(plane, x - 1, y - 1, z - 1, w - 1));
+          }
+        }
+      }
+    }
+
+    console.log(newPlane)
+
+    // Remove empty cubes from the front
+    while (numOccurrences(newPlane[0], '#') === 0) {
+      console.log("empty first cube")
+      newPlane = newPlane.slice(1);
+    }
+
+     // Remove empty cubes from the end
+    while (numOccurrences(newPlane[newPlane.length - 1], '#') === 0) {
+      console.log("empty last cube")
+      newPlane = newPlane.slice(0, -1);
+    }
+
+    // Remove top level(s) if empty on every cube
+    while (newPlane.every(cube => numOccurrences(cube[0], '#') === 0)) {
+      console.log("empty first level")
+      newPlane = newPlane.map(cube => cube.slice(1));
+    }
+
+    // Remove bottom level(s) if empty on every cube
+    while (newPlane.every(cube => numOccurrences(cube[cube.length - 1], '#') === 0)) {
+      console.log("empty last level")
+      newPlane = newPlane.map(cube => cube.slice(0, -1));
+    }
+
+    // Remove first row(s) if empty on every level
+    while (newPlane.every(cube => numOccurrences(cube.map(level => level[0]), '#') === 0)) {
+      console.log("empty first row")
+      newPlane = newPlane.map(level => level.map(row => row.slice(1)));
+    }
+
+    // Remove last row(s) if empty on every level
+    while (newPlane.every(cube => numOccurrences(cube.map(level => level[level.length - 1]), '#') === 0)) {
+      console.log("empty last row")
+      newPlane = newPlane.map(cube => cube.map(level => level.slice(0, -1)));
+    }
+
+    console.log(newPlane)
+
+    // // Remove first columns(s) if empty on every level
+    // while (newPlane.every(level => numOccurrences(level.map(row => row[0]), '#') === 0)) {
+    //   console.log("empty first column")
+    //   newPlane = newPlane.map(level => level.map(row => row.slice(1)));
+    // }
+
+    // // Remove last columns(s) if empty on every level
+    // while (newPlane.every(level => numOccurrences(level.map(row => row[row.length - 1]), '#') === 0)) {
+    //   console.log("empty last column")
+    //   newPlane = newPlane.map(level => level.map(row => row.slice(0, -1)));
+    // }
+
+
+    plane = newPlane;
+  }
+  return numOccurrences(plane, '#');
+}
+
+// Returns array[z][y][x] if it exists
+// Otherwise returns fallback
+const safeGetValue2 = (array, x, y, z, w, fallback = '.') => {
+  if (array[w] != undefined && array[w][z] != undefined && array[w][z][y] != undefined && array[w][z][y][x] != undefined) {
+    return array[w][z][y][x];
+  } else {
+    return fallback;
+  }
+}
+
+const safeSetValue2 = (array, x, y, z, w, value = '.') => {
+  if (!array[w]) {
+    array[w] = []
+  }
+  if (!array[w][z]) {
+    array[w][z] = []
+  }
+  if (!array[w][z][y]) {
+    array[w][z][y] = [];
+  }
+  array[w][z][y][x] = value;
+}
+
+// Checks the 81 points adjacent to (x,y,z,w)
+// and returns whether (x,y,z,w) should be '.' or '#'
+const cyclePoint2 = (array, x, y, z, w) => {
+  let active = 0;
+  for (let i = x - 1; i <= x + 1; i++) {
+    for (let j = y - 1; j <= y + 1; j++) {
+      for (let k = z - 1; k <= z + 1; k++) {
+        for (let m = w - 1; m <= w + 1; m++) {
+          const val = safeGetValue2(array, i, j, k, m);
+          if (val === '#') {
+            active++;
+          } else {
+            // Set the value to expand the area
+            // (may or may not already be '.')
+            safeSetValue2(array, i, j, k, m, '.');
+          }
+        }
+      }
+    }
+  }
+
+  if (safeGetValue2(array, x, y, z, w) === '#') {
+    // Rule is 2 or 3 but the count above includes (x,y,z,w) so check 3 or 4
+    return active === 3 || active === 4 ? '#' : '.';
+  }
+  else if (active === 3) {
+    return '#';
+  }
+  return '.';
+}

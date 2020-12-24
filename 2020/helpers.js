@@ -50,11 +50,32 @@ const numOccurrencesArray = (arr, val) => {
 	return found;
 }
 
+// Returns the number of occurences of @val in the 2D array @arr
+const numOccurrences2DArray = (arr, val) => {
+	return sum(arr.map(row => numOccurrences(row, val)));
+}
+
+// Returns the number of occurences of @val in the 3D array @arr
+const numOccurrences3DArray = (arr, val) => {
+	return sum(arr.map(level => sum(level.map(row => numOccurrences(row, val)))));
+}
+
+// Returns the number of occurences of @val in the 4D array @arr
+const numOccurrences4DArray = (arr, val) => {
+	return sum(arr.map(cube => sum(cube.map(level => sum(level.map(row => numOccurrences(row, val)))))));
+}
+
 // Returns the number of occurences of @val in @set
 // @set can be an array, a string, or a value that can be converted to a string (like a number.toString())
+// @array can be an array of arrays as deep as 4 dimensions
 const numOccurrences = (set, val) => {
 	if (Array.isArray(set)) {
-		return numOccurrencesArray(set, val);
-	}
-	return numOccurrencesString(set.toString(), val);
+		if (Array.isArray(set[0])) {
+			if (Array.isArray(set[0][0])) {
+				if (Array.isArray(set[0][0][0])) {
+					return numOccurrences4DArray(set, val);
+				} else return numOccurrences3DArray(set, val);
+			} else return numOccurrences2DArray(set, val);
+		} else return numOccurrencesArray(set, val);
+	} else return numOccurrencesString(set.toString(), val);
 }
