@@ -30,52 +30,31 @@ const sum = arr => {
 	return total;
 }
 
-// Returns the number of occurrences of @val in the string @str
-// @val can be any string but single letters will work the best
-// If a multi-char val, the next occurrence starts after the end of the previous (no overlaps)
-const numOccurrencesString = (str, val) => {
-	const regex = new RegExp(val, "g");
-	const matches = str.match(regex);
-	return matches ? matches.length : 0;
-}
-
-// Returns the number of occurrences of @val in the array @arr
-const numOccurrencesArray = (arr, val) => {
+// Returns the number of occurrences of @val in the iterable @iter
+// @iter can be an array or a string
+// Note: If @iter is an array, @val must be a full match of an element in the array
+const numOccurrencesBaseMethod = (iter, val) => {
 	let found = 0;
-	let i = arr.indexOf(val);
+	let i = iter.indexOf(val);
 	while (i !== -1) {
 		found++;
-		i = arr.indexOf(val, i + 1);
+		i = iter.indexOf(val, i + 1);
 	}
 	return found;
 }
 
-// Returns the number of occurences of @val in the 2D array @arr
-const numOccurrences2DArray = (arr, val) => {
-	return sum(arr.map(row => numOccurrences(row, val)));
-}
-
-// Returns the number of occurences of @val in the 3D array @arr
-const numOccurrences3DArray = (arr, val) => {
-	return sum(arr.map(level => sum(level.map(row => numOccurrences(row, val)))));
-}
-
-// Returns the number of occurences of @val in the 4D array @arr
-const numOccurrences4DArray = (arr, val) => {
-	return sum(arr.map(cube => sum(cube.map(level => sum(level.map(row => numOccurrences(row, val)))))));
-}
-
 // Returns the number of occurences of @val in @set
 // @set can be an array, a string, or a value that can be converted to a string (like a number.toString())
-// @array can be an array of arrays as deep as 4 dimensions
+// @array can be an array of arrays any dimension deep
 const numOccurrences = (set, val) => {
 	if (Array.isArray(set)) {
 		if (Array.isArray(set[0])) {
-			if (Array.isArray(set[0][0])) {
-				if (Array.isArray(set[0][0][0])) {
-					return numOccurrences4DArray(set, val);
-				} else return numOccurrences3DArray(set, val);
-			} else return numOccurrences2DArray(set, val);
-		} else return numOccurrencesArray(set, val);
-	} else return numOccurrencesString(set.toString(), val);
+			return sum(set.map(row => numOccurrences(row, val)));
+		}
+		else {
+			return numOccurrencesBaseMethod(set, val);
+		}
+	} else {
+		return numOccurrencesBaseMethod(set.toString(), val);
+	}
 }

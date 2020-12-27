@@ -1322,3 +1322,67 @@ const cyclePoint2 = (array, x, y, z, w) => {
   }
   return '.';
 }
+
+// -------- DAY 18 ----------
+const newMath = (input, evaluationMethod) => {
+  return input.split("\n").reduce((total, exp) => total + evaluationMethod(exp), 0);
+}
+
+// Evaluates the section @toEval and replaces it in the @full expression with its result
+// If the section was in parentheses, removes the parens when replacing
+const evalAndReplace = (full, toEval, evaluationMethod) => {
+  const outcome = toEval.startsWith("(") && toEval.endsWith(")")
+    ? evaluationMethod(toEval.slice(1, -1))
+    : evaluationMethod(toEval)
+  return full.replace(toEval, outcome);
+}
+
+// Evaluates the expression @exp according to the "new math part 1" rules
+// + and * are equal in order of operations, so evaluation left to right
+// Parentheses still function as normal, taking precedence
+const evaluate1 = exp => {
+  let parens = exp.match(/\([^\(\)]+\)/);
+  while (parens) {
+    exp = evalAndReplace(exp, parens[0], evaluate1);
+    parens = exp.match(/\([^\(\)]+\)/);
+  }
+
+  let total = 0;
+  let isSum = true;
+
+  exp.split(" ").forEach(char => {
+    if (char === "+") {
+      isSum = true;
+    } else if (char === "*") {
+      isSum = false;
+    } else if (isSum) {
+      total += +char;
+    } else {
+      total *= +char;
+    }
+  });
+
+  return total;
+}
+
+// Evaluates the expression @exp according to the "new math part 2" rules
+// + and * are swapped from normal order of operations, so + comes before *
+// Parentheses still function as normal, taking precedence
+const evaluate2 = exp => {
+  let parens = exp.match(/\([^\(\)]+\)/);
+  while (parens) {
+    exp = evalAndReplace(exp, parens[0], evaluate2);
+    parens = exp.match(/\([^\(\)]+\)/);
+  }
+
+  let addition = exp.match(/\d+\s\+\s\d+/);
+  while (addition) {
+    // Since matches are the form "a + b", can be evaulated with native eval function
+    exp = evalAndReplace(exp, addition[0], eval)
+    addition = exp.match(/\d+\s\+\s\d+/);
+  }
+
+  // At this point, exp should only have * operations left
+  // so it can be evaluated normally with the native eval function
+  return eval(exp);
+}
