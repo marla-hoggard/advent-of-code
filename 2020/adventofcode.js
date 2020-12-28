@@ -1375,11 +1375,11 @@ const evaluate2 = exp => {
     parens = exp.match(/\([^\(\)]+\)/);
   }
 
-  let addition = exp.match(/\d+\s\+\s\d+/);
+  let addition = exp.match(/(?:\d+\s\+\s)+\d+/);
   while (addition) {
-    // Since matches are the form "a + b", can be evaulated with native eval function
+    // Since matches are all addition, can be evaulated with native eval function
     exp = evalAndReplace(exp, addition[0], eval)
-    addition = exp.match(/\d+\s\+\s\d+/);
+    addition = exp.match(/(?:\d+\s\+\s)+\d+/);
   }
 
   // At this point, exp should only have * operations left
