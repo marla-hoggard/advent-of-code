@@ -1388,25 +1388,20 @@ const evaluate2 = exp => {
 }
 
 // ---------- DAY 19 -----------
-// Day 19 - Puzzle 1
-const numValidMessages1 = input => {
+// For Puzzle 1, validationMethod = isValidMessage1 and returnKeys = [8, 11]
+// For Puzzle 2, validationMethod = isValidMessage2 and returnKeys = [42, 31]
+const numValidMessages = (input, validationMethod, returnKeys) => {
   const [rules, messages] = input.split("\n\n");
-  const validOptions = parseRules1(rules);
+  const [firstOptions, secondOptions] = parseRules(rules, returnKeys);
   return messages
     .split("\n")
-    .reduce((numValid, message) => isValidMessage1(validOptions["8"], validOptions["11"], message) ? numValid + 1 : numValid, 0);
+    .reduce((numValid, message) => validationMethod(firstOptions, secondOptions, message) ? numValid + 1 : numValid, 0);
 }
 
-// Checks if @message is 8 11
-// 8 is an array of 8-letter strings
-// 11 is an array of 16-letter strings
-const isValidMessage1 = (firstOptions, secondOptions, message) => {
-  return firstOptions.includes(message.slice(0, 8)) && secondOptions.includes(message.slice(8));
-}
-
-// Evaluates the provided rules and
-// returns an array of valid message options
-const parseRules1 = rules => {
+// Evaluates the provided @rules from puzzle input and
+// returns an array of string arrays whose rule numbers match
+// the keys requested from @returnKeys
+const parseRules = (rules, returnKeys) => {
   let strings = {};
   let subRules = {};
   rules.split("\n").forEach(rule => {
@@ -1417,17 +1412,16 @@ const parseRules1 = rules => {
       subRules[index] = content;
     }
   });
-  while (true) {
-    const [key, rule] = Object.entries(subRules)
-      .find(([key, val]) => val.split(" ").every(el => el === "|" || Object.keys(strings).includes(el)));
 
-    // We run out of memory on this step, so instead of putting it all in one array,
-    // We have to return 8 and 11 separately
+  while (true) {
+    // Finds the first rule in which all subrules have already been parsed
+    const [key, rule] = Object.entries(subRules)
+      .find(([_, val]) => val.split(" ").every(el => el === "|" || Object.keys(strings).includes(el)));
+
     if (key === "0") {
-      return { 8: strings["8"], 11: strings["11"] };
+      return returnKeys.map(k => strings[k]);
     }
-    // If all sub rules of the rule have already been converted to strings
-    // then this rule is ready to be converted to strings
+
     let substrings = [];
     rule.split(" | ").forEach(branch => {
       let branchStrings = [];
@@ -1451,24 +1445,22 @@ const parseRules1 = rules => {
   }
 }
 
+// Checks if @message is 8 11 aka an element of @firstOptions followed by an element of @secondOptions
+// @firstOptions and @secondOptions are arrays of strings where all elements in a given options array have equal length
+const isValidMessage1 = (firstOptions, secondOptions, message) => {
+  const firstLength = firstOptions[0].length;
+  return firstOptions.includes(message.slice(0, firstLength)) && secondOptions.includes(message.slice(firstLength));
+}
+
 // Day 19 - Puzzle 2
 // For this puzzle, 8 and 11 have been changed to:
 // 8: 42 | 42 8
 // 11: 42 31 | 42 11 31
 //
 // 0: 8 11
-// So with the changes, rule 0 is now: 42+ (42 31)+ meaning, any number of 42s then any number of 31s
-// as long as there is at least one 31 and more 42s than 31s
+// So with the changes, rule 0 is now: 42+ (42 31)+
+// meaning, two or more 42s followed by one or more 31s, and more 42s than 31s
 // 42 and 31 each turn out to be an array of 128 8-char strings
-const numValidMessages2 = input => {
-  const [rules, messages] = input.split("\n\n");
-  const validOptions = parseRules2(rules);
-  console.log(messages.split("\n").length);
-  return messages
-    .split("\n")
-    .reduce((numValid, message) => isValidMessage2(validOptions["42"], validOptions["31"], message) ? numValid + 1 : numValid, 0);
-}
-
 const isValidMessage2 = (firstOptions, secondOptions, message) => {
   if (message.length % 8 !== 0) {
     return false;
@@ -1501,50 +1493,4 @@ const isValidMessage2 = (firstOptions, secondOptions, message) => {
     return true;
   }
   return false;
-}
-
-// Evaluates the provided rules and
-// returns an array of valid message options
-const parseRules2 = rules => {
-  let strings = {};
-  let subRules = {};
-  rules.split("\n").forEach(rule => {
-    const [index, content] = rule.split(": ");
-    if (content.match(/"[a-z]+"/)) {
-      strings[index] = [content.slice(1, -1)];
-    } else {
-      subRules[index] = content;
-    }
-  });
-  while (true) {
-    const [key, rule] = Object.entries(subRules)
-      .find(([key, val]) => val.split(" ").every(el => el === "|" || Object.keys(strings).includes(el)));
-
-    // When we get to the end, now we just need to return 31 and 42
-    if (key === "0") {
-      return { 31: strings["31"], 42: strings["42"] };
-    }
-    // If all sub rules of the rule have already been converted to strings
-    // then this rule is ready to be converted to strings
-    let substrings = [];
-    rule.split(" | ").forEach(branch => {
-      let branchStrings = [];
-      branch.split(" ").map(num => strings[num]).forEach(chars => {
-        if (!branchStrings.length) {
-          branchStrings = [...chars];
-        } else if (chars.length === 1) {
-          branchStrings = branchStrings.map(el => el + chars[0]);
-        } else {
-          let expandedStrings = []
-          chars.forEach(char => {
-            expandedStrings = expandedStrings.concat(branchStrings.map(el => el + char));
-          });
-          branchStrings = [...expandedStrings];
-        }
-      });
-      substrings = substrings.concat(branchStrings);
-    });
-    strings[key] = substrings;
-    delete subRules[key];
-  }
 }
