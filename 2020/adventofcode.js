@@ -1494,3 +1494,424 @@ const isValidMessage2 = (firstOptions, secondOptions, message) => {
   }
   return false;
 }
+
+// -------- DAY 20 ----------
+const parsePuzzlePieces = input => {
+  const edgeMap = [ "top", "bottom", "left", "right", "topReverse", "bottomReverse", "leftReverse", "rightReverse"];
+
+    // Parses the input to an array of tile objects with important data
+    const tiles = input.split("\n\n").map(tile => {
+      let data = {};
+      const [title, ...rows] = tile.split("\n");
+      data.index = Number(title.match(/Tile (\d+):/)[1]);
+      data.rows = rows;
+      data.edges = [
+        rows[0],
+        rows[rows.length - 1],
+        rows.map(row => row[0]).join(""),
+        rows.map(row => row[row.length - 1]).join(""),
+      ];
+      data.edges = data.edges.concat(data.edges.map(edge => edge.split("").reverse().join("")));
+      data.matches = {};
+      return data;
+    });
+
+    // Iterates through each tile to find which edges can match
+    for (let a = 0; a < tiles.length; a++) {
+      for (let b = a + 1; b < tiles.length; b++) {
+        if (tiles[a].index !== tiles[b].index) {
+          tiles[a].edges.forEach((edgeA, indexA) => {
+            tiles[b].edges.forEach((edgeB, indexB) => {
+              if (edgeA === edgeB) {
+                // Originally, each matches element was an array,
+                // but it turned out they always only had one element
+                // so we can just simply set it to that match instead of an array of matches
+                tiles[a].matches[edgeMap[indexA]] = { index: tiles[b].index, edge: edgeMap[indexB] };
+                tiles[b].matches[edgeMap[indexB]] = { index: tiles[a].index, edge: edgeMap[indexA] };
+              }
+            });
+          });
+        }
+      }
+    }
+  return tiles;
+}
+
+// Day 20 - Puzzle 1
+// As it turns out, edge matches are unique and every tile has exactly 2-4 potential matches
+// times 2 since for each edge match, their reverses will also match each other.
+// After dividing the number of edge matches by two, there are exact four tiles that only have 2 potential matches
+// so those four must be the four corners. Return the product of their indices
+const findPuzzleCorners = input => {
+  const tiles = parsePuzzlePieces(input);
+  const corners = tiles
+    .filter(tile => Object.keys(tile.matches).length / 2 === 2)
+    .map(tile => tile.index);
+  console.log(corners);
+  return corners.reduce((total, next) => total * next, 1);
+}
+
+// Day 20 - Puzzle 2
+const waterRoughness = input => {
+  const image = assemblePuzzle(input);
+  const seaMonsters = {
+    "none": checkForSeaMonsters(image),
+    "flipHoriz": checkForSeaMonsters(rotateGrid(image, "flipHoriz")),
+    "flipVert": checkForSeaMonsters(rotateGrid(image, "flipVert")),
+    "180": checkForSeaMonsters(rotateGrid(image, "180")),
+    "90c": checkForSeaMonsters(rotateGrid(image, "90c")),
+    "90cc": checkForSeaMonsters(rotateGrid(image, "90cc")),
+    "flip90c": checkForSeaMonsters(rotateGrid(image, "flip90c")),
+    "flip90cc": checkForSeaMonsters(rotateGrid(image, "flip90cc")),
+  };
+
+  const orientationWithSeaMonsters = Object.values(seaMonsters).find(el => el.numSeaMonsters > 0);
+
+  drawImage(orientationWithSeaMonsters.monsterImage, "day20visualization");
+  const subtitleDiv = document.getElementById("day20subtitle");
+  subtitleDiv.innerHTML = `Sea Monsters: ${orientationWithSeaMonsters.numSeaMonsters}`;
+
+  return numOccurrences(orientationWithSeaMonsters.monsterImage.map(row => row.split("")), "#");
+}
+
+// Iterates through @image to find all sea monsters
+// Returns the number of sea monsters found and the image with sea monsters changed to "O"
+const checkForSeaMonsters = image => {
+  let sm = [];
+  let numSeaMonsters = 0;
+  for (let whichRow = 0; whichRow < image.length - 2; whichRow++) {
+    for (let rowStart = 0; rowStart < image[0].length - 20; rowStart++) {
+      const section = image.slice(whichRow, whichRow + 3).map(row => row.slice(rowStart, rowStart + 20));
+      if (hasSeaMonster(section)) {
+        numSeaMonsters++;
+        const row1 = [18];
+        const row2 = [0, 5, 6, 11, 12, 17, 18, 19];
+        const row3 = [1, 4, 7, 10, 13, 16];
+        row1.forEach(i => sm.push(`${whichRow}-${rowStart + i}`));
+        row2.forEach(i => sm.push(`${whichRow + 1}-${rowStart + i}`));
+        row3.forEach(i => sm.push(`${whichRow + 2}-${rowStart + i}`));
+      }
+    }
+  }
+
+  // Iterate through the image and change all the sea monsters to "O"
+  monsterImage = numSeaMonsters
+    ? image.map((row, y) => {
+      return row.split("")
+        .map((cell, x) => {
+          if (sm.includes(`${y}-${x}`)) {
+            return "O";
+          } else {
+            return cell;
+          }
+        }).join("");
+      })
+    : image;
+
+  return {
+    numSeaMonsters,
+    monsterImage,
+  };
+
+}
+
+// Puts the tiles in the correct order to make a square grid
+// Returns the .# picture it creates
+const assemblePuzzle = input => {
+  const tiles = parsePuzzlePieces(input);
+  const all = {};
+
+  // Make a blank square grid so we know all the spaces already exist
+  let puzzle = Array(Math.sqrt(tiles.length)).fill(null).map(el => Array(Math.sqrt(tiles.length)).fill(null));
+
+  for (let tile of tiles) {
+    delete tile.edges;
+    all[tile.index] = tile;
+  }
+
+  let queue = [];
+
+  // Start with a corner.
+  let current = tiles.find(tile => Object.keys(tile.matches).length === 4);
+
+  // Rotate it so that corner is the top left aka [0,0]
+  // This way, we know that all connecting tiles will have xy values of 0+
+  if (current.matches.right && current.matches.bottom) {
+    current.rotation = "none";
+  } else if (current.matches.top && current.matches.right) {
+    current.rotation = "90c";
+  } else if (current.matches.top && current.matches.left) {
+    current.rotation = "180";
+  } else {
+    current.rotation = "90cc";
+  }
+
+  current.x = 0;
+  current.y = 0;
+
+  puzzle[0][0] = current.index;
+  queue.push(current);
+
+  while (queue.length) {
+    let match, next;
+    current = queue.shift();
+    const rotatedEdges = getRotatedEdges(current.rotation);
+    if (current.matches[rotatedEdges.bottom]) {
+      match = current.matches[rotatedEdges.bottom];
+      next = all[match.index];
+      // If next already has a rotation, it's already in the puzzle and we can skip it
+      if (!next.rotation) {
+        next.rotation = getRotationFromEdgeMatch(match.edge, "bottom");
+        next.y = current.y + 1;
+        next.x = current.x;
+        puzzle[next.y][next.x] = next.index;
+        queue.push(next);
+      }
+    }
+    if (current.matches[rotatedEdges.right]) {
+      match = current.matches[rotatedEdges.right];
+      next = all[match.index];
+      // If next already has a rotation, it's already in the puzzle and we can skip it
+      if (!next.rotation) {
+        next.rotation = getRotationFromEdgeMatch(match.edge, "right");
+        next.y = current.y;
+        next.x = current.x + 1
+        puzzle[next.y][next.x] = next.index;
+        queue.push(next);
+      }
+    }
+    if (current.matches[rotatedEdges.top]) {
+      match = current.matches[rotatedEdges.top];
+      next = all[match.index];
+      // If next already has a rotation, it's already in the puzzle and we can skip it
+      if (!next.rotation) {
+        next.rotation = getRotationFromEdgeMatch(match.edge, "top");
+        next.y = current.y - 1;
+        next.x = current.x;
+        puzzle[next.y][next.x] = next.index;
+        queue.push(next);
+      }
+    }
+    if (current.matches[rotatedEdges.left]) {
+      match = current.matches[rotatedEdges.left];
+      next = all[match.index];
+      // If next already has a rotation, it's already in the puzzle and we can skip it
+      if (!next.rotation) {
+        next.rotation = getRotationFromEdgeMatch(match.edge, "left");
+        next.y = current.y;
+        next.x = current.x - 1;
+        puzzle[next.y][next.x] = next.index;
+        queue.push(next);
+      }
+    }
+  }
+
+  return puzzle.map(row =>
+    row.reduce((imageRow, tileIndex) => {
+        const { rows: grid, rotation } = all[tileIndex];
+        const image = removeBorder(rotateGrid(grid, rotation));
+        if (!imageRow.length) {
+          return image;
+        }
+        return imageRow.map((existingRow, i) => existingRow + image[i]);
+      }, [])
+    ).reduce(
+      (image, chunk) => image.concat(chunk),
+      [],
+    );
+}
+
+// This was a test function to draw the original puzzle pieces including borders
+// onto the screen to test that all edges properly match up
+const drawImageInChunks = image => {
+	const imageDiv = document.getElementById('day20visualization-chunks');
+	imageDiv.innerHTML = '';
+	image.forEach(rowOfChunks => {
+		const outerRowDiv = document.createElement('div');
+    outerRowDiv.classList.add('day20outerRow');
+    rowOfChunks.forEach(chunk => {
+      const chunkDiv = document.createElement('div');
+      chunkDiv.classList.add('day20chunk');
+      chunk.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.classList.add('day20row');
+        row.split("").forEach(cell => {
+          const cellDiv = document.createElement('div');
+          cellDiv.classList.add('day20cell');
+          if (cell === '#') {
+            cellDiv.classList.add('black');
+          } else if (cell === 'O') {
+            cellDiv.classList.add('red');
+          }
+          rowDiv.appendChild(cellDiv);
+        });
+        chunkDiv.appendChild(rowDiv);
+      });
+      outerRowDiv.appendChild(chunkDiv);
+    });
+    imageDiv.appendChild(outerRowDiv);
+  });
+
+	document.getElementById('day20').style.display = 'block'
+
+	return 'See visualization';
+};
+
+// Draws the provided image to the screen
+const drawImage = (image) => {
+  const imageDiv = document.getElementById("day20visualization");
+	imageDiv.innerHTML = '';
+	image.forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day20row');
+    row.split("").forEach(cell => {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day20cell');
+      if (cell === '#') {
+        cellDiv.classList.add('black');
+      } else if (cell === 'O') {
+        cellDiv.classList.add('red');
+      }
+      rowDiv.appendChild(cellDiv);
+    });
+    imageDiv.appendChild(rowDiv);
+  });
+
+	document.getElementById('day20').style.display = 'block'
+
+	return 'See visualization';
+};
+
+
+// Takes a rotation value, and returns the translated four cardinal edges
+// after the tile as been rotated by @rotation
+// aka the named edges that are now at the top/bottom/left/right after rotating @rotation
+const getRotatedEdges = (rotation) => {
+  switch(rotation) {
+    case "none":
+      return { top: "top", bottom: "bottom", left: "left", right: "right" };
+    case "180":
+      return { top: "bottomReverse", bottom: "topReverse", left: "rightReverse", right: "leftReverse" };
+    case "90c":
+      return { top: "leftReverse", bottom: "rightReverse", left: "bottom", right: "top" };
+    case "90cc":
+      return { top: "right", bottom: "left", left: "topReverse", right: "bottomReverse" };
+    case "flipVert":
+      return { top: "bottom", bottom: "top", left: "leftReverse", right: "rightReverse" };
+    case "flipHoriz":
+      return { top: "topReverse", bottom: "bottomReverse", left: "right", right: "left" };
+    case "flip90c":
+      return { top: "rightReverse", bottom: "leftReverse", left: "bottomReverse", right: "topReverse" };
+    case "flip90cc":
+      return { top: "left", bottom: "right", left: "topReverse", right: "bottom" };
+  }
+}
+
+// Returns the tile's rotation based on which of its edges matches another's edge
+// Note: @matchedEdge is the cardinal direction, even if in reality that title was also rotated first
+const getRotationFromEdgeMatch = (edge, matchedEdge) => {
+  let aligned;
+  switch(matchedEdge) {
+    // top should match bottom,
+    // which rotation results in that edge now being `bottom`
+    case "top":
+      aligned = {
+        top: "flipVert",
+        topReverse: "180",
+        bottom: "none",
+        bottomReverse: "flipHoriz",
+        left: "90cc",
+        leftReverse: "flip90c",
+        right: "flip90cc",
+        rightReverse: "90c",
+      };
+      break;
+    // which rotation results in that edge now being `top`
+    case "bottom":
+      aligned = {
+        top: "none",
+        topReverse: "flipHoriz",
+        bottom: "flipVert",
+        bottomReverse: "180",
+        left: "flip90cc",
+        leftReverse: "90c",
+        right: "90cc",
+        rightReverse: "flip90c",
+      };
+      break;
+    // which rotation results in that edge now being `right`
+    case "left":
+      aligned = {
+        top: "90c",
+        topReverse: "flip90c",
+        bottom: "flip90cc",
+        bottomReverse: "90cc",
+        left: "flipHoriz",
+        leftReverse: "180",
+        right: "none",
+        rightReverse: "flipVert",
+      }
+      break;
+    // which rotation results in that edge now being `left`
+    case "right":
+      aligned = {
+        top: "flip90cc",
+        topReverse: "90cc",
+        bottom: "90c",
+        bottomReverse: "flip90c",
+        left: "none",
+        leftReverse: "flipVert",
+        right: "flipHoriz",
+        rightReverse: "180",
+      }
+      break;
+  }
+  return aligned[edge];
+}
+
+// Transforms an array of strings @grid by the given @rotation
+const rotateGrid = (grid, rotation) => {
+  const rotations = {
+    "none": rows => rows,
+    "flipHoriz": rows => rows.map(row => row.split("").reverse().join("")),
+    "flipVert": rows => rows.slice().reverse(),
+    "180": rows => rotations.flipHoriz(rotations.flipVert(rows)),
+    "90c": rows => rows.map((_, i) => rows.map(r => r[i]).reverse().join("")),
+    "90cc": rows => rows.map((_, i) => rows.map(row => row[row.length - 1 - i]).join("")),
+    "flip90c": rows => rotations["90c"](rotations.flipHoriz(rows)),
+    "flip90cc": rows => rotations["90cc"](rotations.flipHoriz(rows)),
+  };
+  return rotations[rotation](grid);
+}
+
+// Transforms a 2D array @grid by the given @rotation
+const rotateArray = (grid, rotation) => {
+  const rotations = {
+    "none": rows => rows,
+    "flipHoriz": rows => rows.map(row => row.slice().reverse()),
+    "flipVert": rows => rows.slice().reverse(),
+    "180": rows => rotations.flipHoriz(rotations.flipVert(rows)),
+    "90c": rows => rows.map((_, i) => rows.map(r => r[i]).reverse()),
+    "90cc": rows => rows.map((_, i) => rows.map(row => row[row.length - 1 - i])),
+    "flip90c": rows => rotations["90c"](rotations.flipHoriz(rows)),
+    "flip90cc": rows => rotations["90cc"](rotations.flipHoriz(rows)),
+  };
+  return rotations[rotation](grid);
+}
+
+// Returns @grid (an array of strings or a 2D array) with the outside edges removed
+const removeBorder = grid => grid.slice(1, -1).map(row => row.slice(1, -1));
+
+// Takes a 20x3 @section and returns whether or not that section is a sea monster
+// A section is a sea monster if it has # or O at each location where '#' is shown below
+// The other elements can be anything
+// ..................#.
+// #....##....##....###
+// .#..#..#..#..#..#...
+const hasSeaMonster = section => {
+  return !section
+    .join("")
+    .split("")
+    .filter((_, i) => [18, 20, 25, 26, 31, 32, 37, 38, 39, 41, 44, 47, 50, 53, 56].includes(i))
+    .includes(".")
+}

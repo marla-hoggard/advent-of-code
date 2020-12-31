@@ -27,3 +27,42 @@ h2 {
   font-weight: bold;
 }
 
+/* Day 20 */
+
+#day20 {
+  display: none;
+  text-align: center;
+  margin: 10px;
+}
+
+#day20visualization {
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid red;
+  width: 960px;
+}
+
+#day20subtitle {
+  font-weight: bold;
+}
+
+.day20row {
+  display: flex;
+  height: 10px;
+  margin: auto;
+}
+
+.day20cell {
+  width: 10px;
+}
+
+
+.black {
+  background-color: black;
+}
+
+.red {
+  background-color: red;
+}
+
