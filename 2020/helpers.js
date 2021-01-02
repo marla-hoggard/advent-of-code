@@ -59,9 +59,50 @@ const numOccurrences = (set, val) => {
 	}
 }
 
-// Checks if simple @array1 is the same content as array2
-// Currently, the arrays much be of simple types that can be compared with ===
-// TODO: Update to allow multi-dimensional arrays and objects
+// Checks if @array1 and @array2 have the same content
+// Works for all array depths uses deep equality on object elements
 const isSameArray = (array1, array2) => {
-	return array1.length === array2.length && array1.every((row, i) => row === array2[i]);
+	if (array1.length !== array2.length) {
+		return false;
+	}
+
+	return array1.every((element, i) => {
+		if (typeof element !== "object" ) {
+			return element === array2[i]
+		} else if (Array.isArray(element)) {
+			return isSameArray(element, array2[i]);
+		} else if (element === null) {
+			return array2[i] === null;
+		} else {
+			return isDeepEqual(element, array2[i]);
+		}
+	});
+}
+
+// Check deep equality of two objects
+const isDeepEqual = (object1, object2) => {
+  const keys1 = Object.keys(object1);
+  const keys2 = Object.keys(object2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    const val1 = object1[key];
+    const val2 = object2[key];
+    const areObjects = isObject(val1) && isObject(val2);
+    if (
+      areObjects && !deepEqual(val1, val2) ||
+      !areObjects && val1 !== val2
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isObject(object) {
+  return object != null && typeof object === 'object';
 }
