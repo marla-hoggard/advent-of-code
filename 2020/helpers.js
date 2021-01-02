@@ -58,3 +58,10 @@ const numOccurrences = (set, val) => {
 		return numOccurrencesBaseMethod(set.toString(), val);
 	}
 }
+
+// Checks if simple @array1 is the same content as array2
+// Currently, the arrays much be of simple types that can be compared with ===
+// TODO: Update to allow multi-dimensional arrays and objects
+const isSameArray = (array1, array2) => {
+	return array1.length === array2.length && array1.every((row, i) => row === array2[i]);
+}

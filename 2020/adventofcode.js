@@ -1709,7 +1709,7 @@ const assemblePuzzle = input => {
   return puzzle.map(row =>
     row.reduce((imageRow, tileIndex) => {
         const { rows: grid, rotation } = all[tileIndex];
-        const image = removeBorder(rotateGrid(grid, rotation));
+        const image = rotateGrid(removeBorder(grid), rotation);
         if (!imageRow.length) {
           return image;
         }

@@ -12249,8 +12249,7 @@ Tile 1231:
 ........#.
 #.......#.
 #.#.#..#..
-.#....###.
-`;
+.#....###.`;
 const DAY21 = `qqskn vqm rxhxs xhzr lpxb plc sksqn hcfjt xjqd vgnf shln ccvnlbp btnmj lvntbhnk kl pdvqq pcbls jnqcd xbvm fdbd thpt thjblh dhcbcm kltmhv zxql hnfpxh kcvsl bkbpjf stkqcn lkkb bnj psxb pxmrdg fhcms cdl xkbzbsf rfhz pvkmx qjqb jzfxc glrps kqxmv lvdhspf bsqxjk xdtt cjxv jhzllk bhbhz rfhrps zgsm lccs mnz grnm bgvx xkjng pkzjv vmskhmg dssdlb fnnkfq gbmldv rplg qmgbz nzbbzd kgzjj gq nhclz (contains dairy)
 nfngm ccvnlbp fnnkfq dnz vrjmh tldgnn lbgc cjxv kbcc qqskn zgxrt zks xkvcq qjqb hsjfvb klpvh sksqn xjqd thjblh rlcjkc rplg qmjjb fzqds hdmx fzksgr hcfjt pxmrdg btnmj skg llszv qkgj hngv xxvg bjtftkjv zfxsbphz tbvpmf tcm jnqcd kshmt vpfjnk qrrz vfcq tknpg pkj mnrks kqxmv gphf (contains nuts, soy, peanuts)
 qxxtt pvtmb tkbl tldgnn xbvm lxzs lflgp kpnmg pkzjv qjqb nbcdr qqskn glrps jvzjzb jzfxc xhr thpt dlhj cdl kl bqrkh cmkj hnln dgdr mtcgr jnqcd nfngm cjxv hmg gbmldv nskx jrjshr qmgbz ccvnlbp vpdk xkvcq qzftq bzzl mcdgk pvkmx rplg nhclz fvmql sfvhg zxql hngv fhnxhq srhqgm rgv zks tbvpmf xhzr kshmt lxfqzvk hsbvtfvf pcbls bnj lpxb hmvcc rfhrps rjppgdl tnhfjhj mmh gphf bjtftkjv fszzx hdmx lzhqznp bxqxs tcm bkbpjf klpvh pdvqq (contains fish, nuts, eggs)
