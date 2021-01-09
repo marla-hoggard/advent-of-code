@@ -1915,3 +1915,145 @@ const hasSeaMonster = section => {
     .filter((_, i) => [18, 20, 25, 26, 31, 32, 37, 38, 39, 41, 44, 47, 50, 53, 56].includes(i))
     .includes(".")
 }
+
+// --------- DAY 21 ---------
+const parseAllergens = input => {
+  const foods = input.split("\n").map((line, index) => {
+    const [ing, aller] = line.split(" (contains ");
+    return {
+      index,
+      ingredients: ing.split(" "),
+      allergens: aller.slice(0, -1).split(", "),
+    };
+  });
+  let allergens = Array.from(new Set(foods.reduce((all, next) => all.concat(next.allergens), [])));
+  const allergenDetails = Object.fromEntries(allergens.map(aller => {
+    return [
+      aller,
+      {
+        locations: foods.filter(f => f.allergens.includes(aller)).map(el => el.index),
+        ingredient: null,
+      }
+    ]
+  }));
+
+  let ingredients = Array.from(new Set(foods.reduce((all, next) => all.concat(next.ingredients), [])));
+  const ingredientDetails = Object.fromEntries(ingredients.map(ing => {
+    return [
+      ing,
+      {
+        locations: foods.filter(f => f.ingredients.includes(ing)).map(el => el.index),
+        allergen: null,
+      }
+    ]
+  }));
+
+  while (allergens.length) {
+    const nextAllergen = allergens.find(
+      aller => ingredients.filter(
+        ing => allergenDetails[aller].locations.every(
+          index => ingredientDetails[ing].locations.includes(index) && !ingredientDetails[ing].allergen
+        ),
+      ).length === 1,
+    )
+
+    const matchingIngredient = ingredients.find(
+      ing => allergenDetails[nextAllergen].locations.every(
+        index => ingredientDetails[ing].locations.includes(index) && !ingredientDetails[ing].allergen
+      )
+    );
+
+    allergenDetails[nextAllergen].ingredient = matchingIngredient;
+    ingredientDetails[matchingIngredient].allergen = nextAllergen;
+    allergens = allergens.filter(el => el !== nextAllergen);
+    ingredients = ingredients.filter(el => el !== matchingIngredient);
+  }
+
+  return {
+    foods, allergens, ingredients, allergenDetails, ingredientDetails,
+  };
+}
+
+// Day 21 - Puzzle 1
+const hypoAllergenic = input => {
+  const { foods, ingredients } = parseAllergens(input);
+  return sum(ingredients.map(ing => foods.filter(f => f.ingredients.includes(ing)).length));
+}
+
+// Day 21 - Puzzle 2
+const dangerousIngredients = input => {
+  const { allergenDetails } = parseAllergens(input);
+  console.log(allergenDetails)
+  return Object.keys(allergenDetails).sort().map(all => allergenDetails[all].ingredient).join(",");
+}
+
+// -------- DAY 22 -----------
+// Pass in the @playRound function associated with the given puzzle
+const playCombat = (input, playRound) => {
+  const [ player1, player2 ] = input.split("\n\n").map(hand => hand.split("\n").slice(1).map(el => +el));
+  const { winningHand } = playRound(player1, player2);
+  const len = winningHand.length;
+  return winningHand.reduce((score, card, index) => score += card * (len - index), 0);
+}
+
+// Day 22 - Puzzle 1
+// Play a simple game of war and return the winning hand
+const playSimpleCombat = (player1, player2) => {
+  while (player1.length && player2.length) {
+    const p1 = player1.shift();
+    const p2 = player2.shift();
+    if (p1 > p2) {
+      player1.push(p1, p2)
+    } else {
+      player2.push(p2, p1);
+    }
+  }
+
+  return { winningHand: player1.length ? player1 : player2 };
+}
+
+// Day 22 - Puzzle 2
+// Play a game or subgame of recursive combat
+// Return the winning hand and whether or not player1 won the round
+const playRecursiveCombat = (player1, player2) => {
+  console.log("Starting recursive round", player1, player2);
+  // Keep track of the configs of each round to avoid infinite loop
+  let cardConfigurations = [];
+  while (player1.length && player2.length) {
+    const config = `${player1.join(",")} vs. ${player2.join(",")}`;
+    if (cardConfigurations.includes(config)) {
+      console.log("Infinite loop", { player1, player2 });
+      return { winningHand: [], didPlayer1Win: true }
+    }
+    cardConfigurations.push(config);
+
+    const p1 = player1.shift();
+    const p2 = player2.shift();
+    if (player1.length >= p1 && player2.length >= p2) {
+      const subPlayer1 = player1.slice(0, p1);
+      const subPlayer2 = player2.slice(0, p2);
+      const { didPlayer1Win } = playRecursiveCombat(subPlayer1, subPlayer2);
+      if (didPlayer1Win){
+        player1.push(p1, p2);
+      } else {
+        player2.push(p2, p1);
+      }
+    } else if (p1 > p2) {
+      player1.push(p1, p2);
+    } else {
+      player2.push(p2, p1);
+    }
+  }
+
+  if (player1.length) {
+    return {
+      winningHand: player1,
+      didPlayer1Win: true,
+    };
+  } else {
+    return {
+      winningHand: player2,
+      didPlayer1Win: false,
+    };
+  }
+};
