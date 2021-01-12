@@ -106,3 +106,30 @@ const isDeepEqual = (object1, object2) => {
 function isObject(object) {
   return object != null && typeof object === 'object';
 }
+
+// Splits @arr into a 2D array with rows of length @len
+// ex: arr = [1,2,3,4,5,6], len = 2 -> [[1,2], [3,4], [5,6]]
+// with remainder: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9], [10]]
+const splitArrayInChunks = (arr, len) => {
+	let splitArray = [];
+	for (let i = 0; i < arr.length; i += len) {
+		splitArray.push(arr.slice(i, i + len));
+	}
+	return splitArray;
+}
+
+// The same as splitArrayInChunks except that if there is a remainder,
+// adds the excess to end of the last line instead of putting it on its own
+// ex: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9,10]]
+const splitArrayInChunksRemainderLast = (arr, len) => {
+	let splitArray = [];
+	for (let i = 0; i < arr.length; i += len) {
+		splitArray.push(arr.slice(i, i + len));
+	}
+	const numChunks = splitArray.length;
+	if (splitArray[numChunks - 1].length < len) {
+		splitArray[numChunks - 2] = splitArray[numChunks - 2].concat(splitArray[numChunks - 1]);
+		return splitArray.slice(0, -1);
+	}
+	return splitArray;
+}

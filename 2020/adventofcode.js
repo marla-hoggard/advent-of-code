@@ -2057,3 +2057,360 @@ const playRecursiveCombat = (player1, player2) => {
     };
   }
 };
+
+// ---------- DAY 23 ----------
+// Day 23 - Puzzle 1
+const cupGame = input => {
+  let cups = input.split("").map(el => +el);
+  const len = cups.length;
+  let currentCup = cups[0];
+  let currentIndex = 0;
+  for (let round = 0; round < 100; round++) {
+    let pickup = cups.slice(currentIndex + 1, currentIndex + 4);
+    cups = cups.slice(0, currentIndex + 1).concat(cups.slice(currentIndex + 4));
+    if (pickup.length < 3) {
+      while (pickup.length < 3) {
+        pickup.push(cups.shift());
+      }
+    }
+
+    const lessThanCurrent = cups.filter(el => el < currentCup);
+    const nextValue = lessThanCurrent.length ? Math.max(...lessThanCurrent) : Math.max(...cups);
+    const nextIndex = cups.indexOf(nextValue);
+    cups = cups.slice(0, nextIndex + 1).concat(pickup, cups.slice(nextIndex + 1));
+    currentIndex = cups.indexOf(currentCup) + 1;
+    if (currentIndex === len) {
+      currentIndex = 0;
+    }
+    currentCup = cups[currentIndex];
+  }
+  const index1 = cups.indexOf(1);
+  return cups.slice(index1 + 1).concat(cups.slice(0, index1)).join("");
+}
+
+// Day 23 - Puzzle 2
+const cupGame2 = input => {
+  const len = input.length;
+  let maxKey = 999;
+  let cupGrid = {
+    0: input.split("").map(el => +el).concat(Array(1000 - len).fill(null).map((_, i) => len + i + 1)),
+    [maxKey]: blankRow(maxKey, 1000),
+  }
+  let currentCup = +input[0];
+  let currentRow = 0;
+  let currentIndex = 0;
+
+  for (let round = 0; round < 10000000; round++) {
+    if (round % 100000 === 0) {
+      console.log(round);
+    }
+    if (cupGrid[maxKey].length >= 10000) {
+      const splitArray = splitArrayInChunks(cupGrid[maxKey], 1000);
+      for (let i in splitArray) {
+        cupGrid[+maxKey + +i] = splitArray[i];
+      }
+      maxKey += splitArray.length - 1;
+    }
+    // console.log({ round, row: cupGrid[currentRow], currentCup })
+    let pickup = cupGrid[currentRow].slice(currentIndex + 1, currentIndex + 4);
+    cupGrid[currentRow] = cupGrid[currentRow].slice(0, currentIndex + 1).concat(cupGrid[currentRow].slice(currentIndex + 4));
+    while (pickup.length < 3) {
+      const wrapRow = currentRow < maxKey ? currentRow + 1 : 0;
+      if (!cupGrid[wrapRow]) {
+        cupGrid[wrapRow] = blankRow(wrapRow, 1000);
+      }
+      pickup.push(cupGrid[wrapRow].shift());
+    }
+
+    let nextValue = currentCup === 1 ? 1000000 : currentCup - 1;
+    while (pickup.includes(nextValue)) {
+      nextValue--;
+      if (nextValue === 0) {
+        nextValue = 1000000;
+      }
+    }
+
+    const nextRow = Object.keys(cupGrid).find(row => cupGrid[row].includes(nextValue));
+    const nextIndex = cupGrid[nextRow].indexOf(nextValue);
+
+    // console.log({ round, row: cupGrid[currentRow], pickup, nextValue, nextRow, nextIndex })
+    cupGrid[nextRow] = cupGrid[nextRow].slice(0, nextIndex + 1).concat(pickup, cupGrid[nextRow].slice(nextIndex + 1));
+    currentIndex = cupGrid[currentRow].indexOf(currentCup) + 1;
+    if (currentIndex === cupGrid[currentRow].length) {
+      currentIndex = 0;
+      currentRow++;
+      if (currentRow > maxKey) {
+        currentRow = 0;
+      }
+      if (!cupGrid[currentRow]) {
+        cupGrid[currentRow] = blankRow(currentRow, 1000);
+      }
+    }
+    currentCup = cupGrid[currentRow][currentIndex];
+  }
+
+  const row1 = Object.keys(cupGrid).find(row => cupGrid[row].includes(1));
+  const index1 = cupGrid[row1].indexOf(1);
+  let star1row = row1;
+  let star1index = index1 + 1;
+  if (star1index === cupGrid[row1].length) {
+    star1index = 0;
+    star1row++;
+    if (star1row > maxKey) {
+      star1row = 0;
+    }
+  }
+
+  // console.log({ row1, index1, star1row, star1index, maxKey })
+
+  let star2row = star1row;
+  let star2index = star1index + 1;
+  if (star2index === cupGrid[star1row].length) {
+    star2index = 0;
+    star2row++;
+    if (star2row > maxKey) {
+      star2row = 0;
+    }
+  }
+
+    console.log({...cupGrid})
+  // console.log({ row1, index1, star1row, star1index, star2row, star2index })
+  console.log([cupGrid[row1][index1], cupGrid[star1row][star1index], cupGrid[star2row][star2index]]);
+  return cupGrid[star1row][star1index] * cupGrid[star2row][star2index];
+}
+
+// Creates an array with length @len that represents the starting value of the @row'th row of the cupGrid
+// i.e. blankRow(15, 1000) creates an array of length 1000 filled with the numbers 15,001-16,000 ascending
+const blankRow = (row, len) => {
+  return Array(len).fill(null).map((_, i) => row * len + i + 1)
+}
+
+// ----- DAY 24 --------
+// Day 24 - Puzzle 1
+const hexTiles = input => {
+  const simplified = input.split("\n").map(dir => removeCycles(parseDirections(dir)).join(','));
+  let numRoute = {};
+  for (route of simplified) {
+    if (numRoute[route]) {
+      numRoute[route]++;
+    } else {
+      numRoute[route] = 1;
+    }
+  }
+
+  console.log(numRoute)
+  return Object.values(numRoute).filter(r => r % 2 === 1).length;
+}
+
+// parses a direction string into an array of hex directions
+// i.e. sesewnwne -> ['se', 'se', 'w', 'nw', 'ne']
+const parseDirections = str => {
+  let directions = [];
+  let current = '';
+  for (let char of str) {
+    if (char === 'e' || char === 'w') {
+      directions.push(current + char);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  return directions;
+}
+
+// takes an array of directions, removes all cycles, returns remaining
+const removeCycles = directions => {
+  let obj = { 'w': 0, 'e': 0, 'ne': 0, 'se': 0, 'sw': 0, 'nw': 0 };
+  for (let dir of directions) {
+    obj[dir]++;
+  }
+
+  const removeAdditives = () => {
+    // ne + se = e
+    const ne_se = Math.min(obj.se, obj.ne);
+    obj.se -= ne_se;
+    obj.ne -= ne_se;
+    obj.e += ne_se;
+
+    // nw + sw = w
+    const nw_sw = Math.min(obj.sw, obj.nw);
+    obj.sw -= nw_sw;
+    obj.nw -= nw_sw;
+    obj.w += nw_sw;
+
+    // w + ne = nw
+    const ne_w = Math.min(obj.w, obj.ne);
+    obj.w -= ne_w;
+    obj.ne -= ne_w;
+    obj.nw += ne_w;
+
+    // w + se = sw
+    const se_w = Math.min(obj.w, obj.se);
+    obj.w -= se_w;
+    obj.se -= se_w;
+    obj.sw += se_w;
+
+    // e + sw = se
+    const sw_e = Math.min(obj.e, obj.sw);
+    obj.e -= sw_e;
+    obj.sw -= sw_e;
+    obj.se += sw_e;
+
+     // e + nw = ne
+    const nw_e = Math.min(obj.e, obj.nw);
+    obj.e -= nw_e;
+    obj.nw -= nw_e;
+    obj.ne += nw_e;
+  }
+
+  // Run removeAdditives consecutively until a run has no change
+  let before = Object.values(obj).reduce((prev, cur) => prev + cur, 0);
+  let after;
+  while (before !== after) {
+    before = after;
+    removeAdditives();
+    after = Object.values(obj).reduce((prev, cur) => prev + cur, 0);
+  }
+
+  // w & e
+  if (obj.w >= obj.e) {
+    obj.w = obj.w - obj.e;
+    obj.e = 0;
+  } else {
+    obj.e = obj.e - obj.w;
+    obj.w = 0;
+  }
+
+  // sw & ne
+  if (obj.sw >= obj.ne) {
+    obj.sw = obj.sw - obj.ne;
+    obj.ne = 0;
+  } else {
+    obj.ne = obj.ne - obj.sw;
+    obj.sw = 0;
+  }
+
+  // se & nw
+  if (obj.se >= obj.nw) {
+    obj.se = obj.se - obj.nw;
+    obj.nw = 0;
+  } else {
+    obj.nw = obj.nw - obj.se;
+    obj.se = 0;
+  }
+
+  const e_sw_ne = Math.min(obj.e, obj.sw, obj.nw);
+  obj.e -= e_sw_ne;
+  obj.sw -= e_sw_ne;
+  obj.nw -= e_sw_ne;
+
+  const w_se_ne = Math.min(obj.w, obj.se, obj.ne);
+  obj.w -= w_se_ne;
+  obj.se -= w_se_ne;
+  obj.ne -= w_se_ne;
+
+  return Object.entries(obj).map(([dir, num]) => Array(num).fill(dir)).reduce((all, next) => all.concat(next), []);
+}
+
+// Day 24 - Puzzle 2
+const hexTileFlipping = input => {
+  // Set up initial array of black tiles
+  let blackTiles = getInitialBlackTiles(input);
+
+  for (let i = 0; i < 100; i++) {
+    blackTiles = flipTiles(blackTiles);
+    if (i % 10 === 0) {
+      console.log(blackTiles.length)
+    }
+  }
+
+  return blackTiles.length;
+}
+
+const getInitialBlackTiles = input => {
+  const simplified = input.split("\n").map(dir => removeCycles(parseDirections(dir)).join(','));
+  let numRoute = {};
+  for (route of simplified) {
+    if (numRoute[route]) {
+      numRoute[route]++;
+    } else {
+      numRoute[route] = 1;
+    }
+  }
+
+  return Object.keys(numRoute)
+    .filter(key => numRoute[key] % 2 === 1)
+    .map(route => {
+      let x = 0;
+      let y = 0;
+      let z = 0;
+
+      route.split(',').forEach(step => {
+        switch(step) {
+          case 'w':
+            x--;
+            y++;
+            break;
+          case 'e':
+            x++;
+            y--;
+            break;
+          case 'nw':
+            y++;
+            z--;
+            break;
+          case 'ne':
+            x++;
+            z--;
+            break;
+          case 'sw':
+            x--;
+            z++;
+            break;
+          case 'se':
+            y--;
+            z++;
+            break;
+        }
+      });
+      return { x, y, z };
+    });
+}
+
+const tileToString = ({ x, y, z}) => `${x},${y},${z}`;
+
+const flipTiles = blackTiles => {
+  const blackStrings = blackTiles.map(tile => tileToString(tile));
+  let whiteNeighbors = {};
+  blackTiles.forEach(tile => {
+    let blackNeighbors = 0;
+    const neighbors = [
+      { x: tile.x, y: tile.y + 1, z: tile.z - 1 },
+      { x: tile.x, y: tile.y - 1, z: tile.z + 1 },
+      { x: tile.x + 1, y: tile.y, z: tile.z - 1 },
+      { x: tile.x - 1, y: tile.y, z: tile.z + 1 },
+      { x: tile.x + 1, y: tile.y - 1, z: tile.z },
+      { x: tile.x - 1, y: tile.y + 1, z: tile.z },
+    ];
+    neighbors.forEach(n =>{
+      const neighborString = tileToString(n);
+      if (blackStrings.includes(neighborString)) {
+        blackNeighbors++;
+      } else if (whiteNeighbors[neighborString]) {
+        whiteNeighbors[neighborString]++;
+      } else{
+        whiteNeighbors[neighborString] = 1;
+      }
+    });
+    tile.blackNeighbors = blackNeighbors;
+  });
+
+  return Object.keys(whiteNeighbors)
+    .filter(key => whiteNeighbors[key] === 2)
+    .map(str => {
+      const [x, y, z] = str.split(",").map(el => +el);
+      return { x, y, z};
+    })
+    .concat(blackTiles.filter(tile => tile.blackNeighbors === 1 || tile.blackNeighbors === 2)
+  );
+}
