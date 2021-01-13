@@ -2236,8 +2236,8 @@ const hexTiles = input => {
   return Object.values(numRoute).filter(r => r % 2 === 1).length;
 }
 
-// parses a direction string into an array of hex directions
-// i.e. sesewnwne -> ['se', 'se', 'w', 'nw', 'ne']
+// parses a direction string into an object of direction counts
+// i.e. sesewnwne -> ['se', 'se', 'w', 'nw', 'ne'] -> { 'se': 2, 'w': 1, 'nw': 1, 'ne': 1 }
 const parseDirections = str => {
   let directions = [];
   let current = '';
@@ -2249,107 +2249,108 @@ const parseDirections = str => {
       current += char;
     }
   }
-  return directions;
-}
 
-// takes an array of directions, removes all cycles, returns remaining
-const removeCycles = directions => {
   let obj = { 'w': 0, 'e': 0, 'ne': 0, 'se': 0, 'sw': 0, 'nw': 0 };
   for (let dir of directions) {
     obj[dir]++;
   }
+  return obj;
+}
 
+// takes a directions object, removes all cycles, returns remaining
+const removeCycles = dir => {
   const removeAdditives = () => {
     // ne + se = e
-    const ne_se = Math.min(obj.se, obj.ne);
-    obj.se -= ne_se;
-    obj.ne -= ne_se;
-    obj.e += ne_se;
+    const ne_se = Math.min(dir.se, dir.ne);
+    dir.se -= ne_se;
+    dir.ne -= ne_se;
+    dir.e += ne_se;
 
     // nw + sw = w
-    const nw_sw = Math.min(obj.sw, obj.nw);
-    obj.sw -= nw_sw;
-    obj.nw -= nw_sw;
-    obj.w += nw_sw;
+    const nw_sw = Math.min(dir.sw, dir.nw);
+    dir.sw -= nw_sw;
+    dir.nw -= nw_sw;
+    dir.w += nw_sw;
 
     // w + ne = nw
-    const ne_w = Math.min(obj.w, obj.ne);
-    obj.w -= ne_w;
-    obj.ne -= ne_w;
-    obj.nw += ne_w;
+    const ne_w = Math.min(dir.w, dir.ne);
+    dir.w -= ne_w;
+    dir.ne -= ne_w;
+    dir.nw += ne_w;
 
     // w + se = sw
-    const se_w = Math.min(obj.w, obj.se);
-    obj.w -= se_w;
-    obj.se -= se_w;
-    obj.sw += se_w;
+    const se_w = Math.min(dir.w, dir.se);
+    dir.w -= se_w;
+    dir.se -= se_w;
+    dir.sw += se_w;
 
     // e + sw = se
-    const sw_e = Math.min(obj.e, obj.sw);
-    obj.e -= sw_e;
-    obj.sw -= sw_e;
-    obj.se += sw_e;
+    const sw_e = Math.min(dir.e, dir.sw);
+    dir.e -= sw_e;
+    dir.sw -= sw_e;
+    dir.se += sw_e;
 
      // e + nw = ne
-    const nw_e = Math.min(obj.e, obj.nw);
-    obj.e -= nw_e;
-    obj.nw -= nw_e;
-    obj.ne += nw_e;
+    const nw_e = Math.min(dir.e, dir.nw);
+    dir.e -= nw_e;
+    dir.nw -= nw_e;
+    dir.ne += nw_e;
   }
 
   // Run removeAdditives consecutively until a run has no change
-  let before = Object.values(obj).reduce((prev, cur) => prev + cur, 0);
+  let before = Object.values(dir).reduce((prev, cur) => prev + cur, 0);
   let after;
   while (before !== after) {
     before = after;
     removeAdditives();
-    after = Object.values(obj).reduce((prev, cur) => prev + cur, 0);
+    after = Object.values(dir).reduce((prev, cur) => prev + cur, 0);
   }
 
   // w & e
-  if (obj.w >= obj.e) {
-    obj.w = obj.w - obj.e;
-    obj.e = 0;
+  if (dir.w >= dir.e) {
+    dir.w = dir.w - dir.e;
+    dir.e = 0;
   } else {
-    obj.e = obj.e - obj.w;
-    obj.w = 0;
+    dir.e = dir.e - dir.w;
+    dir.w = 0;
   }
 
   // sw & ne
-  if (obj.sw >= obj.ne) {
-    obj.sw = obj.sw - obj.ne;
-    obj.ne = 0;
+  if (dir.sw >= dir.ne) {
+    dir.sw = dir.sw - dir.ne;
+    dir.ne = 0;
   } else {
-    obj.ne = obj.ne - obj.sw;
-    obj.sw = 0;
+    dir.ne = dir.ne - dir.sw;
+    dir.sw = 0;
   }
 
   // se & nw
-  if (obj.se >= obj.nw) {
-    obj.se = obj.se - obj.nw;
-    obj.nw = 0;
+  if (dir.se >= dir.nw) {
+    dir.se = dir.se - dir.nw;
+    dir.nw = 0;
   } else {
-    obj.nw = obj.nw - obj.se;
-    obj.se = 0;
+    dir.nw = dir.nw - dir.se;
+    dir.se = 0;
   }
 
-  const e_sw_ne = Math.min(obj.e, obj.sw, obj.nw);
-  obj.e -= e_sw_ne;
-  obj.sw -= e_sw_ne;
-  obj.nw -= e_sw_ne;
+  const e_sw_ne = Math.min(dir.e, dir.sw, dir.nw);
+  dir.e -= e_sw_ne;
+  dir.sw -= e_sw_ne;
+  dir.nw -= e_sw_ne;
 
-  const w_se_ne = Math.min(obj.w, obj.se, obj.ne);
-  obj.w -= w_se_ne;
-  obj.se -= w_se_ne;
-  obj.ne -= w_se_ne;
+  const w_se_ne = Math.min(dir.w, dir.se, dir.ne);
+  dir.w -= w_se_ne;
+  dir.se -= w_se_ne;
+  dir.ne -= w_se_ne;
 
-  return Object.entries(obj).map(([dir, num]) => Array(num).fill(dir)).reduce((all, next) => all.concat(next), []);
+  return Object.entries(dir).map(([d, num]) => Array(num).fill(d)).reduce((all, next) => all.concat(next), []);
 }
 
 // Day 24 - Puzzle 2
 const hexTileFlipping = input => {
   // Set up initial array of black tiles
   let blackTiles = getInitialBlackTiles(input);
+  console.log(blackTiles)
 
   for (let i = 0; i < 100; i++) {
     blackTiles = flipTiles(blackTiles);
@@ -2362,51 +2363,59 @@ const hexTileFlipping = input => {
 }
 
 const getInitialBlackTiles = input => {
-  const simplified = input.split("\n").map(dir => removeCycles(parseDirections(dir)).join(','));
+  const routes = input.split("\n").map(dir => parseDirections(dir));
+  const locations = routes.map(route => {
+    let x = 0;
+    let y = 0;
+    let z = 0;
+
+    if (route.w) {
+      x -= route.w;
+      y += route.w;
+    }
+
+    if (route.e) {
+      x += route.e;
+      y -= route.e;
+    }
+
+    if (route.nw) {
+      y += route.nw;
+      z -= route.nw;
+    }
+
+    if (route.ne) {
+      x += route.ne;
+      z -= route.ne;
+    }
+
+    if (route.sw) {
+      x -= route.sw;
+      z += route.sw;
+    }
+
+    if (route.se) {
+      y -= route.se;
+      z += route.se;
+    }
+
+    return { x, y, z };
+  })
+
   let numRoute = {};
-  for (route of simplified) {
-    if (numRoute[route]) {
-      numRoute[route]++;
+  for (coords of locations) {
+    const stringified = tileToString(coords);
+    if (numRoute[stringified]) {
+      numRoute[stringified]++;
     } else {
-      numRoute[route] = 1;
+      numRoute[stringified] = 1;
     }
   }
 
   return Object.keys(numRoute)
     .filter(key => numRoute[key] % 2 === 1)
-    .map(route => {
-      let x = 0;
-      let y = 0;
-      let z = 0;
-
-      route.split(',').forEach(step => {
-        switch(step) {
-          case 'w':
-            x--;
-            y++;
-            break;
-          case 'e':
-            x++;
-            y--;
-            break;
-          case 'nw':
-            y++;
-            z--;
-            break;
-          case 'ne':
-            x++;
-            z--;
-            break;
-          case 'sw':
-            x--;
-            z++;
-            break;
-          case 'se':
-            y--;
-            z++;
-            break;
-        }
-      });
+    .map(str => {
+      const [ x, y, z ] = str.split(",").map(Number);
       return { x, y, z };
     });
 }
