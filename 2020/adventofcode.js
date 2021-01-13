@@ -2457,3 +2457,39 @@ const flipTiles = blackTiles => {
     .concat(blackTiles.filter(tile => tile.blackNeighbors === 1 || tile.blackNeighbors === 2)
   );
 }
+
+// -------- DAY 25 -----------
+const doorCode = input => {
+  const [cardKey, doorKey] = input.split("\n").map(Number);
+  const [cardLoopSize, doorLoopSize] = [cardKey, doorKey].map(calculateLoopSize);
+  console.log({ cardLoopSize, doorLoopSize })
+  const encryption1 = transformValue(cardKey, doorLoopSize);
+  const encryption2 = transformValue(doorKey, cardLoopSize);
+  if (encryption1 === encryption2){
+    return encryption1;
+  } else {
+    console.log({ encryption1, encryption2});
+    return "Encryptions didn't match";
+  }
+
+}
+
+const calculateLoopSize = key => {
+  let value = 1;
+  let loopSize = 0;
+  while (value !== key) {
+    value *= 7; // subject number for decoding
+    value %= 20201227; // given in puzzle directions
+    loopSize++;
+  }
+  return loopSize;
+}
+
+const transformValue = (subject, loopSize) => {
+  let value = 1;
+  for (let i = 0; i < loopSize; i++) {
+    value *= subject;
+    value %= 20201227; // given in puzzle directions
+  }
+  return value;
+}

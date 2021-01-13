@@ -83,6 +83,6 @@ const ANSWERS = {
   "23-2": cupGameLinkedList2,
   "24-1": hexTiles,
   "24-2": hexTileFlipping,
-  "25-1": PLACEHOLDER,
-  "25-2": PLACEHOLDER,
+  "25-1": doorCode,
+  "25-2": () => "Winner!!",
 };
