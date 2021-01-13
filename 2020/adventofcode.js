@@ -2185,6 +2185,40 @@ const blankRow = (row, len) => {
   return Array(len).fill(null).map((_, i) => row * len + i + 1)
 }
 
+// --------- DAY 23 REDONE WITH LINKED LISTS -----------
+// --------- Part 2 reduced from 2 hours to 2 seconds ----
+
+const cupGameLinkedList1 = input => {
+  const cups = new CupList();
+  cups.addManyFromArray(input.split("").map(Number));
+  cups.setOneLess();
+  cups.closeLoop();
+
+  for (let i = 0; i < 100; i++) {
+    cups.makeMove();
+  }
+
+  cups.setCurrentCup(cups.cupOne);
+  return cups.printList().slice(1).join("");
+}
+
+const cupGameLinkedList2 = input => {
+  console.time("game")
+  const cups = new CupList();
+  cups.addManyFromArray(input.split("").map(Number));
+  cups.setOneLess();
+  cups.addManyConsecutive(input.length + 1, 1000000);
+  cups.closeLoop();
+
+  for (let i = 0; i < 10000000; i++) {
+    cups.makeMove();
+  }
+
+  const answer = cups.cupOne.next.value * cups.cupOne.next.next.value;
+  console.timeEnd("game")
+  return answer;
+}
+
 // ----- DAY 24 --------
 // Day 24 - Puzzle 1
 const hexTiles = input => {
