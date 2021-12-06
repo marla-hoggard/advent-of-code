@@ -99,3 +99,84 @@ const day2puzzle2 = (input) => {
   console.log({ horiz, depth });
   return horiz * depth;
 };
+
+/**
+ *
+ * @param {string} input list of binary values
+ * Calculates the most and least common digits in each place
+ * to create gamma (most) and epsilon (least)
+ * @returns gamma * epsilon
+ */
+const day3puzzle1 = (input) => {
+  let gamma = ''; // most common digit
+  let epsilon = ''; // least common digit
+  const strings = input.split('\n');
+  const digits = Array(strings[0].length)
+    .fill(null)
+    .map(() => ({ 0: 0, 1: 0 }));
+  strings.forEach((binaryString) => {
+    binaryString.split('').forEach((d, i) => {
+      digits[i][d]++;
+    });
+  });
+
+  digits.forEach((d) => {
+    if (d[0] > d[1]) {
+      gamma += '0';
+      epsilon += '1';
+    } else {
+      gamma += '1';
+      epsilon += '0';
+    }
+  });
+
+  console.log({ gamma, epsilon });
+  return parseInt(gamma, 2) * parseInt(epsilon, 2);
+};
+
+/**
+ *
+ * @param {string} input list of binary numbers
+ * Oxygen: Filters the list of numbers so only those with the most common digit remain,
+ * one digit at a time from first digit, until one number is left
+ *
+ * CO2: Filters the list of numbers so only those with the least common digit remain,
+ * one digit at a time from first digit, until one number is left
+ * @returns Oxygen * CO2
+ */
+const day3puzzle2 = (input) => {
+  let oxygen = input.split('\n');
+  let carbon = input.split('\n');
+
+  let i = 0;
+  while (oxygen.length > 1) {
+    const mapping = oxygen.reduce(
+      (m, str) => {
+        m[str[i]]++;
+        return m;
+      },
+      { 0: 0, 1: 0 }
+    );
+
+    let val = mapping[0] > mapping[1] ? '0' : '1';
+    oxygen = oxygen.filter((str) => str[i] === val);
+    i++;
+  }
+
+  i = 0;
+  while (carbon.length > 1) {
+    const mapping = carbon.reduce(
+      (m, str) => {
+        m[str[i]]++;
+        return m;
+      },
+      { 0: 0, 1: 0 }
+    );
+
+    let val = mapping[0] > mapping[1] ? '1' : '0';
+    carbon = carbon.filter((str) => str[i] === val);
+    i++;
+  }
+
+  return parseInt(oxygen[0], 2) * parseInt(carbon[0], 2);
+};
