@@ -1,4 +1,5 @@
-// ------ DAY 1 -----
+// -------------- DAY 1 --------------
+
 /**
  * DAY 1 - PUZZLE 1
  * @param {string} input list of numbers separated by line breaks
@@ -35,7 +36,8 @@ const day1Puzzle2 = (input) => {
   return increaseCounter;
 };
 
-// ------ DAY 2 -----
+// -------------- DAY 2 --------------
+
 /**
  * DAY 2 - PUZZLE 1
  * @param {string} input list of directions for the submarine
@@ -100,8 +102,10 @@ const day2puzzle2 = (input) => {
   return horiz * depth;
 };
 
+// -------------- DAY 3 --------------
+
 /**
- *
+ * DAY 3 - PUZZLE 1
  * @param {string} input list of binary values
  * Calculates the most and least common digits in each place
  * to create gamma (most) and epsilon (least)
@@ -135,7 +139,7 @@ const day3puzzle1 = (input) => {
 };
 
 /**
- *
+ * DAY 3 - PUZZLE 2
  * @param {string} input list of binary numbers
  * Oxygen: Filters the list of numbers so only those with the most common digit remain,
  * one digit at a time from first digit, until one number is left
@@ -180,3 +184,122 @@ const day3puzzle2 = (input) => {
 
   return parseInt(oxygen[0], 2) * parseInt(carbon[0], 2);
 };
+
+// -------------- DAY 4 --------------
+
+/**
+ * DAY 4 - PUZZLE 1
+ * @param {string} input an ordered list of bingo numbers drawn and a bunch of bingo boards
+ * @returns the 'score' of the first board to win
+ * where score = (sum of unmarked numbers) * winning number
+ */
+const firstBingoWinner = (input) => {
+  const [rawNumbers, ...rawBoards] = input.split('\n\n');
+
+  const drawnNumbers = rawNumbers.split(',');
+
+  const boards = rawBoards.map((board) => {
+    const parsedBoard = {
+      unmarkedNumbers: [],
+      rows: [5,5,5,5,5],
+      cols: [5,5,5,5,5],
+    };
+
+    board.split('\n').forEach((row, whichRow) => {
+      row.trim().split(/\s+/).forEach((num, whichCol) => {
+        parsedBoard.unmarkedNumbers.push(num);
+        parsedBoard[num] = { row: whichRow, col: whichCol };
+      })
+    });
+
+    return parsedBoard;
+  });
+
+  for (const num of drawnNumbers) {
+    for (const board of boards) {
+      const index = board.unmarkedNumbers.indexOf(num);
+      if (index !== -1) {
+        board.unmarkedNumbers.splice(index, 1);
+        const { row, col } = board[num];
+        if (board.rows[row] === 1) {
+          return sum(board.unmarkedNumbers) * num;
+        } else {
+          board.rows[row]--;
+        }
+
+        if (board.cols[col] === 1) {
+          return sum(board.unmarkedNumbers) * num;
+        } else {
+          board.cols[col]--;
+        }
+      }
+    }
+  }
+  return 'Nobody won';
+}
+
+/**
+ * DAY 4 - PUZZLE 2
+ * @param {string} input an ordered list of bingo numbers drawn and a bunch of bingo boards
+ * @returns the 'score' of the last board to win
+ * where score = (sum of unmarked numbers) * winning number
+ */
+const lastBingoWinner = (input) => {
+  const [rawNumbers, ...rawBoards] = input.split('\n\n');
+
+  const drawnNumbers = rawNumbers.split(',');
+
+  const boards = rawBoards.map((board) => {
+    const parsedBoard = {
+      unmarkedNumbers: [],
+      rows: [5,5,5,5,5],
+      cols: [5,5,5,5,5],
+      done: false,
+    };
+
+    board.split('\n').forEach((row, whichRow) => {
+      row.trim().split(/\s+/).forEach((num, whichCol) => {
+        parsedBoard.unmarkedNumbers.push(num);
+        parsedBoard[num] = { row: whichRow, col: whichCol };
+      })
+    });
+
+    return parsedBoard;
+  });
+
+  let boardsRemaining = boards.length;
+
+  for (const num of drawnNumbers) {
+    for (const board of boards) {
+      if (!board.done) {
+        const index = board.unmarkedNumbers.indexOf(num);
+        if (index !== -1) {
+          board.unmarkedNumbers.splice(index, 1);
+          const { row, col } = board[num];
+          if (board.rows[row] === 1) {
+            if (boardsRemaining === 1) {
+              return sum(board.unmarkedNumbers) * num;
+            } else {
+              board.done = true;
+              boardsRemaining--;
+            }
+          } else {
+            board.rows[row]--;
+          }
+
+          if (!board.done && board.cols[col] === 1) {
+            if (boardsRemaining === 1) {
+              return sum(board.unmarkedNumbers) * num;
+            } else {
+              board.done = true;
+              boardsRemaining--;
+            }
+          } else {
+            board.cols[col]--;
+          }
+        }
+      }
+    }
+  }
+  return 'Nobody won';
+}
