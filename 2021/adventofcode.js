@@ -201,15 +201,15 @@ const firstBingoWinner = (input) => {
   const boards = rawBoards.map((board) => {
     const parsedBoard = {
       unmarkedNumbers: [],
-      rows: [5,5,5,5,5],
-      cols: [5,5,5,5,5],
+      rows: [5, 5, 5, 5, 5],
+      cols: [5, 5, 5, 5, 5],
     };
 
     board.split('\n').forEach((row, whichRow) => {
       row.trim().split(/\s+/).forEach((num, whichCol) => {
         parsedBoard.unmarkedNumbers.push(num);
         parsedBoard[num] = { row: whichRow, col: whichCol };
-      })
+      });
     });
 
     return parsedBoard;
@@ -236,7 +236,7 @@ const firstBingoWinner = (input) => {
     }
   }
   return 'Nobody won';
-}
+};
 
 /**
  * DAY 4 - PUZZLE 2
@@ -252,8 +252,8 @@ const lastBingoWinner = (input) => {
   const boards = rawBoards.map((board) => {
     const parsedBoard = {
       unmarkedNumbers: [],
-      rows: [5,5,5,5,5],
-      cols: [5,5,5,5,5],
+      rows: [5, 5, 5, 5, 5],
+      cols: [5, 5, 5, 5, 5],
       done: false,
     };
 
@@ -261,7 +261,7 @@ const lastBingoWinner = (input) => {
       row.trim().split(/\s+/).forEach((num, whichCol) => {
         parsedBoard.unmarkedNumbers.push(num);
         parsedBoard[num] = { row: whichRow, col: whichCol };
-      })
+      });
     });
 
     return parsedBoard;
@@ -302,4 +302,179 @@ const lastBingoWinner = (input) => {
     }
   }
   return 'Nobody won';
-}
+};
+
+// -------------- DAY 5 --------------
+
+/**
+ * DAY 5 - PUZZLE 1
+ * @param {string} input a list of coordinates for lines
+ * @returns number of points where at least two lines overlap
+ * Only consider horizontal and vertical lines, ignore all others
+ */
+const overlappingVents90 = (input) => {
+  let maxX = 0;
+  let maxY = 0;
+
+  const lines = input.split('\n').flatMap(el => {
+    const [start, end] = el.split(' -> ');
+    const [x1, y1] = start.split(',');
+    const [x2, y2] = end.split(',');
+
+    if (x1 === x2 || y1 === y2) {
+      if (Math.max(x1, x2) > maxX) {
+        maxX = Math.max(x1, x2);
+      }
+
+      if (Math.max(y1, y2) > maxY) {
+        maxY = Math.max(y1, y2);
+      }
+
+      return [{
+        x1: Number(x1),
+        x2: Number(x2),
+        y1: Number(y1),
+        y2: Number(y2),
+      }];
+    } else {
+      return [];
+    }
+  });
+
+  let overlaps = 0;
+  const grid = Array(maxY + 1).fill(null).map(el => Array(maxX + 1).fill(0));
+
+  lines.forEach(({ x1, x2, y1, y2 }) => {
+    if (x1 === x2) {
+      if (y1 < y2) {
+        for (let i = y1; i <= y2; i++) {
+          grid[i][x1]++;
+          if (grid[i][x1] === 2) {
+            overlaps++;
+          }
+        }
+      } else {
+        for (let i = y2; i <= y1; i++) {
+          grid[i][x1]++;
+          if (grid[i][x1] === 2) {
+            overlaps++;
+          }
+        }
+      }
+    } else {
+      if (x1 < x2) {
+        for (let i = x1; i <= x2; i++) {
+          grid[y1][i]++;
+          if (grid[y1][i] === 2) {
+            overlaps++;
+          }
+        }
+      } else {
+        for (let i = x2; i <= x1; i++) {
+          grid[y1][i]++;
+          if (grid[y1][i] === 2) {
+            overlaps++;
+          }
+        }
+      }
+    }
+  });
+
+  return overlaps;
+};
+
+/**
+ * DAY 5 - PUZZLE 2
+ * @param {string} input a list of coordinates for lines
+ * @returns number of points where at least two lines overlap
+ * Consider ALL lines
+ */
+const overlappingVentsAll = (input) => {
+  let maxX = 0;
+  let maxY = 0;
+
+  const lines = input.split('\n').map(el => {
+    const [start, end] = el.split(' -> ');
+    const [x1, y1] = start.split(',');
+    const [x2, y2] = end.split(',');
+
+    if (Math.max(x1, x2) > maxX) {
+      maxX = Math.max(x1, x2);
+    }
+
+    if (Math.max(y1, y2) > maxY) {
+      maxY = Math.max(y1, y2);
+    }
+
+    return {
+      x1: Number(x1),
+      x2: Number(x2),
+      y1: Number(y1),
+      y2: Number(y2),
+    };
+
+  });
+
+  let overlaps = 0;
+  const grid = Array(maxY + 1).fill(null).map(el => Array(maxX + 1).fill(0));
+
+  lines.forEach(({ x1, x2, y1, y2 }) => {
+    if (x1 === x2) {
+      if (y1 < y2) {
+        for (let i = y1; i <= y2; i++) {
+          grid[i][x1]++;
+          if (grid[i][x1] === 2) {
+            overlaps++;
+          }
+        }
+      } else {
+        for (let i = y2; i <= y1; i++) {
+          grid[i][x1]++;
+          if (grid[i][x1] === 2) {
+            overlaps++;
+          }
+        }
+      }
+    } else if (y1 === y2) {
+      if (x1 < x2) {
+        for (let i = x1; i <= x2; i++) {
+          grid[y1][i]++;
+          if (grid[y1][i] === 2) {
+            overlaps++;
+          }
+        }
+      } else {
+        for (let i = x2; i <= x1; i++) {
+          grid[y1][i]++;
+          if (grid[y1][i] === 2) {
+            overlaps++;
+          }
+        }
+      }
+    } else {
+      let startX = x1;
+      let endX = x2;
+      let startY = y1;
+      let isYIncreasing = y1 < y2;
+
+      if (x2 < x1) {
+        startX = x2;
+        endX = x1;
+        startY = y2;
+        isYIncreasing = y2 < y1;
+      }
+
+      for (let i = 0; i <= endX - startX; i++) {
+        const x = startX + i;
+        const y = isYIncreasing ? startY + i : startY - i;
+
+        grid[y][x]++;
+        if (grid[y][x] === 2) {
+          overlaps++;
+        }
+      }
+    }
+  });
+
+  return overlaps;
+};
