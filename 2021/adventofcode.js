@@ -159,7 +159,7 @@ const day3puzzle2 = (input) => {
         m[str[i]]++;
         return m;
       },
-      { 0: 0, 1: 0 }
+      { 0: 0, 1: 0 },
     );
 
     let val = mapping[0] > mapping[1] ? '0' : '1';
@@ -174,7 +174,7 @@ const day3puzzle2 = (input) => {
         m[str[i]]++;
         return m;
       },
-      { 0: 0, 1: 0 }
+      { 0: 0, 1: 0 },
     );
 
     let val = mapping[0] > mapping[1] ? '1' : '0';
@@ -206,10 +206,13 @@ const firstBingoWinner = (input) => {
     };
 
     board.split('\n').forEach((row, whichRow) => {
-      row.trim().split(/\s+/).forEach((num, whichCol) => {
-        parsedBoard.unmarkedNumbers.push(num);
-        parsedBoard[num] = { row: whichRow, col: whichCol };
-      });
+      row
+        .trim()
+        .split(/\s+/)
+        .forEach((num, whichCol) => {
+          parsedBoard.unmarkedNumbers.push(num);
+          parsedBoard[num] = { row: whichRow, col: whichCol };
+        });
     });
 
     return parsedBoard;
@@ -258,10 +261,13 @@ const lastBingoWinner = (input) => {
     };
 
     board.split('\n').forEach((row, whichRow) => {
-      row.trim().split(/\s+/).forEach((num, whichCol) => {
-        parsedBoard.unmarkedNumbers.push(num);
-        parsedBoard[num] = { row: whichRow, col: whichCol };
-      });
+      row
+        .trim()
+        .split(/\s+/)
+        .forEach((num, whichCol) => {
+          parsedBoard.unmarkedNumbers.push(num);
+          parsedBoard[num] = { row: whichRow, col: whichCol };
+        });
     });
 
     return parsedBoard;
@@ -316,7 +322,7 @@ const overlappingVents90 = (input) => {
   let maxX = 0;
   let maxY = 0;
 
-  const lines = input.split('\n').flatMap(el => {
+  const lines = input.split('\n').flatMap((el) => {
     const [start, end] = el.split(' -> ');
     const [x1, y1] = start.split(',');
     const [x2, y2] = end.split(',');
@@ -330,19 +336,23 @@ const overlappingVents90 = (input) => {
         maxY = Math.max(y1, y2);
       }
 
-      return [{
-        x1: Number(x1),
-        x2: Number(x2),
-        y1: Number(y1),
-        y2: Number(y2),
-      }];
+      return [
+        {
+          x1: Number(x1),
+          x2: Number(x2),
+          y1: Number(y1),
+          y2: Number(y2),
+        },
+      ];
     } else {
       return [];
     }
   });
 
   let overlaps = 0;
-  const grid = Array(maxY + 1).fill(null).map(el => Array(maxX + 1).fill(0));
+  const grid = Array(maxY + 1)
+    .fill(null)
+    .map((el) => Array(maxX + 1).fill(0));
 
   lines.forEach(({ x1, x2, y1, y2 }) => {
     if (x1 === x2) {
@@ -393,7 +403,7 @@ const overlappingVentsAll = (input) => {
   let maxX = 0;
   let maxY = 0;
 
-  const lines = input.split('\n').map(el => {
+  const lines = input.split('\n').map((el) => {
     const [start, end] = el.split(' -> ');
     const [x1, y1] = start.split(',');
     const [x2, y2] = end.split(',');
@@ -412,11 +422,12 @@ const overlappingVentsAll = (input) => {
       y1: Number(y1),
       y2: Number(y2),
     };
-
   });
 
   let overlaps = 0;
-  const grid = Array(maxY + 1).fill(null).map(el => Array(maxX + 1).fill(0));
+  const grid = Array(maxY + 1)
+    .fill(null)
+    .map((el) => Array(maxX + 1).fill(0));
 
   lines.forEach(({ x1, x2, y1, y2 }) => {
     if (x1 === x2) {
@@ -477,4 +488,23 @@ const overlappingVentsAll = (input) => {
   });
 
   return overlaps;
+};
+
+// -------------- DAY 6 --------------
+
+// -------------- DAY 7 --------------
+
+// -------------- DAY 8 --------------
+
+const uniqueSegmentDigits = (input) => {
+  let unique = 0;
+  const data = input.split('\n').forEach((row) => {
+    const [, output] = row.split(' | ');
+    output.split(' ').forEach((digit) => {
+      if ([2, 3, 4, 7].includes(digit.length)) {
+        unique++;
+      }
+    });
+  });
+  return unique;
 };

@@ -49,7 +49,7 @@ const ANSWERS = {
   '6-2': placeholder,
   '7-1': placeholder,
   '7-2': placeholder,
-  '8-1': placeholder,
+  '8-1': uniqueSegmentDigits,
   '8-2': placeholder,
   '9-1': placeholder,
   '9-2': placeholder,
