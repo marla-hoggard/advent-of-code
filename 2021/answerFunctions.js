@@ -50,7 +50,7 @@ const ANSWERS = {
   '7-1': alignCrabs1,
   '7-2': alignCrabs2,
   '8-1': uniqueSegmentDigits,
-  '8-2': placeholder,
+  '8-2': sumDecodedSegments,
   '9-1': placeholder,
   '9-2': placeholder,
   '10-1': placeholder,

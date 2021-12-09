@@ -593,7 +593,12 @@ const alignCrabs2 = (input) => {
 };
 
 // -------------- DAY 8 --------------
-
+/**
+ *
+ * @param {string} input list of encoded entries
+ * @returns how many of the output value digits are
+ * the ones that can be made with a unique amount of segments (1,4,7,8) - lengths 2,3,4,7
+ */
 const uniqueSegmentDigits = (input) => {
   let unique = 0;
   input.split('\n').forEach((row) => {
@@ -605,4 +610,129 @@ const uniqueSegmentDigits = (input) => {
     });
   });
   return unique;
+};
+
+const sumDecodedSegments = (input) => {
+  return sum(input.split('\n').map((entry) => decodeEntry(entry)));
+};
+
+/**
+ * Decodes a single entry from the input and determines the output value
+ * @param {string} entry a single entry from the input
+ * @returns {number} the decoded output value
+ */
+const decodeEntry = (entry) => {
+  const [encoded, output] = entry.split(' | ');
+
+  const entries = encoded.split(' ').reduce(
+    (obj, value) => {
+      const ordered = value.split('').sort().join('');
+      if (value.length === 5) {
+        obj[5].push(ordered);
+      } else if (value.length === 6) {
+        obj[6].push(ordered);
+      } else {
+        obj[value.length] = ordered;
+      }
+      return obj;
+    },
+    { 5: [], 6: [] },
+  );
+
+  const decryption = {
+    a: '',
+    b: '',
+    c: '',
+    d: '',
+    e: '',
+    f: '',
+    g: '',
+  };
+
+  let decrypted = '';
+
+  // 1. a is determined by the letter in 7 (len3) and not 1 (len2)
+  let regex = new RegExp(`[${entries[2]}]`, 'g');
+  decryption.a = entries[3].replace(regex, '');
+  decrypted += decryption.a;
+
+  // 2. differentiate c & f by checking which one is in all three 6s (f) vs missing from one (c)
+  if (entries[6].every((code) => code.includes(entries[2][0]))) {
+    decryption.f = entries[2][0];
+    decryption.c = entries[2][1];
+  } else {
+    decryption.c = entries[2][0];
+    decryption.f = entries[2][1];
+  }
+  decrypted += decryption.c;
+  decrypted += decryption.f;
+
+  // 3. differentiate e & b by checking which 5 has c without f vs f without c (and the third has both)
+  const three = entries[5].find((el) => el.includes(decryption.c) && el.includes(decryption.f));
+  regex = new RegExp(`[${decryption.c}${decryption.f}]`, 'g');
+  let inAll = three.replace(regex, '');
+  const two = entries[5].find((el) => !el.includes(decryption.f));
+  const five = entries[5].find((el) => !el.includes(decryption.c));
+  decryption.e = two.split('').find((letter) => !inAll.includes(letter) && letter !== decryption.c);
+  decryption.b = five
+    .split('')
+    .find((letter) => !inAll.includes(letter) && letter !== decryption.f);
+
+  decrypted += decryption.b;
+  decrypted += decryption.e;
+
+  // 4. differentiate between d and g by checking which is in all three 6s (g)
+  const removeDecrypted = entries[6].map((el) => {
+    const regex = new RegExp(`[${decrypted}]`, 'g');
+    return el.replace(regex, '');
+  });
+
+  decryption.g = removeDecrypted.find((el) => el.length === 1);
+  decryption.d = removeDecrypted.find((el) => el.length === 2).replace(decryption.g, '');
+
+  // --- We've cracked the code, now let's decode the output ---
+  const NUMBERS = {
+    abcefg: 0,
+    cf: 1,
+    acdeg: 2,
+    acdfg: 3,
+    bcdf: 4,
+    abdfg: 5,
+    abdefg: 6,
+    acf: 7,
+    abcdefg: 8,
+    abcdfg: 9,
+  };
+
+  const reverseDecryption = reverseObject(decryption);
+
+  return parseInt(
+    output
+      .split(' ')
+      .map((encodedNumber) => {
+        const translated = encodedNumber
+          .split('')
+          .map((enc) => reverseDecryption[enc])
+          .sort()
+          .join('');
+        return NUMBERS[translated];
+      })
+      .join(''),
+  );
+};
+
+const numbers = {
+  1: 'cf',
+  7: 'cfa',
+  4: 'cfbd',
+
+  2: 'adgce', // c + e
+  3: 'adgcf', // cf
+  5: 'adgbf', // f + b
+
+  0: 'abcefg', // no d
+  6: 'abdefg', // no c
+  9: 'abcdfg', // no e
+
+  8: 'abcdefg',
 };
