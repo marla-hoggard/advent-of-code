@@ -491,6 +491,51 @@ const overlappingVentsAll = (input) => {
 };
 
 // -------------- DAY 6 --------------
+/**
+ * The brute force way
+ * @param {sting} input csv of integers representing fish
+ * @param {*} days how many iterations of breeding to run
+ * @returns how much fish there are after @days days
+ */
+const lanternfishBreeding1 = (input, days = 80) => {
+  let fish = input.split(',').map((el) => Number(el));
+  for (let i = 0; i < days; i++) {
+    fish = fish.flatMap((f) => {
+      if (f === 0) {
+        return [6, 8];
+      } else {
+        return [f - 1];
+      }
+    });
+    console.log(i, fish.length);
+  }
+  return fish.length;
+};
+
+/**
+ * The much better way
+ * @param {sting} input csv of integers representing fish
+ * @param {*} days how many iterations of breeding to run
+ * @returns how much fish there are after @days days
+ */
+const lanternfishBreeding2 = (input, days = 80) => {
+  const starters = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+  let fish = input.split(',').reduce((obj, f) => {
+    obj[f]++;
+    return obj;
+  }, starters);
+
+  for (let i = 0; i < days; i++) {
+    let nextRound = { ...starters };
+    for (let num = 0; num < 8; num++) {
+      nextRound[num] = fish[num + 1];
+    }
+    nextRound[8] = fish[0];
+    nextRound[6] += fish[0];
+    fish = { ...nextRound };
+  }
+  return sum(Object.values(fish));
+};
 
 // -------------- DAY 7 --------------
 
