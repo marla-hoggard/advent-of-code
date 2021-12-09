@@ -538,12 +538,65 @@ const lanternfishBreeding2 = (input, days = 80) => {
 };
 
 // -------------- DAY 7 --------------
+/**
+ * DAY 7 - PUZZLE 1
+ * @param {string} input csv of crab locations
+ * Determines the location that requires the least fuel
+ * for all crabs to move to, where movement is linear (1 fuel unit per step)
+ * @returns fuel required for all crabs to move to that location
+ */
+const alignCrabs1 = (input) => {
+  const crabs = input.split(',').map((el) => +el);
+  const min = Math.min(...crabs);
+  const max = Math.max(...crabs);
+  let minFuel = Infinity;
+  let location = min;
+  for (let i = min; i <= max; i++) {
+    const fuel = sum(crabs.map((pos) => Math.abs(pos - i)));
+    if (fuel < minFuel) {
+      minFuel = fuel;
+      location = i;
+    }
+  }
+  console.log({ minFuel, location });
+  return minFuel;
+};
+
+/**
+ * DAY 7 - PUZZLE 2
+ * @param {string} input csv of crab locations
+ * Determines the location that requires the least fuel
+ * for all crabs to move to, where movement is exponential (1+2+3+...)
+ * @returns fuel required for all crabs to move to that location
+ */
+const alignCrabs2 = (input) => {
+  const crabs = input.split(',').map((el) => +el);
+  const min = Math.min(...crabs);
+  const max = Math.max(...crabs);
+  let minFuel = Infinity;
+  let location = min;
+  for (let i = min; i <= max; i++) {
+    const fuel = sum(
+      crabs.map((pos) => {
+        const distance = Math.abs(pos - i);
+        return (distance * (distance + 1)) / 2;
+      }),
+    );
+
+    if (fuel < minFuel) {
+      minFuel = fuel;
+      location = i;
+    }
+  }
+  console.log({ minFuel, location });
+  return minFuel;
+};
 
 // -------------- DAY 8 --------------
 
 const uniqueSegmentDigits = (input) => {
   let unique = 0;
-  const data = input.split('\n').forEach((row) => {
+  input.split('\n').forEach((row) => {
     const [, output] = row.split(' | ');
     output.split(' ').forEach((digit) => {
       if ([2, 3, 4, 7].includes(digit.length)) {
