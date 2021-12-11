@@ -736,3 +736,175 @@ const numbers = {
 
   8: 'abcdefg',
 };
+
+// -------------- DAY 9 --------------
+const lavaLowPoints = (input) => {
+  let risk = 0;
+  input.split('\n').forEach((row, i, grid) => {
+    row.split('').forEach((value, j) => {
+      if (
+        (i === 0 || grid[i - 1][j] > value) &&
+        (i === grid.length - 1 || grid[i + 1][j] > value) &&
+        (j === 0 || grid[i][j - 1] > value) &&
+        (j === row.length - 1 || grid[i][j + 1] > value)
+      ) {
+        risk += 1 + +value;
+      }
+    });
+  });
+  return risk;
+};
+
+// TODO - DAY 9 - PUZZLE 2
+
+// -------------- DAY 10 --------------
+// DAY 10 - PUZZLE 1
+const countCorrupted = (input) => {
+  const scores = input.split('\n').map((line) => {
+    let open = '';
+
+    for (const char of line.split('')) {
+      switch (char) {
+        case ')': {
+          if (open.at(-1) !== '(') {
+            return 3;
+          } else {
+            open = open.slice(0, -1);
+            break;
+          }
+        }
+        case ']': {
+          if (open.at(-1) !== '[') {
+            return 57;
+          } else {
+            open = open.slice(0, -1);
+            break;
+          }
+        }
+        case '}': {
+          if (open.at(-1) !== '{') {
+            return 1197;
+          } else {
+            open = open.slice(0, -1);
+            break;
+          }
+        }
+        case '>': {
+          if (open.at(-1) !== '<') {
+            return 25137;
+          } else {
+            open = open.slice(0, -1);
+            break;
+          }
+        }
+        case '(':
+        case '{':
+        case '[':
+        case '<':
+          open += char;
+      }
+    }
+    return 0;
+  });
+
+  console.log(scores);
+  return sum(scores);
+};
+
+// DAY 10 - PUZZLE 2
+const fixIncomplete = (input) => {
+  const closings = input
+    .split('\n')
+    .filter((line) => {
+      let open = '';
+
+      for (const char of line.split('')) {
+        switch (char) {
+          case ')': {
+            if (open.at(-1) !== '(') {
+              return false;
+            } else {
+              open = open.slice(0, -1);
+              break;
+            }
+          }
+          case ']': {
+            if (open.at(-1) !== '[') {
+              return false;
+            } else {
+              open = open.slice(0, -1);
+              break;
+            }
+          }
+          case '}': {
+            if (open.at(-1) !== '{') {
+              return false;
+            } else {
+              open = open.slice(0, -1);
+              break;
+            }
+          }
+          case '>': {
+            if (open.at(-1) !== '<') {
+              return false;
+            } else {
+              open = open.slice(0, -1);
+              break;
+            }
+          }
+          case '(':
+          case '{':
+          case '[':
+          case '<':
+            open += char;
+        }
+      }
+      return true;
+    })
+    .map((line) => {
+      let open = '';
+
+      for (const char of line.split('')) {
+        switch (char) {
+          case ')':
+          case ']':
+          case '}':
+          case '>':
+            open = open.slice(0, -1);
+            break;
+          case '(':
+          case '{':
+          case '[':
+          case '<':
+            open += char;
+            break;
+        }
+      }
+
+      let score = 0;
+
+      open
+        .split('')
+        .reverse()
+        .forEach((char) => {
+          score *= 5;
+          switch (char) {
+            case '(':
+              score += 1;
+              break;
+            case '[':
+              score += 2;
+              break;
+            case '{':
+              score += 3;
+              break;
+            case '<':
+              score += 4;
+              break;
+          }
+        });
+      return score;
+    });
+
+  return closings.sort((a, b) => b - a)[Math.floor(closings.length / 2)];
+};
