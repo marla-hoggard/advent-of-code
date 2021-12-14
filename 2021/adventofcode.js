@@ -1022,3 +1022,146 @@ const fixIncomplete = (input) => {
 
   return closings.sort((a, b) => b - a)[Math.floor(closings.length / 2)];
 };
+
+// -------------- DAY 11 --------------
+// Day 11 - Puzzle 1
+const countFlashes = (input, steps = 100) => {
+  const grid = input.split('\n').map((row) => row.split('').map((el) => +el));
+  let numFlashes = 0;
+
+  for (let step = 0; step < steps; step++) {
+    flashed = new Set();
+
+    const increment = (row, col) => {
+      if (row < 0 || col < 0 || row >= grid.length || col >= grid[0].length) {
+        return;
+      }
+
+      grid[row][col]++;
+
+      if (grid[row][col] > 9) {
+        flashed.add(`${row},${col}`);
+      }
+    };
+
+    grid.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        increment(r, c);
+      });
+    });
+
+    flashed.forEach((coords) => {
+      const [r, c] = coords.split(',').map((el) => +el);
+
+      increment(r - 1, c - 1);
+      increment(r - 1, c);
+      increment(r - 1, c + 1);
+      increment(r, c - 1);
+      increment(r, c + 1);
+      increment(r + 1, c - 1);
+      increment(r + 1, c);
+      increment(r + 1, c + 1);
+    });
+
+    flashed.forEach((coords) => {
+      const [r, c] = coords.split(',').map((el) => +el);
+      grid[r][c] = 0;
+    });
+
+    numFlashes += flashed.size;
+    if (step % 10 === 0) {
+      console.log({ step, numFlashes });
+    }
+  }
+  return numFlashes;
+};
+
+// Day 11 - Puzzle 2
+const flashConvergence = (input) => {
+  const grid = input.split('\n').map((row) => row.split('').map((el) => +el));
+  const numCells = grid.length * grid[0].length;
+
+  let step = 1;
+  while (true) {
+    flashed = new Set();
+
+    const increment = (row, col) => {
+      if (row < 0 || col < 0 || row >= grid.length || col >= grid[0].length) {
+        return;
+      }
+
+      grid[row][col]++;
+
+      if (grid[row][col] > 9) {
+        flashed.add(`${row},${col}`);
+      }
+    };
+
+    grid.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        increment(r, c);
+      });
+    });
+
+    flashed.forEach((coords) => {
+      const [r, c] = coords.split(',').map((el) => +el);
+
+      increment(r - 1, c - 1);
+      increment(r - 1, c);
+      increment(r - 1, c + 1);
+      increment(r, c - 1);
+      increment(r, c + 1);
+      increment(r + 1, c - 1);
+      increment(r + 1, c);
+      increment(r + 1, c + 1);
+    });
+
+    flashed.forEach((coords) => {
+      const [r, c] = coords.split(',').map((el) => +el);
+      grid[r][c] = 0;
+    });
+
+    if (flashed.size === numCells) {
+      return step;
+    }
+
+    step++;
+  }
+};
+
+// -------------- DAY 12 --------------
+// -------------- DAY 13 --------------
+// -------------- DAY 14 --------------
+const polymerPairInsertion = (input, steps = 10) => {
+  const [start, , ...rulesRaw] = input.split('\n');
+  const rules = {};
+  rulesRaw.forEach((rule) => {
+    const [key, val] = rule.split(' -> ');
+    rules[key] = val;
+  });
+
+  let polymer = start;
+  let frequency = {};
+  for (let step = 0; step < steps; step++) {
+    let nextRound = '';
+    frequency = {};
+
+    for (let i = 0; i < polymer.length - 1; i++) {
+      const key = polymer.slice(i, i + 2);
+      const toAdd = rules[key];
+      nextRound += polymer[i];
+      nextRound += toAdd;
+
+      frequency[polymer[i]] ? frequency[polymer[i]]++ : (frequency[polymer[i]] = 1);
+      frequency[toAdd] ? frequency[toAdd]++ : (frequency[toAdd] = 1);
+    }
+
+    nextRound += polymer.at(-1);
+    frequency[polymer.at(-1)] ? frequency[polymer.at(-1)]++ : (frequency[polymer.at(-1)] = 1);
+
+    polymer = nextRound;
+  }
+
+  const sortedFreq = Object.values(frequency).sort((a, b) => a - b);
+  return sortedFreq.at(-1) - sortedFreq[0];
+};
