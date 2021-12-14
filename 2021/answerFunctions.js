@@ -52,7 +52,7 @@ const ANSWERS = {
   '8-1': uniqueSegmentDigits,
   '8-2': sumDecodedSegments,
   '9-1': lavaLowPoints,
-  '9-2': placeholder,
+  '9-2': lavaBasins,
   '10-1': countCorrupted,
   '10-2': fixIncomplete,
   '11-1': placeholder,

@@ -738,6 +738,7 @@ const numbers = {
 };
 
 // -------------- DAY 9 --------------
+// DAY 9 - PUZZLE 1
 const lavaLowPoints = (input) => {
   let risk = 0;
   input.split('\n').forEach((row, i, grid) => {
@@ -755,7 +756,120 @@ const lavaLowPoints = (input) => {
   return risk;
 };
 
-// TODO - DAY 9 - PUZZLE 2
+// DAY 9 - PUZZLE 2
+const lavaBasins = (input) => {
+  const lowPoints = [];
+  const grid = input.split(`\n`).map((row) => row.split('').map((el) => +el));
+  const gridForDraw = Array(grid.length)
+    .fill(null)
+    .map(() => Array(grid[0].length).fill('E'));
+
+  const coords = (row, col) => `${row},${col}`;
+
+  grid.forEach((row, i) => {
+    row.forEach((value, j) => {
+      if (
+        (i === 0 || grid[i - 1][j] > value) &&
+        (i === grid.length - 1 || grid[i + 1][j] > value) &&
+        (j === 0 || grid[i][j - 1] > value) &&
+        (j === row.length - 1 || grid[i][j + 1] > value)
+      ) {
+        lowPoints.push({ row: i, col: j, value, coords: coords(i, j) });
+        gridForDraw[i][j] = 'L';
+      }
+      if (value === 9) {
+        gridForDraw[i][j] = 'W';
+      }
+    });
+  });
+
+  let basins = [];
+  let basinPoints = [];
+  lowPoints.forEach((lowPoint) => {
+    let points = [];
+    let toCheck = [lowPoint];
+    let i = 0;
+    while (i < toCheck.length) {
+      const { row, col, value } = toCheck[i];
+      if (points.includes(coords(row, col))) {
+        i++;
+        continue;
+      }
+      const above =
+        row > 0
+          ? { row: row - 1, col, value: grid[row - 1][col], coords: coords(row - 1, col) }
+          : null;
+      const below =
+        row < grid.length - 1
+          ? { row: row + 1, col, value: grid[row + 1][col], coords: coords(row + 1, col) }
+          : null;
+      const left =
+        col > 0
+          ? { row, col: col - 1, value: grid[row][col - 1], coords: coords(row, col - 1) }
+          : null;
+      const right =
+        col < grid[0].length - 1
+          ? { row, col: col + 1, value: grid[row][col + 1], coords: coords(row, col + 1) }
+          : null;
+
+      if (
+        (!above || above.value >= value || points.includes(above.coords)) &&
+        (!below || below.value >= value || points.includes(below.coords)) &&
+        (!left || left.value >= value || points.includes(left.coords)) &&
+        (!right || right.value >= value || points.includes(right.coords))
+      ) {
+        // This point is part of the basin. Add it to points if it's not there already
+        points.push(coords(row, col));
+        if (gridForDraw[row][col] !== 'L') gridForDraw[row][col] = 'B';
+
+        // Add all the adjacent locations to the check queue if they exist, aren't already in points, and aren't 9
+        if (above && above.value !== 9 && !points.includes(above.coords)) {
+          toCheck.push(above);
+        }
+        if (below && below.value !== 9 && !points.includes(below.coords)) {
+          toCheck.push(below);
+        }
+        if (left && left.value !== 9 && !points.includes(left.coords)) {
+          toCheck.push(left);
+        }
+        if (right && right.value !== 9 && !points.includes(right.coords)) {
+          toCheck.push(right);
+        }
+      }
+      i++;
+    }
+    basins.push(points.length);
+    basinPoints = basinPoints.concat(points);
+  });
+  basins.sort((a, b) => b - a);
+  drawBasins(grid, gridForDraw);
+  return basins[0] * basins[1] * basins[2];
+};
+
+const drawBasins = (numberGrid, markedGrid) => {
+  const imageDiv = document.getElementById('day9visualization');
+  imageDiv.style.visibility = 'visible';
+  imageDiv.innerHTML = '';
+  markedGrid.forEach((row, whichRow) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day9row');
+    row.forEach((cell, whichCol) => {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day9cell');
+      cellDiv.textContent = numberGrid[whichRow][whichCol];
+      if (cell === 'L') {
+        cellDiv.classList.add('red');
+      } else if (cell === 'W') {
+        cellDiv.classList.add('black');
+      } else if (cell === 'B') {
+        cellDiv.classList.add('yellow');
+      }
+      rowDiv.appendChild(cellDiv);
+    });
+    imageDiv.appendChild(rowDiv);
+  });
+  imageDiv.style.visibility = 'visible';
+};
 
 // -------------- DAY 10 --------------
 // DAY 10 - PUZZLE 1
