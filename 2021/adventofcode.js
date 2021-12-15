@@ -1130,6 +1130,72 @@ const flashConvergence = (input) => {
 };
 
 // -------------- DAY 12 --------------
+const countCavePaths = (input) => {
+  const graph = new Graph();
+  input.split('\n').forEach((edge) => {
+    const [node1, node2] = edge.split('-');
+    graph.addEdge(node1, node2);
+  });
+
+  let completePaths = new Set();
+  let openPaths = [new GraphPath([graph.start])];
+
+  let i = 0;
+  while (openPaths.length && i < 20) {
+    openPaths = openPaths.flatMap((p) => {
+      let newPaths = [];
+
+      for (const neighbor of p.last.neighbors) {
+        if (p.canAddNode(neighbor)) {
+          const path = new GraphPath([...p.path, neighbor]);
+          if (neighbor.isEnd) {
+            completePaths.add(path.toString());
+          } else if (!path.isDeadEnd()) {
+            newPaths.push(path);
+          }
+        }
+      }
+      return newPaths;
+    });
+    i++;
+  }
+
+  console.log(completePaths);
+  return completePaths.size;
+};
+
+const countCavePaths2 = (input) => {
+  const graph = new Graph();
+  input.split('\n').forEach((edge) => {
+    const [node1, node2] = edge.split('-');
+    graph.addEdge(node1, node2);
+  });
+
+  let completePaths = new Set();
+  let openPaths = [new GraphPath2([graph.start])];
+
+  while (openPaths.length) {
+    openPaths = openPaths.flatMap((p) => {
+      let newPaths = [];
+
+      for (const neighbor of p.last.neighbors) {
+        if (p.canAddNode(neighbor)) {
+          const path = p.newWithAddedNode(neighbor);
+          if (neighbor.isEnd) {
+            completePaths.add(path.toString());
+          } else if (!path.isDeadEnd()) {
+            newPaths.push(path);
+          }
+        }
+      }
+      return newPaths;
+    });
+  }
+
+  console.log(completePaths);
+  return completePaths.size;
+};
+
 // -------------- DAY 13 --------------
 // -------------- DAY 14 --------------
 const polymerPairInsertion = (input, steps = 10) => {

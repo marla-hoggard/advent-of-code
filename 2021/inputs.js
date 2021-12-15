@@ -5509,7 +5509,29 @@ const DAY11 = `7232374314
 1255116187
 5821277714
 2623834788`;
-const DAY12 = ``;
+const DAY12 = `he-JK
+wy-KY
+pc-XC
+vt-wy
+LJ-vt
+wy-end
+wy-JK
+end-LJ
+start-he
+JK-end
+pc-wy
+LJ-pc
+at-pc
+xf-XC
+XC-he
+pc-JK
+vt-XC
+at-he
+pc-he
+start-at
+start-XC
+at-LJ
+vt-JK`;
 const DAY13 = ``;
 const DAY14 = `VOKKVSKKPSBVOOKVCFOV
 
