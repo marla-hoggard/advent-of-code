@@ -48,6 +48,24 @@ h2 {
   text-align: center;
 }
 
+#day13visualization {
+  visibility: hidden;
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+.day13row {
+  display: flex;
+  height: 15px;
+  margin: auto;
+}
+
+.day13cell {
+  width: 15px;
+}
+
 .black {
   background-color: black;
   color: white;

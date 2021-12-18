@@ -1197,6 +1197,124 @@ const countCavePaths2 = (input) => {
 };
 
 // -------------- DAY 13 --------------
+
+const singleFold = (input) => {
+  const [stars, folds] = input.split('\n\n');
+  let starCoords = new Set(stars.split('\n'));
+  const [dir, amt] = folds
+    .split('\n')[0]
+    .split('=')
+    .map((el, i) => {
+      if (i === 0) {
+        return el.at(-1);
+      } else {
+        return +el;
+      }
+    });
+
+  let folded = new Set();
+  starCoords.forEach((coord) => {
+    const [x, y] = coord.split(',').map((el) => +el);
+    if (dir === 'x') {
+      if (x < amt) {
+        folded.add(coord);
+      } else {
+        folded.add(`${2 * amt - x},${y}`);
+      }
+    } else {
+      if (y < amt) {
+        folded.add(coord);
+      } else {
+        folded.add(`${x},${2 * amt - y}`);
+      }
+    }
+  });
+
+  console.log(folded);
+  return folded.size;
+};
+
+const foldForCode = (input) => {
+  const [stars, folds] = input.split('\n\n');
+  let starCoords = new Set(stars.split('\n'));
+
+  folds.split('\n').forEach((fold) => {
+    const [dir, amt] = fold.split('=').map((el, i) => {
+      if (i === 0) {
+        return el.at(-1);
+      } else {
+        return +el;
+      }
+    });
+    let folded = new Set();
+    starCoords.forEach((coord) => {
+      const [x, y] = coord.split(',').map((el) => +el);
+      if (dir === 'x') {
+        if (x < amt) {
+          folded.add(coord);
+        } else {
+          folded.add(`${2 * amt - x},${y}`);
+        }
+      } else {
+        if (y < amt) {
+          folded.add(coord);
+        } else {
+          folded.add(`${x},${2 * amt - y}`);
+        }
+      }
+    });
+    starCoords = folded;
+  });
+
+  drawFoldedGrid(starCoords);
+  return 'See visualization';
+};
+
+/**
+ * Draws the coordinates to the screen
+ * @param {Set} coords Set of coords of the form "x,y"
+ */
+const drawFoldedGrid = (coords) => {
+  const imageDiv = document.getElementById('day13visualization');
+  imageDiv.style.visibility = 'visible';
+  imageDiv.innerHTML = '';
+
+  let maxX = 0;
+  let maxY = 0;
+  coords.forEach((coord) => {
+    const [x, y] = coord.split(',').map((el) => +el);
+    if (x > maxX) {
+      maxX = x;
+    }
+    if (y > maxY) {
+      maxY = y;
+    }
+  });
+
+  const grid = Array(maxY + 1)
+    .fill(null)
+    .map(() => Array(maxX + 1).fill('white'));
+  coords.forEach((coord) => {
+    const [x, y] = coord.split(',').map((el) => +el);
+    grid[y][x] = 'black';
+  });
+
+  grid.forEach((row) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day13row');
+    row.forEach((cell) => {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day13cell');
+      if (cell === 'black') {
+        cellDiv.classList.add('black');
+      }
+      rowDiv.appendChild(cellDiv);
+    });
+    imageDiv.appendChild(rowDiv);
+  });
+  imageDiv.style.visibility = 'visible';
+};
+
 // -------------- DAY 14 --------------
 const polymerPairInsertion = (input, steps = 10) => {
   const [start, , ...rulesRaw] = input.split('\n');
