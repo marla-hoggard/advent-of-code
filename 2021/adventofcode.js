@@ -1349,3 +1349,326 @@ const polymerPairInsertion = (input, steps = 10) => {
   const sortedFreq = Object.values(frequency).sort((a, b) => a - b);
   return sortedFreq.at(-1) - sortedFreq[0];
 };
+
+// -------------- TODO - Better algorithm for DAY 14 for part 2 --------------
+
+// -------------- DAY 15 --------------
+
+// -------------- DAY 16 --------------
+// Day 16 - Puzzle 1
+const processPacketVersions = (input) => {
+  const binaryString = input
+    .split('')
+    .map((hexDigit) => parseInt(hexDigit, 16).toString(2).padStart(4, '0'))
+    .join('');
+
+  const versionList = [];
+
+  const parsePacket = (packet) => {
+    const version = parseInt(packet.slice(0, 3), 2);
+    const op = parseInt(packet.slice(3, 6), 2);
+    const lengthId = op === 4 ? null : packet[6];
+    const type =
+      op === 4
+        ? 'literalNum'
+        : lengthId === '0'
+        ? 'totalLengthBits'
+        : lengthId === '1'
+        ? 'numSubPackets'
+        : 'done';
+    const totalLengthBits = type === 'totalLengthBits' ? parseInt(packet.slice(7, 22), 2) : null;
+    const numSubPackets = type === 'numSubPackets' ? parseInt(packet.slice(7, 18), 2) : null;
+    const rest =
+      type === 'literalNum'
+        ? packet.slice(6)
+        : type === 'totalLengthBits'
+        ? packet.slice(22)
+        : packet.slice(18);
+    return {
+      version,
+      type,
+      totalLengthBits,
+      numSubPackets,
+      rest,
+    };
+  };
+
+  const calculatePacket = (packet) => {
+    if (!packet) {
+      return;
+    }
+    const { version, type, totalLengthBits, numSubPackets, rest } = parsePacket(packet);
+
+    versionList.push(version);
+
+    switch (type) {
+      case 'literalNum':
+        const { value, remainder } = parseLiteralNumber(rest);
+        return { version, value, remainder };
+      case 'totalLengthBits':
+        const sub = getSubpacketsByLength(rest.slice(0, totalLengthBits));
+
+        return {
+          version,
+          subpackets: sub,
+          remainder: packet.slice(totalLengthBits + 22),
+        };
+      case 'numSubPackets':
+        const { subpackets, remainder: rem } = getSubpacketsByNumber(rest, numSubPackets);
+        return {
+          version,
+          subpackets: subpackets,
+          remainder: rem,
+        };
+    }
+  };
+
+  const parseLiteralNumber = (packetNumber) => {
+    let binaryString = '';
+    let toParse = packetNumber.slice(0, 5);
+    let remainder = packetNumber.slice(5);
+    binaryString += toParse.slice(1);
+    while (toParse.startsWith('1')) {
+      toParse = remainder.slice(0, 5);
+      remainder = remainder.slice(5);
+      binaryString += toParse.slice(1);
+    }
+
+    const value = parseInt(binaryString, 2);
+    return {
+      value,
+      remainder,
+    };
+  };
+
+  // We don't know how many subpackets there are,
+  // but we should parse the full length of @packets
+  const getSubpacketsByLength = (packets) => {
+    const subpackets = [];
+    let parsed = calculatePacket(packets);
+
+    do {
+      subpackets.push(parsed);
+      parsed = calculatePacket(parsed.remainder);
+    } while (parsed && parsed.remainder.includes('1'));
+
+    return subpackets;
+  };
+
+  // We know how many subpackets are in @packets
+  // We don't know how many chars are part of it
+  // Need to return the rest for the next round of parsing
+  const getSubpacketsByNumber = (packets, num) => {
+    const subpackets = [];
+    let toParse = packets;
+
+    for (let i = 0; i < num; i++) {
+      const parsed = calculatePacket(toParse);
+      subpackets.push(parsed);
+      toParse = parsed.remainder;
+    }
+    return { subpackets, remainder: toParse };
+  };
+
+  calculatePacket(binaryString);
+  return sum(versionList);
+};
+
+// Day 16 - Puzzle 2
+const processPackets = (input) => {
+  const parsePacket = (packet) => {
+    const version = parseInt(packet.slice(0, 3), 2);
+    const op = parseInt(packet.slice(3, 6), 2);
+    const lengthId = op === 4 ? null : packet[6];
+    const type =
+      op === 4
+        ? 'literalNum'
+        : lengthId === '0'
+        ? 'totalLengthBits'
+        : lengthId === '1'
+        ? 'numSubPackets'
+        : 'done';
+    const totalLengthBits = type === 'totalLengthBits' ? parseInt(packet.slice(7, 22), 2) : null;
+    const numSubPackets = type === 'numSubPackets' ? parseInt(packet.slice(7, 18), 2) : null;
+    const rest =
+      type === 'literalNum'
+        ? packet.slice(6)
+        : type === 'totalLengthBits'
+        ? packet.slice(22)
+        : packet.slice(18);
+    return {
+      version,
+      op,
+      type,
+      totalLengthBits,
+      numSubPackets,
+      rest,
+    };
+  };
+
+  const calculatePacket = (packet) => {
+    if (!packet) {
+      return;
+    }
+    const { op, type, totalLengthBits, numSubPackets, rest } = parsePacket(packet);
+
+    switch (type) {
+      case 'literalNum':
+        const { value, remainder } = parseLiteralNumber(rest);
+        return { value, op, remainder };
+      case 'totalLengthBits':
+        const sub = getSubpacketsByLength(rest.slice(0, totalLengthBits));
+        parsedPackets = {
+          op,
+          subpackets: sub,
+          type: 'length',
+        };
+        return {
+          op,
+          subpackets: sub,
+          remainder: packet.slice(totalLengthBits + 22),
+        };
+      case 'numSubPackets':
+        const { subpackets, remainder: rem } = getSubpacketsByNumber(rest, numSubPackets);
+        parsedPackets = {
+          op,
+          subpackets,
+          type: 'num',
+        };
+        return {
+          op,
+          subpackets,
+          remainder: rem,
+        };
+    }
+  };
+
+  const parseLiteralNumber = (packetNumber) => {
+    let binaryString = '';
+    let toParse = packetNumber.slice(0, 5);
+    let remainder = packetNumber.slice(5);
+    binaryString += toParse.slice(1);
+    while (toParse.startsWith('1')) {
+      toParse = remainder.slice(0, 5);
+      remainder = remainder.slice(5);
+      binaryString += toParse.slice(1);
+    }
+
+    const value = parseInt(binaryString, 2);
+    return {
+      value,
+      remainder,
+    };
+  };
+
+  // We don't know how many subpackets there are,
+  // but we should parse the full length of @packets
+  const getSubpacketsByLength = (packets) => {
+    const subpackets = [];
+    let parsed = calculatePacket(packets);
+    subpackets.push(parsed);
+
+    do {
+      parsed = calculatePacket(parsed.remainder);
+      if (parsed) {
+        subpackets.push(parsed);
+      }
+    } while (parsed && parsed.remainder.includes('1'));
+
+    return subpackets;
+  };
+
+  // We know how many subpackets are in @packets
+  // We don't know how many chars are part of it
+  // Need to return the rest for the next round of parsing
+  const getSubpacketsByNumber = (packets, num) => {
+    const subpackets = [];
+    let toParse = packets;
+
+    for (let i = 0; i < num; i++) {
+      const parsed = calculatePacket(toParse);
+      subpackets.push(parsed);
+      toParse = parsed.remainder;
+    }
+    return { subpackets, remainder: toParse };
+  };
+
+  // HERE IS WHERE THIS FUNCTION ACTUALLY STARTS
+  const binaryString = input
+    .split('')
+    .map((hexDigit) => parseInt(hexDigit, 16).toString(2).padStart(4, '0'))
+    .join('');
+
+  let parsedPackets = {};
+  calculatePacket(binaryString);
+  return evaluatePacket(parsedPackets);
+};
+
+const evaluatePacket = (packet) => {
+  while (packet.value == undefined) {
+    packet = evaluateSubpackets(packet);
+  }
+
+  return packet.value;
+};
+
+const evaluateSubpackets = (packet) => {
+  if (!packet) {
+    return;
+  }
+
+  if (packet.value != undefined) {
+    return packet;
+  }
+
+  if (packet.subpackets.every((sub) => sub.value != undefined)) {
+    const values = packet.subpackets.map(({ value }) => value);
+    let value = 0;
+    switch (packet.op) {
+      // SUM
+      case 0:
+        value = sum(values);
+        break;
+      // PRODUCT
+      case 1:
+        value = values.reduce((prev, cur) => prev * cur, 1);
+        break;
+
+      // MINIMUM
+      case 2:
+        value = Math.min(...values);
+        break;
+
+      // MAXIMUM
+      case 3:
+        value = Math.max(...values);
+        break;
+
+      case 4:
+        value = values[0];
+        break;
+
+      // GREATER THAN
+      case 5:
+        value = values[0] > values[1] ? 1 : 0;
+        break;
+
+      // LESS THAN
+      case 6:
+        value = values[0] < values[1] ? 1 : 0;
+        break;
+
+      // EQUAL TO
+      case 7:
+        value = values[0] === values[1] ? 1 : 0;
+        break;
+
+      default:
+        console.log('bad op', op);
+    }
+    return { op: 4, value };
+  } else {
+    packet.subpackets = packet.subpackets.map((sub) => evaluateSubpackets(sub));
+    return packet;
+  }
+};
