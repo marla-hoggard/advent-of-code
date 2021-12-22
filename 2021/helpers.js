@@ -129,3 +129,45 @@ const splitArrayInChunksRemainderLast = (arr, len) => {
   }
   return splitArray;
 };
+
+/**
+ * Creates a 2D array where all cells are equal to @param val
+ * @param {number} width Width of the array (how long is each subarray)
+ * @param {number} height Height of the array (how many rows in the array)
+ * @param {*} val The value to fill each cell in the 2D array
+ */
+const create2DArray = (width, height, val) => {
+  if (typeof val !== 'object' || val == null) {
+    return create2DArrayPrimitive(width, height, val);
+  } else if (Array.isArray(val)) {
+    return create2DArrayofArrays(width, height, val);
+  } else {
+    return create2DArrayObject(width, height, object);
+  }
+};
+
+const create2DArrayPrimitive = (width, height, val) => {
+  return Array(height)
+    .fill(null)
+    .map(() => Array(width).fill(val));
+};
+
+const create2DArrayofArrays = (width, height, val) => {
+  return Array(height)
+    .fill(null)
+    .map(() =>
+      Array(width)
+        .fill(null)
+        .map(() => [...val]),
+    );
+};
+
+const create2DArrayObject = (width, height, val) => {
+  return Array(height)
+    .fill(null)
+    .map(() =>
+      Array(width)
+        .fill(null)
+        .map(() => ({ ...val })),
+    );
+};

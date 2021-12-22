@@ -1140,8 +1140,7 @@ const countCavePaths = (input) => {
   let completePaths = new Set();
   let openPaths = [new GraphPath([graph.start])];
 
-  let i = 0;
-  while (openPaths.length && i < 20) {
+  while (openPaths.length) {
     openPaths = openPaths.flatMap((p) => {
       let newPaths = [];
 
@@ -1157,7 +1156,6 @@ const countCavePaths = (input) => {
       }
       return newPaths;
     });
-    i++;
   }
 
   console.log(completePaths);
@@ -1671,4 +1669,61 @@ const evaluateSubpackets = (packet) => {
     packet.subpackets = packet.subpackets.map((sub) => evaluateSubpackets(sub));
     return packet;
   }
+};
+
+// -------------- DAY 17 --------------
+// -------------- DAY 18 --------------
+// -------------- DAY 19 --------------
+
+// -------------- DAY 20 --------------
+const imageEnhancement = (input, steps = 2) => {
+  let [algorithm, image] = input.split('\n\n');
+
+  algorithm = algorithm.replace(/\./g, '0').replace(/#/g, '1');
+  image = image
+    .replace(/\./g, '0')
+    .replace(/#/g, '1')
+    .split('\n')
+    .map((row) => row.split(''));
+
+  const getValue = (array2D, row, col, fallback) => {
+    if (row < 0 || row >= array2D.length || col < 0 || col >= array2D[0].length) {
+      return fallback;
+    } else {
+      return array2D[row][col];
+    }
+  };
+
+  for (let step = 0; step < steps; step++) {
+    // Since algorithm[0] = 1 and algorithm[511] = 0,
+    // we have to alternate the fallback value (infinite border) on each step
+    const fallback = step % 2 ? '1' : '0';
+    const width = image[0].length + 2;
+    const height = image.length + 2;
+    const nextImage = create2DArray(width, height, fallback);
+    const paddedImage = image.map((row) => [fallback].concat(row, [fallback]));
+    paddedImage.unshift(Array(width).fill(fallback));
+    paddedImage.push(Array(width).fill(fallback));
+
+    for (let r = 0; r < paddedImage.length; r++) {
+      for (let c = 0; c < paddedImage[r].length; c++) {
+        const binary =
+          getValue(paddedImage, r - 1, c - 1, fallback) +
+          getValue(paddedImage, r - 1, c, fallback) +
+          getValue(paddedImage, r - 1, c + 1, fallback) +
+          getValue(paddedImage, r, c - 1, fallback) +
+          getValue(paddedImage, r, c, fallback) +
+          getValue(paddedImage, r, c + 1, fallback) +
+          getValue(paddedImage, r + 1, c - 1, fallback) +
+          getValue(paddedImage, r + 1, c, fallback) +
+          getValue(paddedImage, r + 1, c + 1, fallback);
+
+        const base10 = parseInt(binary, 2);
+        nextImage[r][c] = algorithm[base10];
+      }
+    }
+    image = [...nextImage];
+  }
+
+  return numOccurrences(image, '1');
 };
