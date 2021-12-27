@@ -1672,6 +1672,122 @@ const evaluateSubpackets = (packet) => {
 };
 
 // -------------- DAY 17 --------------
+// If the y range is negative, the best initial y is |minY| - 1
+// because you'd go (1+2+...+minY-1) - (1+2+...+minY-1) = 0
+// then 0 - minY = the bottom of the range
+// As long as maxHeight is greater then minX, it will have been possible
+// to 0 out the x velocity long before we hit the maxHeight and will
+// land somewhere in the bottom row of the target area
+// This fact is true for the example and my input, so it works for this puzzle
+const trickShot = (input) => {
+  const [, , xRaw, yRaw] = input.split(' ');
+  const [xMin, xMax] = xRaw
+    .slice(2, -1)
+    .split('..')
+    .map((el) => +el);
+  const [yMin, yMax] = yRaw
+    .slice(2)
+    .split('..')
+    .map((el) => +el);
+
+  if (yMin < 0) {
+    const bestY = Math.abs(yMin) - 1;
+    const maxHeight = (bestY * (bestY + 1)) / 2;
+    if (maxHeight > xMin) {
+      return maxHeight;
+    }
+  }
+
+  return 'Need a different alg';
+};
+
+// Day 17 - Puzzle 2
+const initialVelocities = (input) => {
+  const [, , xRaw, yRaw] = input.split(' ');
+  const [xMin, xMax] = xRaw
+    .slice(2, -1)
+    .split('..')
+    .map((el) => +el);
+
+  let x = {};
+  let val = xMax;
+  const pyramids = findPyramids(xMin, xMax);
+  x.pyramids = pyramids;
+  while (val >= pyramids[0]) {
+    let sum = val;
+    for (let i = 1; i <= val && sum <= xMax; i++) {
+      if (xMin <= sum && sum <= xMax) {
+        if (x[i]) {
+          x[i].push(val);
+        } else {
+          x[i] = [val];
+        }
+      }
+      sum += val - i;
+    }
+    val--;
+  }
+
+  pyramids.forEach((p) => {
+    pyramids.forEach((p2) => {
+      if (!x[p].includes(p2)) {
+        x[p].push(p2);
+      }
+    });
+  });
+  x.pastPyramids = Math.max(...pyramids) + 1;
+
+  const [yMin, yMax] = yRaw
+    .slice(2)
+    .split('..')
+    .map((el) => +el);
+
+  let y = {};
+  for (let val = yMin; val < Math.abs(yMin); val++) {
+    let sum = val;
+    let i = 1;
+    y[val] = [];
+    while (sum >= yMin) {
+      if (yMin <= sum && sum <= yMax) {
+        y[val].push(i);
+      }
+      sum += val - i;
+      i++;
+    }
+  }
+
+  let pairs = 0;
+  Object.values(y).forEach((len) => {
+    let lengthSet = new Set();
+    len.forEach((l) => {
+      if (x[l]) {
+        lengthSet = new Set([...lengthSet, ...x[l]]);
+      } else if (l >= x.pastPyramids) {
+        lengthSet = new Set([...lengthSet, ...x.pyramids]);
+      }
+    });
+    pairs += lengthSet.size;
+  });
+
+  return pairs;
+};
+
+// Returns an array of numbers whose pyramid sum (1+2+...+n)
+// falls between min and max, inclusive
+const findPyramids = (min, max) => {
+  let pyramids = [];
+  let sum = 0;
+  let n = 1;
+  while (sum <= max) {
+    sum += n;
+    if (min <= sum && sum <= max) {
+      pyramids.push(n);
+    }
+    n++;
+  }
+  return pyramids;
+};
+
 // -------------- DAY 18 --------------
 // -------------- DAY 19 --------------
 
@@ -1726,4 +1842,152 @@ const imageEnhancement = (input, steps = 2) => {
   }
 
   return numOccurrences(image, '1');
+};
+
+// -------------- DAY 21 --------------
+const deterministicDice = (input) => {
+  let [p1Loc, p2Loc] = input.split('\n').map((line) => +line.split(': ')[1]);
+  let p1Score = 0;
+  let p2Score = 0;
+  let die = 2;
+  let numRolls = 0;
+  let whoseTurn = 1;
+
+  while (p1Score < 1000 && p2Score < 1000) {
+    if (whoseTurn === 1) {
+      p1Loc += die * 3;
+      p1Loc = p1Loc % 10 || 10; // A number 1-10, wraps around
+      p1Score += p1Loc;
+      whoseTurn = 2;
+    } else {
+      p2Loc += die * 3;
+      p2Loc = p2Loc % 10 || 10; // A number 1-10, wraps around
+      p2Score += p2Loc;
+      whoseTurn = 1;
+    }
+    die += 3;
+    die = die % 100 || 100; // A number 1-100, wraps around
+    numRolls += 3;
+  }
+
+  console.log({ die, numRolls, p1Score, p2Score });
+
+  return p1Score < 1000 ? p1Score * numRolls : p2Score * numRolls;
+};
+
+// ------- TODO - DAY 21 Puzzle 2 --------
+
+// -------------- DAY 22 --------------
+const rebootReactor = (input) => {
+  const steps = input.split('\n').map((line) => {
+    const [dir, rest] = line.split(' ');
+    const value = dir === 'on' ? 1 : 0;
+    const [x, y, z] = rest.split(',').map((el) =>
+      el
+        .replace(/[xyz]=/, '')
+        .split('..')
+        .map((el) => +el),
+    );
+    return { value, x, y, z };
+  });
+
+  // [-50...50];
+  const INDEXES = Array(101)
+    .fill(-50)
+    .map((el, i) => el + i);
+
+  const reactor = {};
+  INDEXES.forEach((x) => {
+    reactor[x] = {};
+    INDEXES.forEach((y) => {
+      reactor[x][y] = {};
+      INDEXES.forEach((z) => {
+        reactor[x][y][z] = 0;
+      });
+    });
+  });
+
+  let lightsOn = 0;
+
+  steps.forEach((step) => {
+    const startX = step.x[0] < -50 ? -50 : step.x[0];
+    const endX = step.x[1] > 50 ? 50 : step.x[1];
+    const startY = step.y[0] < -50 ? -50 : step.y[0];
+    const endY = step.y[1] > 50 ? 50 : step.y[1];
+    const startZ = step.z[0] < -50 ? -50 : step.z[0];
+    const endZ = step.z[1] > 50 ? 50 : step.z[1];
+
+    for (let x = startX; x <= endX; x++) {
+      for (let y = startY; y <= endY; y++) {
+        for (let z = startZ; z <= endZ; z++) {
+          if (step.value === 0 && reactor[x][y][z] === 1) {
+            reactor[x][y][z] = 0;
+            lightsOn--;
+          } else if (step.value === 1 && reactor[x][y][z] === 0) {
+            reactor[x][y][z] = 1;
+            lightsOn++;
+          }
+        }
+      }
+    }
+  });
+
+  return lightsOn;
+};
+
+// -------------- DAY 23 --------------
+
+// -------------- DAY 24 --------------
+
+// -------------- DAY 25 --------------
+const seaCucumberMoves = (input) => {
+  let east = new Set();
+  let south = new Set();
+  input.split('\n').forEach((row, r) => {
+    row.split('').forEach((cell, c) => {
+      const coords = `${r},${c}`;
+      if (cell === '>') {
+        east.add(coords);
+      } else if (cell === 'v') {
+        south.add(coords);
+      }
+    });
+  });
+
+  const bounds = {
+    r: input.split('\n').length - 1,
+    c: input.split('\n')[0].length - 1,
+  };
+
+  let moves = 1;
+  let step = 0;
+  while (moves > 0) {
+    moves = 0;
+    step++;
+    let eastMoved = new Set();
+    let southMoved = new Set();
+    east.forEach((orig) => {
+      const [r, c] = orig.split(',').map((el) => +el);
+      const moved = c === bounds.c ? `${r},0` : `${r},${c + 1}`;
+      if (east.has(moved) || south.has(moved)) {
+        eastMoved.add(orig);
+      } else {
+        eastMoved.add(moved);
+        moves++;
+      }
+    });
+    south.forEach((orig) => {
+      const [r, c] = orig.split(',').map((el) => +el);
+      const moved = r === bounds.r ? `0,${c}` : `${r + 1},${c}`;
+      if (eastMoved.has(moved) || south.has(moved)) {
+        southMoved.add(orig);
+      } else {
+        southMoved.add(moved);
+        moves++;
+      }
+    });
+    east = new Set(eastMoved);
+    south = new Set(southMoved);
+  }
+  return step;
 };
