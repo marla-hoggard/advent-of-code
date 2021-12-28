@@ -1789,6 +1789,134 @@ const findPyramids = (min, max) => {
 };
 
 // -------------- DAY 18 --------------
+const snailAddition = (input) => {
+  const [first, ...rest] = input.split('\n');
+  let sum = first;
+  rest.forEach((nextNum) => {
+    const added = addSnailNums(sum, nextNum);
+    sum = reduceSnailNum(added);
+  });
+  console.log(sum);
+  return getSnailMagnitude(sum);
+};
+
+const addSnailNums = (num1, num2) => `[${num1},${num2}]`;
+
+const reduceSnailNum = (snailNum) => {
+  let reduced = snailNum;
+  while (true) {
+    const pair = findExplodingPair(reduced);
+    if (pair) {
+      reduced = explodePair(reduced, pair);
+      continue;
+    }
+    const double = findDoubleDigit(reduced);
+    if (double) {
+      reduced = splitDoubleDigit(reduced, double);
+      continue;
+    }
+    return reduced;
+  }
+};
+
+const findExplodingPair = (snailNum) => {
+  let openParens = 0;
+  let i = 0;
+  while (i < snailNum.length && openParens < 5) {
+    if (snailNum[i] === '[') {
+      openParens++;
+    } else if (snailNum[i] === ']') {
+      openParens--;
+    }
+    i++;
+  }
+  if (openParens === 5) {
+    const endIndex = snailNum.indexOf(']', i);
+    const pair = snailNum.slice(i, endIndex);
+    const [left, right] = pair.split(',');
+    return {
+      startIndex: i - 1,
+      endIndex,
+      left: +left,
+      right: +right,
+      pair: `[${pair}]`,
+    };
+  }
+  return null;
+};
+
+const explodePair = (snailNum, explodingPair) => {
+  let before = snailNum.slice(0, explodingPair.startIndex);
+  let after = snailNum.slice(explodingPair.endIndex + 1);
+  const leftNums = before.match(/[0-9]+/g);
+  const rightNums = after.match(/[0-9]+/g);
+  if (rightNums) {
+    const first = rightNums[0];
+    const newFirst = +first + explodingPair.right;
+    const firstIndex = after.indexOf(first);
+    after = `${after.slice(0, firstIndex)}${newFirst}${after.slice(firstIndex + first.length)}`;
+  }
+  if (leftNums) {
+    const last = leftNums.at(-1);
+    const newLast = +last + explodingPair.left;
+    const lastIndex = before.lastIndexOf(last);
+    before = `${before.slice(0, lastIndex)}${newLast}${before.slice(lastIndex + last.length)}`;
+  }
+  return `${before}0${after}`;
+};
+
+const findDoubleDigit = (snailNum) => {
+  const match = snailNum.match(/\d\d/);
+  if (match) {
+    return {
+      value: +match[0],
+      index: match.index,
+    };
+  }
+  return null;
+};
+
+const splitDoubleDigit = (snailNum, data) => {
+  const replacement = `[${Math.floor(data.value / 2)},${Math.ceil(data.value / 2)}]`;
+  return snailNum.slice(0, data.index) + replacement + snailNum.slice(data.index + 2);
+};
+
+const getSnailMagnitude = (snailNum) => {
+  const SIMPLE_PAIR_REGEX = /\[(?<left>\d+),(?<right>\d+)\]/;
+  let reduced = snailNum;
+  while (true) {
+    const match = reduced.match(SIMPLE_PAIR_REGEX);
+    if (!match) {
+      console.log('no match found', reduced);
+      return reduced;
+    }
+    const magnitude = +match.groups.left * 3 + +match.groups.right * 2;
+    if (match[0] === reduced) {
+      return magnitude;
+    } else {
+      reduced = reduced.replace(match[0], magnitude);
+    }
+  }
+};
+
+// Day 18 - Puzzle 2
+const findLargestSnailSum = (input) => {
+  const snails = input.split('\n');
+  let maxMagnitude = 0;
+  for (const first of snails) {
+    for (const second of snails) {
+      if (first === second) {
+        continue;
+      }
+      const mag = getSnailMagnitude(reduceSnailNum(addSnailNums(first, second)));
+      if (mag > maxMagnitude) {
+        maxMagnitude = mag;
+      }
+    }
+  }
+  return maxMagnitude;
+};
+
 // -------------- DAY 19 --------------
 
 // -------------- DAY 20 --------------
