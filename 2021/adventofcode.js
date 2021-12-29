@@ -1314,7 +1314,8 @@ const drawFoldedGrid = (coords) => {
 };
 
 // -------------- DAY 14 --------------
-const polymerPairInsertion = (input, steps = 10) => {
+const polymerPairInsertionBruteForce = (input, steps = 10) => {
+  console.time();
   const [start, , ...rulesRaw] = input.split('\n');
   const rules = {};
   rulesRaw.forEach((rule) => {
@@ -1323,28 +1324,75 @@ const polymerPairInsertion = (input, steps = 10) => {
   });
 
   let polymer = start;
-  let frequency = {};
+  let frequency = polymer.split('').reduce((freq, val) => {
+    freq[val] ? freq[val]++ : (freq[val] = 1);
+    return freq;
+  }, {});
+
   for (let step = 0; step < steps; step++) {
     let nextRound = '';
-    frequency = {};
 
     for (let i = 0; i < polymer.length - 1; i++) {
       const key = polymer.slice(i, i + 2);
       const toAdd = rules[key];
       nextRound += polymer[i];
       nextRound += toAdd;
-
-      frequency[polymer[i]] ? frequency[polymer[i]]++ : (frequency[polymer[i]] = 1);
       frequency[toAdd] ? frequency[toAdd]++ : (frequency[toAdd] = 1);
     }
 
     nextRound += polymer.at(-1);
-    frequency[polymer.at(-1)] ? frequency[polymer.at(-1)]++ : (frequency[polymer.at(-1)] = 1);
-
     polymer = nextRound;
   }
 
   const sortedFreq = Object.values(frequency).sort((a, b) => a - b);
+  console.timeEnd();
+  return sortedFreq.at(-1) - sortedFreq[0];
+};
+
+const polymerPairInsertion = (input, steps = 10) => {
+  const [start, , ...rulesRaw] = input.split('\n');
+  const rules = {};
+  rulesRaw.forEach((rule) => {
+    const [key, val] = rule.split(' -> ');
+    rules[key] = [key[0] + val, val + key[1]];
+  });
+
+  const EMPTY_BIGRAMS = Object.keys(rules).reduce((obj, b) => {
+    obj[b] = 0;
+    return obj;
+  }, {});
+
+  let bigrams = { ...EMPTY_BIGRAMS };
+
+  for (let i = 0; i < start.length - 1; i++) {
+    const bi = start.slice(i, i + 2);
+    bigrams[bi]++;
+  }
+
+  for (let step = 0; step < steps; step++) {
+    let nextRound = { ...EMPTY_BIGRAMS };
+
+    Object.entries(bigrams).forEach(([bigram, freq]) => {
+      rules[bigram].forEach((bi) => {
+        nextRound[bi] += freq;
+      });
+    });
+
+    bigrams = { ...nextRound };
+  }
+
+  let letterCounts = {};
+
+  // We're going to count the second letter of each bigram,
+  // so then we also need to add the first letter of the whole input
+  letterCounts[start[0]] = 1;
+
+  Object.entries(bigrams).forEach(([bi, freq]) => {
+    const letter = bi[1];
+    letter in letterCounts ? (letterCounts[letter] += freq) : (letterCounts[letter] = freq);
+  });
+
+  const sortedFreq = Object.values(letterCounts).sort((a, b) => a - b);
   return sortedFreq.at(-1) - sortedFreq[0];
 };
 

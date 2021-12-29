@@ -62,7 +62,7 @@ const ANSWERS = {
   '13-1': singleFold,
   '13-2': foldForCode,
   '14-1': polymerPairInsertion,
-  '14-2': placeholder,
+  '14-2': (input) => polymerPairInsertion(input, 40),
   '15-1': placeholder,
   '15-2': placeholder,
   '16-1': processPacketVersions,
