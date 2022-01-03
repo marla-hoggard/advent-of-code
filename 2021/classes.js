@@ -165,3 +165,108 @@ class GraphPath2 {
     return new GraphPath2([...this.path, node], hasDoubleVisit);
   }
 }
+
+// For Day 15
+class GridGraph {
+  /**
+   *
+   * @param {string} input a 2D rectangle of digits
+   */
+  constructor(input) {
+    this.queue = []; // nodes with distances
+    this.farther = []; // nodes whose distance is still infinity
+    const nodes = input.split('\n').map((row, whichRow) => {
+      return row.split('').map((cell, whichCol) => {
+        return new GridNode(whichRow, whichCol, +cell);
+      });
+    });
+    nodes.forEach((row, r, nodes) => {
+      row.forEach((node, c) => {
+        this.farther.push(node);
+        if (r > 0) {
+          node.addNeighbor(nodes[r - 1][c]);
+        }
+        if (r < nodes.length - 1) {
+          node.addNeighbor(nodes[r + 1][c]);
+        }
+        if (c > 0) {
+          node.addNeighbor(nodes[r][c - 1]);
+        }
+        if (c < row.length - 1) {
+          node.addNeighbor(nodes[r][c + 1]);
+        }
+      });
+    });
+    this.start = nodes[0][0];
+    this.start.setDistance(0);
+    this.addToQueue(this.start);
+    this.end = nodes.at(-1).at(-1);
+  }
+
+  sortQueue() {
+    this.queue.sort((a, b) => a.distance - b.distance);
+  }
+
+  // Adds an unprocessed node to the queue
+  addToQueue(node) {
+    if (node.isVisited || node.isInQueue) {
+      return;
+    }
+    this.queue.push(node);
+    node.isInQueue = true;
+  }
+
+  // "Visit" the node at the front of the queue
+  // Remove it from the queue and mark it as visited
+  // Update distances of all neighbors
+  processNextInQueue() {
+    const node = this.queue.shift();
+    node.isVisited = true;
+    node.isInQueue = false;
+
+    node.neighbors.forEach((neighbor) => {
+      if (neighbor.distance > node.distance + neighbor.value) {
+        neighbor.setDistance(node.distance + neighbor.value);
+      }
+      this.addToQueue(neighbor);
+    });
+    this.sortQueue();
+  }
+
+  findShortestPath() {
+    while (this.queue.length) {
+      this.processNextInQueue();
+    }
+    return this.end.distance;
+  }
+}
+
+class GridNode {
+  constructor(row, col, value) {
+    this.value = value;
+    this.row = row;
+    this.col = col;
+    this.distance = Infinity;
+    this.neighbors = [];
+    this.isVisited = false;
+    this.isInQueue = false;
+  }
+
+  getCoords() {
+    return `${this.row}, ${this.col}`;
+  }
+
+  setDistance(dist) {
+    this.distance = dist;
+  }
+
+  isNeighbor(coords) {
+    return !!this.neighbors.find((n) => n.getCoords() === coords);
+  }
+
+  addNeighbor(neighborNode) {
+    if (!this.isNeighbor(neighborNode.coords)) {
+      this.neighbors.push(neighborNode);
+    }
+  }
+}

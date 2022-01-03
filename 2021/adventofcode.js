@@ -1399,6 +1399,38 @@ const polymerPairInsertion = (input, steps = 10) => {
 // -------------- TODO - Better algorithm for DAY 14 for part 2 --------------
 
 // -------------- DAY 15 --------------
+const findLowestCaveRisk = (input) => {
+  const grid = new GridGraph(input);
+  return grid.findShortestPath();
+};
+
+const singleDigitIncrement = (value, increase) => {
+  const sum = value + increase;
+  return sum <= 9 ? sum : sum - 9;
+};
+
+const findMultipliedCaveRisk = (input) => {
+  const rows = input.split('\n');
+  const numRows = rows.length;
+  const numCols = rows[0].length;
+  const tiled = create2DArray(numCols * 5, numRows * 5, 0);
+  rows.forEach((row, r) => {
+    row.split('').forEach((cell, c) => {
+      const val = +cell;
+      for (let rMult = 0; rMult <= 4; rMult++) {
+        for (let cMult = 0; cMult <= 4; cMult++) {
+          tiled[r + numRows * rMult][c + numCols * cMult] = singleDigitIncrement(
+            val,
+            rMult + cMult,
+          );
+        }
+      }
+    });
+  });
+
+  const grid = new GridGraph(tiled.map((row) => row.join('')).join('\n'));
+  return grid.findShortestPath();
+};
 
 // -------------- DAY 16 --------------
 // Day 16 - Puzzle 1
