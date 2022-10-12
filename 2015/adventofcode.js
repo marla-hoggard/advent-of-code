@@ -218,3 +218,76 @@ const day5Puzzle2 = (input) => {
 
   return nice;
 };
+
+/**
+ * Toggles lights on and off in a 1000 x 1000 grid based on instructions.
+ * Returns the number of lights on at the end.
+ */
+const day6Puzzle1 = (input) => {
+  const instructions = input.split('\n');
+  const lights = new Array(1000).fill(null).map(() => new Array(1000).fill(null).map(() => 0));
+  instructions.forEach((step) => {
+    const matches = step.match(/(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)/);
+
+    const [_, alg, startX, startY, endX, endY] = matches;
+    for (let x = +startX; x <= +endX; x++) {
+      for (let y = +startY; y <= +endY; y++) {
+        switch (alg) {
+          case 'turn on':
+            lights[x][y] = 1;
+            break;
+          case 'turn off':
+            lights[x][y] = 0;
+            break;
+          case 'toggle':
+            lights[x][y] = lights[x][y] ? 0 : 1;
+            break;
+        }
+      }
+    }
+  });
+
+  return lights.reduce((total, row) => {
+    const rowSum = row.reduce((sum, val) => sum + val, 0);
+    return total + rowSum;
+  }, 0);
+};
+
+/**
+ * Updates brightness of lights in a 1000 x 1000 grid based on instructions.
+ * Returns the total count of light brightness at the end.
+ * "Turn on" - increase light by 1
+ * "Turn off" - decrease light by 1 (miniumum is 0)
+ * "Toggle" - increase light by 2
+ */
+const day6Puzzle2 = (input) => {
+  const instructions = input.split('\n');
+  const lights = new Array(1000).fill(null).map(() => new Array(1000).fill(null).map(() => 0));
+  instructions.forEach((step) => {
+    const matches = step.match(/(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)/);
+
+    const [_, alg, startX, startY, endX, endY] = matches;
+    for (let x = +startX; x <= +endX; x++) {
+      for (let y = +startY; y <= +endY; y++) {
+        switch (alg) {
+          case 'turn on':
+            lights[x][y] += 1;
+            break;
+          case 'turn off':
+            if (lights[x][y] > 0) {
+              lights[x][y] -= 1;
+            }
+            break;
+          case 'toggle':
+            lights[x][y] += 2;
+            break;
+        }
+      }
+    }
+  });
+
+  return lights.reduce((total, row) => {
+    const rowSum = row.reduce((sum, val) => sum + val, 0);
+    return total + rowSum;
+  }, 0);
+};
