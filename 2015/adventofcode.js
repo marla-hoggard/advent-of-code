@@ -292,13 +292,11 @@ const day6Puzzle2 = (input) => {
   }, 0);
 };
 
-const day7Puzzle1 = (input) => {
+const day7 = (input, overrideWire) => {
+  const overrideValue = overrideWire ? day7(input) : undefined;
   const isNumber = (val) => !isNaN(val);
   const isAlpha = (val) => /^[a-z]+$/.test(val);
   const uint16 = (n) => n & 0xffff;
-
-  let wires = {};
-  let steps = input.split('\n');
 
   const parseValue = (value) => {
     if (isNumber(value)) {
@@ -331,177 +329,114 @@ const day7Puzzle1 = (input) => {
     }
   };
 
-  for (let i = 0; i < steps.length; i++) {
-    const parts = steps[i].split(' ');
+  const calculateStep = (step) => {
+    const { operator, parsedFirst, parsedSecond, output } = step;
+    let value = 0;
 
-    if (parts.length === 3) {
-      const parsed = parseValue(parts[0]);
-      const wireName = parts[2];
-      if (parsed.defined) {
-        wires[wireName] = uint16(parsed.value);
-        console.log(`Setting ${wireName} to ${parsed.value} which comes from ${parsed.key}.`);
-      } else {
-        console.log('Length 3 not defined');
-        steps.push(steps[i]);
-      }
-    } else if (parts.length === 4) {
-      const parsed = parseValue(parts[1]);
-      const wireName = parts[3];
-      if (parsed.defined) {
-        console.log(`Setting ${wireName} to NOT ${parsed.value} which comes from ${parsed.key}.`);
-        wires[wireName] = uint16(~Number(parsed.value));
-      } else {
-        console.log('Length 4 not defined');
-        steps.push(steps[i]);
-      }
-    } else {
-      const op = parts[1];
-      const wireName = parts[4];
-
-      const parsedFirst = parseValue(parts[0]);
-      const parsedSecond = parseValue(parts[2]);
-
-      if (!parsedFirst.defined) {
-        console.log('Length 5, first value not defined');
-        steps.push(steps[i]);
-        continue;
-      }
-
-      if (!parsedSecond.defined) {
-        console.log('Length 5, second value not defined');
-        steps.push(steps[i]);
-        continue;
-      }
-
-      switch (op) {
-        case 'AND':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} AND ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value & parsedSecond.value);
-          break;
-        case 'OR':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} OR ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value | parsedSecond.value);
-          break;
-        case 'LSHIFT':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} LSHIFT ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value << parsedSecond.value);
-          break;
-        case 'RSHIFT':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} RSHIFT ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value >> parsedSecond.value);
-          break;
-      }
+    switch (operator) {
+      case 'SET':
+        value = parsedFirst.value;
+        break;
+      case 'NOT':
+        value = ~parsedFirst.value;
+        break;
+      case 'AND':
+        value = parsedFirst.value & parsedSecond.value;
+        break;
+      case 'OR':
+        value = parsedFirst.value | parsedSecond.value;
+        break;
+      case 'LSHIFT':
+        value = parsedFirst.value << parsedSecond.value;
+        break;
+      case 'RSHIFT':
+        value = parsedFirst.value >> parsedSecond.value;
+        break;
     }
-  }
 
-  console.log(wires);
-  return wires.a;
-};
+    value = uint16(value);
+    wires[output] = value;
 
-const day7Puzzle2 = (input) => {
-  const isNumber = (val) => !isNaN(val);
-  const isAlpha = (val) => /^[a-z]+$/.test(val);
-  const uint16 = (n) => n & 0xffff;
+    if (dependencies[output]) {
+      dependencies[output].forEach((stepIndex) => {
+        const step = parsedSteps[stepIndex];
+        step.needsResolution = step.needsResolution.filter((el) => el !== output);
 
-  let wires = { b: day7Puzzle1(input) };
-  let steps = input.split('\n');
+        if (step.parsedFirst.key === output) {
+          step.first = value;
+          step.parsedFirst.value = value;
+          step.parsedFirst.defined = true;
+        } else if (step.parsedSecond?.key === output) {
+          step.second = value;
+          step.parsedSecond.value = value;
+          step.parsedSecond.defined = true;
+        }
 
-  const parseValue = (value) => {
-    if (isNumber(value)) {
-      return {
-        value: Number(value),
-        key: 'number',
-        defined: true,
-      };
-    } else if (isAlpha(value)) {
-      if (wires[value] != undefined) {
-        return {
-          value: wires[value],
-          key: value,
-          defined: true,
-        };
-      } else {
-        return {
-          value: undefined,
-          key: value,
-          defined: false,
-        };
-      }
-    } else {
-      console.log('Invalid value', value);
-      return {
-        value: undefined,
-        key: value,
-        defined: false,
-      };
+        if (!step.needsResolution.length) {
+          calculateStep(step);
+          delete parsedSteps[stepIndex];
+        } else {
+          parsedSteps[stepIndex] = step;
+        }
+      });
     }
   };
 
-  for (let i = 0; i < steps.length; i++) {
-    const parts = steps[i].split(' ');
+  let wires = { b: overrideValue };
+  let dependencies = {};
+  let parsedSteps = {};
+  let steps = input.split('\n');
 
-    if (parts.length === 3) {
-      const parsed = parseValue(parts[0]);
-      const wireName = parts[2];
-      if (wireName === 'b') continue;
-      if (parsed.defined) {
-        wires[wireName] = uint16(parsed.value);
-        console.log(`Setting ${wireName} to ${parsed.value} which comes from ${parsed.key}.`);
-      } else {
-        console.log('Length 3 not defined');
-        steps.push(steps[i]);
-      }
-    } else if (parts.length === 4) {
-      const parsed = parseValue(parts[1]);
-      const wireName = parts[3];
-      if (wireName === 'b') continue;
-      if (parsed.defined) {
-        console.log(`Setting ${wireName} to NOT ${parsed.value} which comes from ${parsed.key}.`);
-        wires[wireName] = uint16(~Number(parsed.value));
-      } else {
-        console.log('Length 4 not defined');
-        steps.push(steps[i]);
-      }
-    } else {
-      const op = parts[1];
-      const wireName = parts[4];
-      if (wireName === 'b') continue;
+  steps.forEach((step, i) => {
+    const parts = step.split(' ').reverse();
+    const output = parts[0];
+    if (output === overrideWire) {
+      return;
+    }
+    const operator = parts[3] || 'SET';
+    let first = parts[2];
+    let second;
+    let needsResolution = [];
+    if (parts.length === 5) {
+      first = parts[4];
+      second = parts[2];
+    }
 
-      const parsedFirst = parseValue(parts[0]);
-      const parsedSecond = parseValue(parts[2]);
+    const parsedFirst = parseValue(first);
+    if (!parsedFirst.defined) {
+      dependencies[parsedFirst.key]
+        ? dependencies[parsedFirst.key].push(i)
+        : (dependencies[parsedFirst.key] = [i]);
+      needsResolution.push(parsedFirst.key);
+    }
 
-      if (!parsedFirst.defined) {
-        console.log('Length 5, first value not defined');
-        steps.push(steps[i]);
-        continue;
-      }
-
+    let parsedSecond;
+    if (second != undefined) {
+      parsedSecond = parseValue(second);
       if (!parsedSecond.defined) {
-        console.log('Length 5, second value not defined');
-        steps.push(steps[i]);
-        continue;
-      }
-
-      switch (op) {
-        case 'AND':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} AND ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value & parsedSecond.value);
-          break;
-        case 'OR':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} OR ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value | parsedSecond.value);
-          break;
-        case 'LSHIFT':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} LSHIFT ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value << parsedSecond.value);
-          break;
-        case 'RSHIFT':
-          console.log(`Setting ${wireName} to ${parsedFirst.value} RSHIFT ${parsedSecond.value}.`);
-          wires[wireName] = uint16(parsedFirst.value >> parsedSecond.value);
-          break;
+        dependencies[parsedSecond.key]
+          ? dependencies[parsedSecond.key].push(i)
+          : (dependencies[parsedSecond.key] = [i]);
+        needsResolution.push(parsedSecond.key);
       }
     }
-  }
+
+    if (!needsResolution.length) {
+      calculateStep({ output, operator, parsedFirst, parsedSecond });
+    }
+
+    parsedSteps[i] = {
+      step,
+      output,
+      operator,
+      first,
+      second,
+      parsedFirst,
+      parsedSecond,
+      needsResolution,
+      index: i,
+    };
+  });
 
   console.log(wires);
   return wires.a;
