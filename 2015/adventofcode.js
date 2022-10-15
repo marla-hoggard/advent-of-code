@@ -441,3 +441,57 @@ const day7 = (input, overrideWire) => {
   console.log(wires);
   return wires.a;
 };
+
+/**
+ * Returns the difference in characters
+ * between the raw strings from the input
+ * and the escaped strings from the input.
+ *
+ * Encodings:
+ * \" encodes to "
+ * \\ encodes to \
+ * \x12 where 12 are hex chars, encodes to a single ascii character
+ *
+ * Unlike usual, I did have to add a bit of code to the input in order to actaully
+ * get the raw string from the input. Without doing that, the input would come in already
+ * encoded which made it impossible to accomplish the task.
+ */
+const day8Puzzle1 = (input) => {
+  const strings = input.split('\n');
+  const ascii = /\\x[a-z0-9][a-z0-9]/g;
+  const escapedQuote = /\\"/g;
+  const escapedSlash = /\\\\/g;
+  const rawLength = strings.reduce((total, cur) => total + cur.length, 0);
+  const escapedLength = strings.reduce((total, cur) => {
+    const len = cur
+      .replaceAll(escapedSlash, 'S')
+      .replaceAll(ascii, 'X')
+      .replaceAll(escapedQuote, 'E')
+      .replaceAll('"', '').length;
+    return total + len;
+  }, 0);
+  console.log({ rawLength, escapedLength });
+  return rawLength - escapedLength;
+};
+
+/**
+ * Takes the raw version of each string, then re-encodes it
+ * to escape all the quotes and backslashes, and nests the new string
+ * in its own quotations. The ascii characters
+ * remain as is besides the backslash.
+ *
+ * "" -> "\"\""
+ * "\x12" -> "\"\\x12\""
+ *
+ * Returns the difference in length between the raw and newly encoded strings.
+ * This can simply be calculated by counting the number of quotes and slashes in the raw string,
+ * plus two per string for the added quotes around it.
+ */
+const day8Puzzle2 = (input) => {
+  const strings = input.split('\n');
+  return strings.reduce((total, cur) => {
+    const quotes = numOccurrences(cur, '"') + 2;
+    const slashes = numOccurrences(cur, '\\');
+    return total + quotes + slashes;
+  }, 0);
+};
