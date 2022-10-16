@@ -6,6 +6,7 @@
     <script type="text/javascript" src="inputs.js"></script>
     <script type="text/javascript" src="answerFunctions.js"></script>
     <script type="text/javascript" src="helpers.js"></script>
+    <script type="text/javascript" src="md5.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
 
@@ -24,12 +25,12 @@
   </body>
 
   <script>
-    const numComplete = 1; // CHANGE THIS EVERY TIME WE ADD A DAY
+    const numComplete = 8; // CHANGE THIS EVERY TIME WE ADD A DAY
 
-    let puzzleDiv = document.getElementById("puzzles");
+    let puzzleDiv = document.getElementById('puzzles');
     for (let day = 1; day <= numComplete; day++) {
-      const puzzleDay = document.createElement("div");
-      puzzleDay.classList.add("puzzle");
+      const puzzleDay = document.createElement('div');
+      puzzleDay.classList.add('puzzle');
       puzzleDay.innerHTML = `
 			<h4>DAY ${day}</h4>
 			<button id="d${day}p1">Puzzle 1</button>
@@ -42,7 +43,7 @@
       for (let puzzle = 1; puzzle <= 2; puzzle++) {
         const id = `d${day}p${puzzle}`;
         const button = document.getElementById(id);
-        button.addEventListener("click", () => {
+        button.addEventListener('click', () => {
           const para = document.getElementById(`${id}-answer`);
           para.innerHTML = `Puzzle ${puzzle}: Calculating...`;
 
