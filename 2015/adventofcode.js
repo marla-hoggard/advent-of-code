@@ -574,3 +574,27 @@ const getPathLength = (path, distances) => {
   }
   return dist;
 };
+
+const day10 = (input, iterations) => {
+  let seq = input;
+
+  for (let i = 0; i < iterations; i++) {
+    let newSeq = '';
+    let count = 1;
+    let value = seq[0];
+    for (let c = 1; c < seq.length; c++) {
+      const char = seq[c];
+      if (char === value) {
+        count++;
+      } else {
+        newSeq += `${count}${value}`;
+        count = 1;
+        value = char;
+      }
+    }
+    newSeq += `${count}${value}`;
+    seq = newSeq;
+  }
+
+  return seq.length;
+};

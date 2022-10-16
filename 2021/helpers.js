@@ -171,3 +171,12 @@ const create2DArrayObject = (width, height, val) => {
         .map(() => ({ ...val })),
     );
 };
+
+// Reverses the keys and values of an object
+// All values must be unique or else data will be lost
+const reverseObject = (obj) => {
+  return Object.entries(obj).reduce((reversed, [key, val]) => {
+    reversed[val] = key;
+    return reversed;
+  }, {});
+};

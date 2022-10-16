@@ -2104,18 +2104,9 @@ const rebootReactor = (input) => {
     .fill(-50)
     .map((el, i) => el + i);
 
-  const reactor = {};
-  INDEXES.forEach((x) => {
-    reactor[x] = {};
-    INDEXES.forEach((y) => {
-      reactor[x][y] = {};
-      INDEXES.forEach((z) => {
-        reactor[x][y][z] = 0;
-      });
-    });
-  });
+  const getCoords = (x, y, z) => `${x},${y},${z}`;
 
-  let lightsOn = 0;
+  let lightsOn = new Set();
 
   steps.forEach((step) => {
     const startX = step.x[0] < -50 ? -50 : step.x[0];
@@ -2128,19 +2119,53 @@ const rebootReactor = (input) => {
     for (let x = startX; x <= endX; x++) {
       for (let y = startY; y <= endY; y++) {
         for (let z = startZ; z <= endZ; z++) {
-          if (step.value === 0 && reactor[x][y][z] === 1) {
-            reactor[x][y][z] = 0;
-            lightsOn--;
-          } else if (step.value === 1 && reactor[x][y][z] === 0) {
-            reactor[x][y][z] = 1;
-            lightsOn++;
+          const coords = getCoords(x, y, z);
+          if (step.value === 0) {
+            lightsOn.delete(coords);
+          } else if (step.value === 1) {
+            lightsOn.add(coords);
           }
         }
       }
     }
   });
 
-  return lightsOn;
+  return lightsOn.size;
+};
+
+const rebootReactor2 = (input) => {
+  const steps = input.split('\n').map((line) => {
+    const [dir, rest] = line.split(' ');
+    const value = dir === 'on' ? 1 : 0;
+    const [x, y, z] = rest.split(',').map((el) =>
+      el
+        .replace(/[xyz]=/, '')
+        .split('..')
+        .map((el) => +el),
+    );
+    return { value, x, y, z };
+  });
+
+  const getCoords = (x, y, z) => `${x},${y},${z}`;
+
+  let lightsOn = new Set();
+
+  steps.forEach((step) => {
+    for (let x = step.x[0]; x <= step.x[1]; x++) {
+      for (let y = step.y[0]; y <= step.y[1]; y++) {
+        for (let z = step.z[0]; z <= step.z[1]; z++) {
+          const coords = getCoords(x, y, z);
+          if (step.value === 0) {
+            lightsOn.delete(coords);
+          } else if (step.value === 1) {
+            lightsOn.add(coords);
+          }
+        }
+      }
+    }
+  });
+
+  return lightsOn.size;
 };
 
 // -------------- DAY 23 --------------
