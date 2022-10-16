@@ -438,7 +438,6 @@ const day7 = (input, overrideWire) => {
     };
   });
 
-  console.log(wires);
   return wires.a;
 };
 
@@ -470,7 +469,6 @@ const day8Puzzle1 = (input) => {
       .replaceAll('"', '').length;
     return total + len;
   }, 0);
-  console.log({ rawLength, escapedLength });
   return rawLength - escapedLength;
 };
 

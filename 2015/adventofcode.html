@@ -52,7 +52,9 @@
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               const calcAnswer = ANSWERS[`${day}-${puzzle}`];
+              console.time(`Day ${day}, Part ${puzzle}`);
               const result = calcAnswer(INPUTS[day]);
+              console.timeEnd(`Day ${day}, Part ${puzzle}`);
               para.innerHTML = `Puzzle ${puzzle}: <b>${result}</b>`;
             });
           });
