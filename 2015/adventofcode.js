@@ -495,3 +495,84 @@ const day8Puzzle2 = (input) => {
     return total + quotes + slashes;
   }, 0);
 };
+
+const day9Puzzle1 = (input) => {
+  const distances = createDistanceMap(input);
+  const paths = getAllPaths(distances);
+
+  let shortestDistance = Infinity;
+  paths.forEach((path) => {
+    const distance = getPathLength(path, distances);
+    if (distance < shortestDistance) {
+      shortestDistance = distance;
+    }
+  });
+
+  return shortestDistance;
+};
+
+const day9Puzzle2 = (input) => {
+  const distances = createDistanceMap(input);
+  const paths = getAllPaths(distances);
+
+  let longestDistance = 0;
+  paths.forEach((path) => {
+    const distance = getPathLength(path, distances);
+    if (distance > longestDistance) {
+      longestDistance = distance;
+    }
+  });
+
+  return longestDistance;
+};
+
+// For Day 9, map the input to an object of distances
+const createDistanceMap = (input) => {
+  let distances = {};
+  input.split('\n').forEach((line) => {
+    const [node1, _, node2, __, dist] = line.split(' ');
+    if (!distances[node1]) {
+      distances[node1] = {};
+    }
+    if (!distances[node2]) {
+      distances[node2] = {};
+    }
+
+    distances[node1][node2] = +dist;
+    distances[node2][node1] = +dist;
+  });
+  return distances;
+};
+
+// Day 9 helper
+// Creates an array of "paths" for every possible order of the cities provided
+// We don't actually need the distances, just the list of keys to pull the city names
+const getAllPaths = (distances) => {
+  const cities = Object.keys(distances);
+  let paths = [[]];
+  cities.forEach((city) => {
+    let newPaths = [];
+    paths.forEach((path) => {
+      let pathsToAdd = [];
+      for (let i = 0; i <= path.length; i++) {
+        pathsToAdd.push(insertIntoArray(path, i, city));
+      }
+      newPaths = newPaths.concat(pathsToAdd);
+    });
+    paths = newPaths;
+  });
+
+  return paths;
+};
+
+// Day 9 helper
+// Takes an array of city names representing an ordered path
+// Returns the length of that path in that order
+const getPathLength = (path, distances) => {
+  let dist = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const city = distances[path[i]];
+    dist += city[path[i + 1]];
+  }
+  return dist;
+};

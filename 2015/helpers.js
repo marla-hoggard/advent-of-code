@@ -57,3 +57,11 @@ const numOccurrences = (set, val) => {
     return numOccurrencesBaseMethod(set.toString(), val);
   }
 };
+
+// Inserts @value into @array at @index and returns the updated array
+// Does not mutate the underlying array, as long as it's an array of primitives
+const insertIntoArray = (array, index, value) => {
+  const copy = [...array];
+  copy.splice(index, 0, value);
+  return copy;
+};
