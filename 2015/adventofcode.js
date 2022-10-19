@@ -598,3 +598,52 @@ const day10 = (input, iterations) => {
 
   return seq.length;
 };
+
+const day11Puzzle1 = (input) => {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyz';
+
+  const increment = (str) => {
+    let updated = str.split('');
+    let i = updated.length - 1;
+    while (i >= 0) {
+      const char = updated[i];
+      if (char !== 'z') {
+        const charIdx = alphabet.indexOf(char);
+        updated[i] = alphabet[charIdx + 1];
+        return updated.join('');
+      } else {
+        updated[i] = 'a';
+        i--;
+      }
+    }
+  };
+
+  const pairsRegex = /([a-z])\1/g;
+  let series = [];
+  for (let i = 0; i < alphabet.length - 2; i++) {
+    series.push(alphabet.slice(i, i + 3));
+  }
+  const seriesRegex = new RegExp(series.join('|'));
+
+  const isValidPassword = (str) => {
+    const numPairs = str.match(pairsRegex) || [];
+    if (numPairs.length < 2) {
+      return false;
+    }
+    return !!str.match(seriesRegex);
+  };
+
+  let password = increment(input);
+  let i = 0;
+
+  while (!isValidPassword(password) && i < 10000) {
+    password = increment(password);
+  }
+
+  return password;
+};
+
+const day11Puzzle2 = (input) => {
+  const p1 = day11Puzzle1(input);
+  return day11Puzzle1(p1);
+};
