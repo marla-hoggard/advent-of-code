@@ -647,3 +647,76 @@ const day11Puzzle2 = (input) => {
   const p1 = day11Puzzle1(input);
   return day11Puzzle1(p1);
 };
+
+/**
+ * This was the way I did it first.
+ * Very simple, quick answer.
+ * But, it couldn't be extended to part 2,
+ * so I figured I'd solve it again a way that could be reused for part 2.
+ * This solution is faster as well.
+ */
+const day12Puzzle1Regex = (input) => {
+  return JSON.stringify(input)
+    .match(/[\d-]+/g)
+    .reduce((prev, cur) => prev + +cur, 0);
+};
+
+const day12Puzzle1 = (input) => {
+  let total = 0;
+  Object.values(input).forEach((val) => {
+    if (typeof val === 'string') {
+      return;
+    } else if (typeof val === 'number') {
+      total += val;
+    } else if (Array.isArray(val)) {
+      total = val.reduce((sum, el) => {
+        if (typeof el === 'string') {
+          return sum;
+        } else if (typeof el === 'number') {
+          return sum + el;
+        } else return sum + day12Puzzle1(el);
+      }, total);
+    } else {
+      total += day12Puzzle1(val);
+    }
+  });
+  return total;
+};
+
+// Why is this so much slower???
+const day12Puzzle1ShortButSlow = (input) => {
+  if (typeof input === 'string') {
+    return 0;
+  } else if (typeof input === 'number') {
+    return input;
+  } else if (Array.isArray(input)) {
+    input.reduce((sum, el) => sum + day12Puzzle1(el), 0);
+  }
+  return Object.values(input).reduce((sum, el) => sum + day12Puzzle1(el), 0);
+};
+
+const day12Puzzle2 = (input) => {
+  if (!Array.isArray(input) && Object.values(input).includes('red')) {
+    return 0;
+  }
+
+  let total = 0;
+  Object.values(input).forEach((val) => {
+    if (typeof val === 'string') {
+      return;
+    } else if (typeof val === 'number') {
+      total += val;
+    } else if (Array.isArray(val)) {
+      total = val.reduce((sum, el) => {
+        if (typeof el === 'string') {
+          return sum;
+        } else if (typeof el === 'number') {
+          return sum + el;
+        } else return sum + day12Puzzle2(el);
+      }, total);
+    } else {
+      total += day12Puzzle2(val);
+    }
+  });
+  return total;
+};
