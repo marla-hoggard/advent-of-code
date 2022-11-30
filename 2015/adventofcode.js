@@ -648,7 +648,217 @@ const day11Puzzle2 = (input) => {
   return day11Puzzle1(p1);
 };
 
+/**
+ * This was the way I did it first.
+ * Very simple, quick answer.
+ * But, it couldn't be extended to part 2,
+ * so I figured I'd solve it again a way that could be reused for part 2.
+ * This solution is faster as well.
+ */
+const day12Puzzle1Regex = (input) => {
+  return JSON.stringify(input)
+    .match(/[\d-]+/g)
+    .reduce((prev, cur) => prev + +cur, 0);
+};
+
 const day12Puzzle1 = (input) => {
-  const numbers = input.match(/[0-9\-]+/gm);
-  return sum(numbers);
+  let total = 0;
+  Object.values(input).forEach((val) => {
+    if (typeof val === 'string') {
+      return;
+    } else if (typeof val === 'number') {
+      total += val;
+    } else if (Array.isArray(val)) {
+      total = val.reduce((sum, el) => {
+        if (typeof el === 'string') {
+          return sum;
+        } else if (typeof el === 'number') {
+          return sum + el;
+        } else return sum + day12Puzzle1(el);
+      }, total);
+    } else {
+      total += day12Puzzle1(val);
+    }
+  });
+  return total;
+};
+
+// Why is this so much slower???
+const day12Puzzle1ShortButSlow = (input) => {
+  if (typeof input === 'string') {
+    return 0;
+  } else if (typeof input === 'number') {
+    return input;
+  } else if (Array.isArray(input)) {
+    input.reduce((sum, el) => sum + day12Puzzle1(el), 0);
+  }
+  return Object.values(input).reduce((sum, el) => sum + day12Puzzle1(el), 0);
+};
+
+const day12Puzzle2 = (input) => {
+  if (!Array.isArray(input) && Object.values(input).includes('red')) {
+    return 0;
+  }
+
+  let total = 0;
+  Object.values(input).forEach((val) => {
+    if (typeof val === 'string') {
+      return;
+    } else if (typeof val === 'number') {
+      total += val;
+    } else if (Array.isArray(val)) {
+      total = val.reduce((sum, el) => {
+        if (typeof el === 'string') {
+          return sum;
+        } else if (typeof el === 'number') {
+          return sum + el;
+        } else return sum + day12Puzzle2(el);
+      }, total);
+    } else {
+      total += day12Puzzle2(val);
+    }
+  });
+  return total;
+};
+
+/**
+ * When provided a bunch of pair-wise happiness scores
+ * for two people sitting next to each other,
+ * Determine the best round table order (highest total score)
+ * and return its total happiness score.
+ */
+const day13Puzzle1 = (input) => {
+  const scores = getHappinessScores(input);
+  const arrangements = getAllSeatingArrangements(scores);
+
+  let maxScore = 0;
+  arrangements.forEach((order) => {
+    const score = calculateHappiness(scores, order);
+    if (score > maxScore) {
+      maxScore = score;
+    }
+  });
+  return maxScore;
+};
+
+/**
+ * When provided a bunch of pair-wise happiness scores
+ * for two people sitting next to each other,
+ * Determine the best round table order (highest total score).
+ *
+ * But this time, add yourself in. Your happiness score next to anyone else,
+ * and vice versa, is simply 0.
+ *
+ * Find the best order without yourself fit in, and return its score.
+ *
+ * How to do it? First find the best order from Part 1,
+ * then find the best spot in that best order to fit yourself into.
+ */
+const day13Puzzle2 = (input) => {
+  const scores = getHappinessScores(input);
+  const arrangements = getAllSeatingArrangements(scores);
+
+  let maxScore = 0;
+  let bestOrder;
+
+  arrangements.forEach((order) => {
+    const score = calculateHappiness(scores, order);
+    if (score > maxScore) {
+      maxScore = score;
+      bestOrder = order;
+    }
+  });
+
+  scores.you = {};
+  Object.keys(scores).forEach((name) => {
+    scores[name].you = 0;
+    scores.you[name] = 0;
+  });
+
+  let fitMeIn = [];
+  for (let i = 0; i <= bestOrder.length; i++) {
+    fitMeIn.push(insertIntoArray(bestOrder, i, 'you'));
+  }
+
+  maxScore = 0;
+  fitMeIn.forEach((order) => {
+    const score = calculateHappiness(scores, order);
+    if (score > maxScore) {
+      maxScore = score;
+    }
+  });
+
+  return maxScore;
+};
+
+/**
+ * Parse the input into a set of objects to map the pair-wise scores.
+ */
+const getHappinessScores = (input) => {
+  const regex =
+    /(?<name>\w+) would (?<dir>lose|gain) (?<amt>\d+) happiness units by sitting next to (?<name2>\w+)/;
+
+  const scores = {};
+
+  input.split('\n').forEach((fact) => {
+    const { name, name2, dir, amt } = fact.match(regex).groups;
+    const value = dir === 'gain' ? +amt : 0 - amt;
+
+    if (scores[name] === undefined) {
+      scores[name] = { [name2]: value };
+    } else if (scores[name][name2] !== undefined) {
+      scores[name][name2] += value;
+    } else {
+      scores[name][name2] = value;
+    }
+
+    if (scores[name2] === undefined) {
+      scores[name2] = { [name]: value };
+    } else if (scores[name2][name] !== undefined) {
+      scores[name2][name] += value;
+    } else {
+      scores[name2][name] = value;
+    }
+  });
+
+  return scores;
+};
+
+// Day 13 helper
+// Creates an array of "seating arrangements" for every possible order of the names provided
+// This is identical to day9 getAllPaths
+const getAllSeatingArrangements = (scores) => {
+  const names = Object.keys(scores);
+  let arrangements = [[]];
+  names.forEach((name) => {
+    let newArrangements = [];
+    arrangements.forEach((arrangement) => {
+      let arrangementsToAdd = [];
+      for (let i = 0; i <= arrangement.length; i++) {
+        arrangementsToAdd.push(insertIntoArray(arrangement, i, name));
+      }
+      newArrangements = newArrangements.concat(arrangementsToAdd);
+    });
+    arrangements = newArrangements;
+  });
+
+  return arrangements;
+};
+
+/**
+ * Calculate the total happiness score for a given order
+ */
+const calculateHappiness = (scores, order) => {
+  let score = 0;
+  let i = 0;
+  while (i < order.length - 1) {
+    const name1 = order[i];
+    const name2 = order[i + 1];
+    score += scores[name1][name2];
+    i++;
+  }
+
+  // It's a circle, so wrap around
+  score += scores[order[i]][order[0]];
+  return score;
 };
