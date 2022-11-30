@@ -1,32 +1,3 @@
-h2 {
-  text-align: center;
-}
-
-.yearLinks {
-  text-align: center;
-  padding-bottom: 20px;
-  font-weight: bold;
-}
-
-#puzzles {
-  width: 100%;
-  justify-content: center;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 200px);
-  grid-gap: 10px;
-}
-
-.puzzle {
-  background: #2196f3a3;
-  border: 2px solid blue;
-  padding: 5px;
-  text-align: center;
-}
-
-.dayTitle {
-  font-weight: bold;
-}
-
 #day9visualization {
   visibility: hidden;
   margin: auto;

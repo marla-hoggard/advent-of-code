@@ -647,3 +647,8 @@ const day11Puzzle2 = (input) => {
   const p1 = day11Puzzle1(input);
   return day11Puzzle1(p1);
 };
+
+const day12Puzzle1 = (input) => {
+  const numbers = input.match(/[0-9\-]+/gm);
+  return sum(numbers);
+};

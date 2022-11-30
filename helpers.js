@@ -1,27 +1,46 @@
+/**
+ * Find the manhattan distance between two x,y coordinates
+ */
 const manhattanDistance = ([x1, y1], [x2, y2]) => {
   return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 };
 
+/**
+ * Takes two parameters that represent the numerator and denomenator
+ * of a fraction to be reduced.
+ * Returns a tuple that represents that reduced fraction.
+ * i.e. reduceFraction(15, 10) = [3, 2];
+ */
 const reduceFraction = (num, denom) => {
   const GCD = gcd(num, denom);
   return [num / GCD, denom / GCD];
 };
 
-// Find the greatest common denominator of a and b
+/**
+ * Finds the greatest common denominator of a and b
+ */
 const gcd = (a, b) => {
   return b ? gcd(b, a % b) : a;
 };
 
+/**
+ * Finds the lowest common multiple of a and b
+ */
 const lcm2 = (a, b) => {
   return (a * b) / gcd(a, b);
 };
 
+/**
+ * Finds the lowest common multiple of a, b and c
+ */
 const lcm3 = (a, b, c) => {
   return lcm2(lcm2(a, b), c);
 };
 
-// Return the sum of the values in an array
-// For each element in @arr, Number(el) must return a number
+/**
+ * Return the sum of the values in an array
+ * For each element in @param arr, Number(el) must return a number
+ */
 const sum = (arr) => {
   let total = 0;
   for (let i = 0; i < arr.length; i++) {
@@ -30,9 +49,11 @@ const sum = (arr) => {
   return total;
 };
 
-// Returns the number of occurrences of @val in the iterable @iter
-// @iter can be an array or a string
-// Note: If @iter is an array, @val must be a full match of an element in the array
+/**
+ * Returns the number of occurrences of @val in the iterable @iter
+ * @iter can be an array or a string.
+ * Note: If @iter is an array, @val must be a full match of an element in the array
+ */
 const numOccurrencesBaseMethod = (iter, val) => {
   let found = 0;
   let i = iter.indexOf(val);
@@ -43,9 +64,11 @@ const numOccurrencesBaseMethod = (iter, val) => {
   return found;
 };
 
-// Returns the number of occurences of @val in @set
-// @set can be an array, a string, or a value that can be converted to a string (like a number.toString())
-// @array can be an array of arrays any dimension deep
+/**
+ * Returns the number of occurences of @val in @set
+ * @set can be an array, a string, or a value that can be converted to a string (like a number.toString())
+ * @array can be an array of arrays any dimension deep
+ */
 const numOccurrences = (set, val) => {
   if (Array.isArray(set)) {
     if (Array.isArray(set[0])) {
@@ -58,8 +81,10 @@ const numOccurrences = (set, val) => {
   }
 };
 
-// Checks if @array1 and @array2 have the same content
-// Works for all array depths uses deep equality on object elements
+/**
+ * Checks if @array1 and @array2 have the same content
+ * Works for all array depths uses deep equality on object elements
+ */
 const isSameArray = (array1, array2) => {
   if (array1.length !== array2.length) {
     return false;
@@ -78,7 +103,9 @@ const isSameArray = (array1, array2) => {
   });
 };
 
-// Check deep equality of two objects
+/**
+ *  Check deep equality of two objects
+ */
 const isDeepEqual = (object1, object2) => {
   const keys1 = Object.keys(object1);
   const keys2 = Object.keys(object2);
@@ -99,13 +126,18 @@ const isDeepEqual = (object1, object2) => {
   return true;
 };
 
+/**
+ * Returns true if the item passed in is a defined, nonnull Object
+ */
 function isObject(object) {
   return object != null && typeof object === 'object';
 }
 
-// Splits @arr into a 2D array with rows of length @len
-// ex: arr = [1,2,3,4,5,6], len = 2 -> [[1,2], [3,4], [5,6]]
-// with remainder: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9], [10]]
+/**
+ * Splits @arr into a 2D array with rows of length @len
+ * ex: arr = [1,2,3,4,5,6], len = 2 -> [[1,2], [3,4], [5,6]]
+ * with remainder: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9], [10]]
+ */
 const splitArrayInChunks = (arr, len) => {
   let splitArray = [];
   for (let i = 0; i < arr.length; i += len) {
@@ -114,9 +146,11 @@ const splitArrayInChunks = (arr, len) => {
   return splitArray;
 };
 
-// The same as splitArrayInChunks except that if there is a remainder,
-// adds the excess to end of the last line instead of putting it on its own
-// ex: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9,10]]
+/**
+ * The same as splitArrayInChunks except that if there is a remainder,
+ * adds the excess to end of the last line instead of putting it on its own
+ * ex: arr = [1,2,3,4,5,6,7,8,9,10], len = 3 => [[1,2,3], [4,5,6], [7,8,9,10]]
+ */
 const splitArrayInChunksRemainderLast = (arr, len) => {
   let splitArray = [];
   for (let i = 0; i < arr.length; i += len) {
@@ -172,11 +206,58 @@ const create2DArrayObject = (width, height, val) => {
     );
 };
 
-// Reverses the keys and values of an object
-// All values must be unique or else data will be lost
+/**
+ * Reverses the keys and values of an object.
+ * All values must be unique or else data will be lost.
+ */
 const reverseObject = (obj) => {
   return Object.entries(obj).reduce((reversed, [key, val]) => {
     reversed[val] = key;
     return reversed;
   }, {});
+};
+
+/**
+ * Inserts @value into @array at @index and returns the updated array
+ * Does not mutate the underlying array, as long as it's an array of primitives
+ * @returns a new array with the value inserted.
+ */
+const insertIntoArray = (array, index, value) => {
+  const copy = [...array];
+  copy.splice(index, 0, value);
+  return copy;
+};
+
+// @indices = a number or an array of numbers
+// Removes the index/indices of @indices from array and returns array
+/**
+ * Removes the value(s) at @indices from @array and returns the resulting array.
+ * Does not mutate the original array.
+ * @param {any[]} array The array to edit
+ * @param {number | number[]} indices The index or array of indices to remove
+ *
+ * Note: This could probably be refactored to be more performant
+ */
+const removeIndex = (array, indices) => {
+  if (typeof indices === 'number') {
+    return array.slice(0, indices).concat(array.slice(indices + 1));
+  }
+  indices.sort((a, b) => a - b);
+  while (indices.length) {
+    const remove = indices.shift();
+    array = removeIndex(array, remove);
+    indices = indices.map((el) => el - 1);
+  }
+  return array;
+};
+
+/**
+ * Returns @array without the first instance of @val
+ */
+const removeVal = (array, val) => {
+  const index = array.indexOf(val);
+  if (index >= 0) {
+    return array.slice(0, index).concat(array.slice(index + 1));
+  }
+  return array;
 };

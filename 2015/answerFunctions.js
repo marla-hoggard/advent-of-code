@@ -55,7 +55,7 @@ const ANSWERS = {
   '10-2': (input) => day10(input, 50),
   '11-1': day11Puzzle1,
   '11-2': day11Puzzle2,
-  '12-1': () => console.log('Day 12 - Puzzle 1'),
+  '12-1': day12Puzzle1,
   '12-2': () => console.log('Day 12 - Puzzle 2'),
   '13-1': () => console.log('Day 13 - Puzzle 1'),
   '13-2': () => console.log('Day 13 - Puzzle 2'),
