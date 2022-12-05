@@ -206,3 +206,42 @@ const getPriorityScore = (char) => {
     return 0;
   }
 }
+
+/**
+ * Each line of the input represents a pair of inclusive ranges, i.e. "2-6,5-10"
+ * Counts the number of pairs in which one range fully overlaps with/is contained by the other.
+ * Examples of full overlapa: 2-8,3-7 and 2-8,7-8
+ */
+const day4puzzle1 = (input) => {
+  let count = 0;
+  input.split('\n').forEach(pair => {
+    const [range1, range2] = pair.split(',');
+    const [min1, max1] = range1.split('-').map(el => +el);
+    const [min2, max2] = range2.split('-').map(el => +el);
+
+    if ((min1 >= min2 && max1 <= max2) || (min2 >= min1 && max2 <= max1)) {
+      count++;
+    }
+  });
+
+  return count;
+}
+
+/**
+ * Each line of the input represents a pair of inclusive ranges, i.e. "2-6,5-10"
+ * Counts the number of pairs in which the two ranges overlap at all.
+ */
+const day4puzzle2 = (input) => {
+  let count = 0;
+  input.split('\n').forEach(pair => {
+    const [range1, range2] = pair.split(',');
+    const [min1, max1] = range1.split('-').map(el => +el);
+    const [min2, max2] = range2.split('-').map(el => +el);
+
+    if ((min2 <= max1 && max2 >= min1) || (min1 <= max2 && max1 >= min2)) {
+      count++;
+    }
+  });
+
+  return count;
+}
