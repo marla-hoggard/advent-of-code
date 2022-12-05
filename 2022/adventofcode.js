@@ -101,3 +101,108 @@ const day2puzzle2 = (input) => {
  * will get a value of 3, instead of 0.
  */
 const scoreClamp = (score) => ((score + 2) % 3) + 1;
+
+/**
+ * Find the "error" in each "rucksack".
+ * 1. Split each string in half by length (i.e. abcdef -> [abc, def]).
+ * 2. Find the only character (case sensitive) that appears in both halves
+ * 3. Find the "priority score" of the common character (a-z = 1-26, A-Z = 27-52)
+ * 4. Return the sum of the priority scores of each rucksack.
+ */
+const day3puzzle1 = (input) => {
+  let total = 0;
+  input.split('\n').forEach(rucksack => {
+    const [comp1, comp2] = splitInTwo(rucksack);
+    const error = findInBoth(comp1, comp2);
+    const score = getPriorityScore(error);
+    total += score;
+
+  })
+  return total;
+}
+
+/**
+ * Find the "badge" among each "elf group".
+ * 1. Group each set of three consecutive strings in the input into an Elf Group
+ * 2. Find the only character (case sensitive) that appears in all three strings
+ * 3. Find the "priority score" of the common character (a-z = 1-26, A-Z = 27-52)
+ * 4. Return the sum of the priority scores of each rucksack.
+ */
+const day3puzzle2 = (input) => {
+  let total = 0;
+
+  const rucksacks = input.split('\n');
+  const groups = splitArrayInChunks(rucksacks, 3);
+
+  groups.forEach(([comp1, comp2, comp3]) => {
+    const badge = findInAllThree(comp1, comp2, comp3);
+    const score = getPriorityScore(badge);
+    total += score;
+
+  })
+  return total;
+}
+
+/**
+ * Takes a single string, splits it in two equal-length halves
+ * and returns an array of the two halves.
+ * For day3Puzzle1, all should be even length, but if odd, the first half would have the extra char
+ */
+const splitInTwo = (str) => {
+  const half = Math.ceil(str.length / 2);
+  return [
+    str.slice(0, half),
+    str.slice(half),
+  ];
+}
+
+/**
+ * When provided two strings, returns the character that is present in both.
+ * Expectation for day3Puzzle1 is that there should only be one,
+ * so it will return the first one found.
+ */
+const findInBoth = (s1, s2) => {
+  for (const char of s1.split('')) {
+    if (s2.includes(char)) {
+      return char;
+    }
+  }
+  console.log("No overlap found", s1, s2);
+  return '';
+}
+
+/**
+ * When provided three strings, returns the character that is present in all three.
+ * Expectation for day3Puzzle2 is that there should only be one,
+ * so it will return the first one found.
+ */
+const findInAllThree = (s1, s2, s3) => {
+  for (const char of s1.split('')) {
+    if (s2.includes(char) && s3.includes(char)) {
+      return char;
+    }
+  }
+  console.log("No overlap found", s1, s2, s3);
+  return '';
+}
+
+/**
+ * Takes a single character. Returns its score for day3Puzzle1.
+ * Lowercase a-z mapped to 1-26
+ * Uppercase A-Z mapped to 27-52
+ */
+const getPriorityScore = (char) => {
+  const charCode = char.charCodeAt(0);
+  // A-Z - Scores from 27-52
+  if (charCode >=65 && charCode <= 90) {
+    return charCode - 38;
+  }
+  // a-z - Scores from 1-26
+  else if (charCode >= 97 && charCode <= 122) {
+    return charCode - 96;
+  }
+  else {
+    console.log('Invalid character', char, charCode);
+    return 0;
+  }
+}

@@ -17,8 +17,8 @@ h2 {
 }
 
 .puzzle {
-  background: #2196f3a3;
-  border: 2px solid blue;
+  background: #21f387a3;
+  border: 2px solid rgb(1, 85, 22);
   padding: 5px;
   text-align: center;
 }
@@ -26,4 +26,3 @@ h2 {
 .dayTitle {
   font-weight: bold;
 }
-
