@@ -111,15 +111,14 @@ const scoreClamp = (score) => ((score + 2) % 3) + 1;
  */
 const day3puzzle1 = (input) => {
   let total = 0;
-  input.split('\n').forEach(rucksack => {
+  input.split('\n').forEach((rucksack) => {
     const [comp1, comp2] = splitInTwo(rucksack);
     const error = findInBoth(comp1, comp2);
     const score = getPriorityScore(error);
     total += score;
-
-  })
+  });
   return total;
-}
+};
 
 /**
  * Find the "badge" among each "elf group".
@@ -138,10 +137,9 @@ const day3puzzle2 = (input) => {
     const badge = findInAllThree(comp1, comp2, comp3);
     const score = getPriorityScore(badge);
     total += score;
-
-  })
+  });
   return total;
-}
+};
 
 /**
  * Takes a single string, splits it in two equal-length halves
@@ -150,11 +148,8 @@ const day3puzzle2 = (input) => {
  */
 const splitInTwo = (str) => {
   const half = Math.ceil(str.length / 2);
-  return [
-    str.slice(0, half),
-    str.slice(half),
-  ];
-}
+  return [str.slice(0, half), str.slice(half)];
+};
 
 /**
  * When provided two strings, returns the character that is present in both.
@@ -167,9 +162,9 @@ const findInBoth = (s1, s2) => {
       return char;
     }
   }
-  console.log("No overlap found", s1, s2);
+  console.log('No overlap found', s1, s2);
   return '';
-}
+};
 
 /**
  * When provided three strings, returns the character that is present in all three.
@@ -182,9 +177,9 @@ const findInAllThree = (s1, s2, s3) => {
       return char;
     }
   }
-  console.log("No overlap found", s1, s2, s3);
+  console.log('No overlap found', s1, s2, s3);
   return '';
-}
+};
 
 /**
  * Takes a single character. Returns its score for day3Puzzle1.
@@ -194,18 +189,17 @@ const findInAllThree = (s1, s2, s3) => {
 const getPriorityScore = (char) => {
   const charCode = char.charCodeAt(0);
   // A-Z - Scores from 27-52
-  if (charCode >=65 && charCode <= 90) {
+  if (charCode >= 65 && charCode <= 90) {
     return charCode - 38;
   }
   // a-z - Scores from 1-26
   else if (charCode >= 97 && charCode <= 122) {
     return charCode - 96;
-  }
-  else {
+  } else {
     console.log('Invalid character', char, charCode);
     return 0;
   }
-}
+};
 
 /**
  * Each line of the input represents a pair of inclusive ranges, i.e. "2-6,5-10"
@@ -214,10 +208,10 @@ const getPriorityScore = (char) => {
  */
 const day4puzzle1 = (input) => {
   let count = 0;
-  input.split('\n').forEach(pair => {
+  input.split('\n').forEach((pair) => {
     const [range1, range2] = pair.split(',');
-    const [min1, max1] = range1.split('-').map(el => +el);
-    const [min2, max2] = range2.split('-').map(el => +el);
+    const [min1, max1] = range1.split('-').map((el) => +el);
+    const [min2, max2] = range2.split('-').map((el) => +el);
 
     if ((min1 >= min2 && max1 <= max2) || (min2 >= min1 && max2 <= max1)) {
       count++;
@@ -225,7 +219,7 @@ const day4puzzle1 = (input) => {
   });
 
   return count;
-}
+};
 
 /**
  * Each line of the input represents a pair of inclusive ranges, i.e. "2-6,5-10"
@@ -233,10 +227,10 @@ const day4puzzle1 = (input) => {
  */
 const day4puzzle2 = (input) => {
   let count = 0;
-  input.split('\n').forEach(pair => {
+  input.split('\n').forEach((pair) => {
     const [range1, range2] = pair.split(',');
-    const [min1, max1] = range1.split('-').map(el => +el);
-    const [min2, max2] = range2.split('-').map(el => +el);
+    const [min1, max1] = range1.split('-').map((el) => +el);
+    const [min2, max2] = range2.split('-').map((el) => +el);
 
     if ((min2 <= max1 && max2 >= min1) || (min1 <= max2 && max1 >= min2)) {
       count++;
@@ -244,4 +238,69 @@ const day4puzzle2 = (input) => {
   });
 
   return count;
-}
+};
+
+/**
+ * Executes stack movement one at a time.
+ * Returns the top crate from each stack, in order, as a string.
+ */
+const day5puzzle1 = (input) => {
+  const [setup, steps] = input.split('\n\n');
+  const stacks = parseStacks(setup);
+
+  steps.split('\n').forEach((step) => {
+    const [_move, count, _from, fromStack, _to, toStack] = step.split(' ').map((el) => +el);
+    for (let i = 0; i < count && stacks[fromStack].length > 0; i++) {
+      const crate = stacks[fromStack].pop();
+      stacks[toStack].push(crate);
+    }
+  });
+
+  return stacks.map((el) => el.at(-1)).join('');
+};
+
+/**
+ * Executes stack movement as an ordered group for each step.
+ * Returns the top crate from each stack, in order, as a string.
+ */
+const day5puzzle2 = (input) => {
+  const [setup, steps] = input.split('\n\n');
+  const stacks = parseStacks(setup);
+
+  steps.split('\n').forEach((step) => {
+    const [_move, count, _from, fromStack, _to, toStack] = step.split(' ').map((el) => +el);
+    const toMove = stacks[fromStack].slice(0 - count);
+    stacks[fromStack] = stacks[fromStack].slice(0, 0 - count);
+    stacks[toStack] = stacks[toStack].concat(...toMove);
+  });
+
+  return stacks.map((el) => el.at(-1)).join('');
+};
+
+/**
+ * Parses the stack part of the puzzle input into an array of Stacks
+ */
+const parseStacks = (stackInput) => {
+  const rows = stackInput.split('\n');
+  const labels = rows.at(-1);
+  const numbers = labels.trim().split(/\s+/);
+  const stacks = Array(numbers.length)
+    .fill(null)
+    .map((el) => []);
+
+  const stackSetup = rows.slice(0, -1).reverse();
+  stackSetup.forEach((row) => {
+    const items = row.match(/.{1,4}/g);
+    items.forEach((item, i) => {
+      const hasItem = item.match(/[A-Z]/);
+      if (hasItem) {
+        stacks[i].push(hasItem[0]);
+      }
+    });
+  });
+
+  // The stacks are 1-indexed in the puzzle, so add an empty stack to be index 0
+  stacks.unshift([]);
+
+  return stacks;
+};
