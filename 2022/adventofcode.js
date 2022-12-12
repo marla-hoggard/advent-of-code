@@ -358,3 +358,92 @@ const day6regex = (num) => {
   }
   return new RegExp(regex);
 };
+
+/**
+ * Finds the sum of the sizes of the directories
+ * whose size is less than 100,000
+ */
+const day7puzzle1 = (input) => {
+  const dirSizes = buildFileSystem(input);
+
+  return Object.values(dirSizes).reduce((sum, dir) => (dir <= 100000 ? sum + dir : sum), 0);
+};
+
+/**
+ * Finds the size of the smallest directory that can be deleted
+ * to free up sufficient space, where the goal is to have 30,000,000
+ * out of 70,000,000 available, and used space is the size of '/'.
+ */
+const day7puzzle2 = (input) => {
+  const dirSizes = buildFileSystem(input);
+  const total = 70000000;
+  const spaceNeeded = 30000000;
+  const used = dirSizes['/'];
+
+  // The amount of space that needs to be freed
+  const target = spaceNeeded - (total - used);
+
+  // Sort ascending then return the first that is at least `target`
+  return Object.values(dirSizes)
+    .sort((a, b) => a - b)
+    .find((el) => el >= target);
+};
+
+/**
+ * Creates a files object representing the file system
+ * and a dirSizes object that contains the total size of each folder, by path.
+ * Returns dirSizes (as files isn't ultimately needed).
+ */
+const buildFileSystem = (input) => {
+  let files = { '/': {} };
+  let path = [files['/']];
+  let currentDir = ['/'];
+  let dirSizes = { '/': 0 };
+  let isListing = false;
+
+  for (const line of input.split('\n')) {
+    const current = path.at(-1);
+    const commands = line.split(' ');
+    if (commands[0] === '$') {
+      if (commands[1] === 'ls') {
+        isListing = true;
+      } else {
+        if (isListing) {
+          isListing = false;
+        }
+
+        if (commands[2] === '/') {
+          path = [files['/']];
+          currentDir = ['/'];
+        } else if (commands[2] === '..') {
+          path = path.slice(0, -1);
+          currentDir = currentDir.slice(0, -1);
+        } else {
+          if (!current[commands[2]]) {
+            current[commands[2]] = {};
+          }
+          path.push(current[commands[2]]);
+          currentDir.push(`${currentDir.at(-1)},${commands[2]}`);
+        }
+      }
+    } else if (isListing && !current[commands[1]]) {
+      if (commands[0] === 'dir') {
+        current[commands[1]] = {};
+        dirSizes[`${currentDir.at(-1)},${commands[1]}`] = 0;
+      } else {
+        const size = +commands[0];
+        current[commands[1]] = size;
+        currentDir.forEach((dirInPath) => {
+          dirSizes[dirInPath] += size;
+        });
+      }
+    } else {
+      console.log('unexpected command', line);
+    }
+  }
+
+  console.log(files);
+  console.log(dirSizes);
+
+  return dirSizes;
+};
