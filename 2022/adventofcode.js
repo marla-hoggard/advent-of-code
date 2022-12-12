@@ -304,3 +304,57 @@ const parseStacks = (stackInput) => {
 
   return stacks;
 };
+
+/**
+ * Finds the position of the first section of the input string
+ * where there are four consecutive non-matching characters.
+ *
+ * The "position" is the 1-based index of the last character in the substring.
+ *
+ * This was my first method, but it would be very tedious to do the checks
+ * for more than 4. So after reading part two, I created a more programmatic solution.
+ */
+const day6puzzle1 = (input) => {
+  for (let i = 4; i < input.length; i++) {
+    const [a, b, c, d] = input.slice(i - 4, i).split('');
+    if (a !== b && a !== c && a !== d && b !== c && b !== d && c !== d) {
+      console.log([a, b, c, d].join(''));
+      return i;
+    }
+  }
+
+  return 'None found;';
+};
+
+/**
+ * Finds the position of the first section of the input string
+ * where there are @len consecutive non-matching characters.
+ *
+ * The "position" is the 1-based index of the last character in the substring.
+ */
+const day6solution = (input, len = 4) => {
+  const regex = day6regex(len);
+  const match = input.match(regex);
+  if (match) {
+    return match.index + len;
+  }
+
+  return 'None found;';
+};
+
+/**
+ * Constructs a regular expression for finding a set of @num
+ * unmatching consecutive characters using negative lookaheads.
+ *
+ * Ex: day6regex(3) = /(.)(?!\1)(.)(?!\1)(?!\2)(.)/
+ */
+const day6regex = (num) => {
+  let regex = '';
+  for (let i = 0; i < num; i++) {
+    for (let j = 1; j <= i; j++) {
+      regex += `(?!\\${j})`;
+    }
+    regex += '(.)';
+  }
+  return new RegExp(regex);
+};
