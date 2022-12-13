@@ -447,3 +447,135 @@ const buildFileSystem = (input) => {
 
   return dirSizes;
 };
+
+/**
+ * Returns the number of "trees" that are visible from
+ * at least on edge of the grid. A tree is visible from a given
+ * edge if it is taller than all the trees between it and that edge.
+ */
+const day8puzzle1 = (input) => {
+  let count = 0;
+  input.split('\n').forEach((row, r, grid) => {
+    row.split('').forEach((val, c) => {
+      // Check top
+      let visible = true;
+      for (let i = 0; i < r; i++) {
+        if (grid[i][c] >= val) {
+          visible = false;
+          break;
+        }
+      }
+      if (visible) {
+        count++;
+        return;
+      }
+
+      // Check bottom
+      visible = true;
+      for (let i = row.length - 1; i > r; i--) {
+        if (grid[i][c] >= val) {
+          visible = false;
+          break;
+        }
+      }
+      if (visible) {
+        count++;
+        return;
+      }
+
+      // Check left
+      visible = true;
+      for (let i = 0; i < c; i++) {
+        if (grid[r][i] >= val) {
+          visible = false;
+          break;
+        }
+      }
+      if (visible) {
+        count++;
+        return;
+      }
+
+      // Check right
+      visible = true;
+      for (let i = grid[0].length - 1; i > c; i--) {
+        if (grid[r][i] >= val) {
+          visible = false;
+          break;
+        }
+      }
+      if (visible) {
+        count++;
+      }
+    });
+  });
+
+  return count;
+};
+
+/**
+ * Finds the tree with the highest "treehouse score".
+ * A tree's score is the product of the visible trees
+ * in each direction. A tree is visible from the treehouse
+ * if it is less than or equal to the value of the treehouse.
+ */
+const day8puzzle2 = (input) => {
+  let highScore = 0;
+  input.split('\n').forEach((row, r, grid) => {
+    row.split('').forEach((val, c) => {
+      // If we're on an edge, skip it because at least one direction will be 0
+      if (r === 0 || c === 0 || r === row.length - 1 || c === grid[0].length - 1) {
+        return;
+      }
+      let top = 0;
+      let bottom = 0;
+      let left = 0;
+      let right = 0;
+
+      let i = r - 1;
+      while (i >= 0) {
+        top++;
+        if (grid[i][c] >= val) break;
+        i--;
+      }
+      if (top === 0) return;
+
+      i = r + 1;
+      while (i < row.length) {
+        bottom++;
+        if (grid[i][c] >= val) break;
+        i++;
+      }
+      if (bottom === 0) return;
+
+      i = c - 1;
+      while (i >= 0) {
+        left++;
+        if (grid[r][i] >= val) break;
+        i--;
+      }
+      if (left === 0) return;
+
+      i = c + 1;
+      while (i < grid[0].length) {
+        right++;
+        if (grid[r][i] >= val) break;
+        i++;
+      }
+
+      score = top * bottom * right * left;
+      if (score > highScore) {
+        console.log(
+          'New high score',
+          score,
+          val,
+          `[${r},${c}]`,
+          `[${top},${bottom},${left},${right}]`,
+        );
+        highScore = score;
+      }
+    });
+  });
+
+  return highScore;
+};
