@@ -579,3 +579,83 @@ const day8puzzle2 = (input) => {
 
   return highScore;
 };
+
+/**
+ * The head of a rope with @param num knots follows a sequence of movements.
+ * Each consecutive knot pair can be at most one coordinate (incl diagonally) apart.
+ * How many unique locations does the tail (the 10th knot) visit?
+ */
+const day9solution = (input, num = 2) => {
+  let knots = Array(num)
+    .fill(null)
+    .map(() => [0, 0]);
+  let visited = new Set();
+  visited.add('0,0');
+
+  // After moving one knot, see if the next knot must move
+  const reconcile = (k1, k2) => {
+    const xDiff = knots[k1][0] - knots[k2][0];
+    const yDiff = knots[k1][1] - knots[k2][1];
+
+    if (Math.abs(xDiff) <= 1 && Math.abs(yDiff) <= 1) {
+      return;
+    }
+
+    if (yDiff < 0) {
+      knots[k2][1]--;
+    } else if (yDiff > 0) {
+      knots[k2][1]++;
+    }
+
+    if (xDiff < 0) {
+      knots[k2][0]--;
+    } else if (xDiff > 0) {
+      knots[k2][0]++;
+    }
+  };
+
+  const moveLeft = () => {
+    knots[0][0]--;
+  };
+
+  const moveRight = () => {
+    knots[0][0]++;
+  };
+
+  const moveUp = () => {
+    knots[0][1]++;
+  };
+
+  const moveDown = () => {
+    knots[0][1]--;
+  };
+
+  for (const instr of input.split('\n')) {
+    const [dir, amt] = instr.split(' ');
+    let moveHead = () => console.log('Unexpected direction');
+    switch (dir) {
+      case 'L':
+        moveHead = moveLeft;
+        break;
+      case 'R':
+        moveHead = moveRight;
+        break;
+      case 'U':
+        moveHead = moveUp;
+        break;
+      case 'D':
+        moveHead = moveDown;
+        break;
+    }
+
+    for (let i = 0; i < +amt; i++) {
+      moveHead();
+      for (let k = 0; k < knots.length - 1; k++) {
+        reconcile(k, k + 1);
+      }
+      visited.add(knots.at(-1).join(','));
+    }
+  }
+
+  return visited.size;
+};
