@@ -659,3 +659,105 @@ const day9solution = (input, num = 2) => {
 
   return visited.size;
 };
+
+const day10puzzle1 = (input) => {
+  let x = 1;
+  let cycle = 0;
+  let strength = 0;
+  const milestones = [20, 60, 100, 140, 180, 220];
+
+  for (const instr of input.split('\n')) {
+    cycle++;
+
+    if (milestones.includes(cycle)) {
+      strength += x * cycle;
+      console.log('second', cycle, x * cycle, strength, instr);
+      if (cycle === 220) break;
+    }
+
+    if (instr === 'noop') {
+      continue;
+    }
+
+    cycle++;
+
+    if (milestones.includes(cycle)) {
+      strength += x * cycle;
+      console.log('third', cycle, x * cycle, strength, instr);
+      if (cycle === 220) break;
+    }
+
+    const value = +instr.split(' ')[1];
+    x += value;
+  }
+
+  return strength;
+};
+
+const day10puzzle2 = (input) => {
+  let x = 1;
+  let cycle = 0;
+  let row = 0;
+  let pixels = [[]];
+  let done = false;
+
+  const populateDisplay = () => {
+    if (x >= cycle - 1 && x <= cycle + 1) {
+      pixels[row].push(true);
+    } else {
+      pixels[row].push(false);
+    }
+  };
+
+  const incrementCycle = () => {
+    cycle++;
+    if (cycle > 39) {
+      cycle = 0;
+      if (row < 5) {
+        row++;
+        pixels.push([]);
+      } else {
+        done = true;
+      }
+    }
+  };
+
+  for (const instr of input.split('\n')) {
+    populateDisplay();
+    incrementCycle();
+    if (done) break;
+
+    if (instr === 'noop') {
+      continue;
+    }
+
+    populateDisplay();
+    incrementCycle();
+    if (done) break;
+
+    const value = +instr.split(' ')[1];
+    x += value;
+  }
+
+  drawPixels(pixels);
+  return 'See visualization';
+};
+
+const drawPixels = (displayGrid) => {
+  const imageDiv = document.getElementById('day10visualization');
+  imageDiv.innerHTML = '';
+  displayGrid.forEach((row) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day10row');
+    row.forEach((cell) => {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day10cell');
+      if (cell) {
+        cellDiv.classList.add('black');
+      }
+      rowDiv.appendChild(cellDiv);
+    });
+    imageDiv.appendChild(rowDiv);
+  });
+  imageDiv.style.visibility = 'visible';
+};

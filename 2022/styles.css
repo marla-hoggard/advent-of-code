@@ -1,0 +1,22 @@
+#day10visualization {
+  visibility: hidden;
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 400px;
+}
+
+.day10row {
+  display: flex;
+  height: 10px;
+  margin: auto;
+}
+
+.day10cell {
+  width: 10px;
+  text-align: center;
+}
+
+.black {
+  background-color: black;
+}
