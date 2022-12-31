@@ -761,3 +761,107 @@ const drawPixels = (displayGrid) => {
   });
   imageDiv.style.visibility = 'visible';
 };
+
+const day11puzzle1 = (input, rounds = 20) => {
+  const monkeys = parseMonkeys(input);
+
+  for (let i = 0; i < rounds; i++) {
+    for (const monkey of monkeys) {
+      // For each item in the monkey's list
+      // run the operation, divide by 3 and round down,
+      // then pass the updated item to the appropriate monkey based on the divisility test
+      // and finally, increment the number of inspected items for this monkey
+      while (monkey.items.length) {
+        let val = monkey.items.shift();
+        val = monkey.op(val);
+        val = Math.floor(val / 3);
+        if (val % monkey.divTest === 0) {
+          monkeys[monkey.truePass].items.push(val);
+        } else {
+          monkeys[monkey.falsePass].items.push(val);
+        }
+        monkey.inspected++;
+      }
+    }
+  }
+
+  console.log(monkeys);
+
+  const inspections = monkeys.map((m) => m.inspected).sort((a, b) => b - a);
+  return inspections[0] * inspections[1];
+};
+
+const day11puzzle2 = (input, rounds = 10000) => {
+  const monkeys = parseMonkeys(input);
+
+  // Find the product of all the divisibility test values
+  // Any number should have the same mod for every monkey as its equivalent modulo the masterMod
+  // This will ensure that our item values never go above the masterMod, so they won't get too high to track
+  const masterMod = monkeys.reduce((prod, { divTest }) => prod * divTest, 1);
+
+  for (let i = 0; i < rounds; i++) {
+    for (const monkey of monkeys) {
+      // For each item in the monkey's list
+      // run the operation, clamp to the masterMod,
+      // then pass the updated item to the appropriate monkey based on the divisility test
+      // and finally, increment the number of inspected items for this monkey
+      while (monkey.items.length) {
+        let old = monkey.items.shift();
+        let val = monkey.op(old);
+        val %= masterMod;
+        if (val % monkey.divTest === 0) {
+          monkeys[monkey.truePass].items.push(val);
+        } else {
+          monkeys[monkey.falsePass].items.push(val);
+        }
+        monkey.inspected++;
+      }
+    }
+    if ((i + 1) % 1000 === 0) {
+      console.log(monkeys.map((m) => m.inspected));
+    }
+  }
+
+  console.log(monkeys);
+
+  const inspections = monkeys.map((m) => m.inspected).sort((a, b) => b - a);
+  return inspections[0] * inspections[1];
+};
+
+// Parses the day 11 puzzle input into an array of monkey objects
+const parseMonkeys = (input) => {
+  const monkeys = [];
+  for (const data of input.split('\n\n')) {
+    let monkey = { inspected: 0 };
+    const [monkeyNum, starters, operation, test, trueTest, falseTest] = data
+      .split('\n')
+      .map((line) => line.trim());
+
+    monkey.num = +monkeyNum.match(/^Monkey (?<num>\d+):$/).groups.num;
+    monkey.items = starters
+      .split(': ')[1]
+      .split(', ')
+      .map((el) => +el);
+    monkey.divTest = +test.split('divisible by ')[1];
+    monkey.truePass = +trueTest.split('throw to monkey ')[1];
+    monkey.falsePass = +falseTest.split('throw to monkey ')[1];
+
+    const [op, val] = operation.split('new = old ')[1].split(' ');
+    if (op === '*') {
+      if (val === 'old') {
+        monkey.op = (x) => x * x;
+      } else {
+        monkey.op = (x) => x * Number(val);
+      }
+    } else {
+      if (val === 'old') {
+        monkey.op = (x) => x + x;
+      } else {
+        monkey.op = (x) => x + Number(val);
+      }
+    }
+
+    monkeys.push(monkey);
+  }
+  return monkeys;
+};
