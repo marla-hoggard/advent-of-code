@@ -865,3 +865,83 @@ const parseMonkeys = (input) => {
   }
   return monkeys;
 };
+
+// ---- TODO Day 12 ----- //
+
+/**
+ * For each pair of "packet", determines if they are provided in order.
+ * Returns the sum of the 1-indexed indices of the pairs that are in order.
+ */
+const day13puzzle1 = (input) => {
+  const pairs = input.split('\n\n').map((pair) => pair.split('\n').map((val) => JSON.parse(val)));
+  const indices = [];
+  let sumIndices = 0;
+
+  pairs.forEach((pair, i) => {
+    if (isInOrder(pair)) {
+      indices.push(i + 1);
+      sumIndices += i + 1;
+    } else {
+    }
+  });
+
+  console.log(indices);
+
+  return sumIndices;
+};
+
+/**
+ * Sorts the total list of packets, ignoring original pairings,
+ * plus [[2]] and [[6]].
+ * Returns the product of the 1-indexed indices of where [[2]] and [[6]] ended up.
+ */
+const day13puzzle2 = (input) => {
+  const packets = input
+    .split('\n\n')
+    .flatMap((pair) => pair.split('\n').map((val) => JSON.parse(val)));
+  packets.push([[2]]);
+  packets.push([[6]]);
+
+  const sortedPackets = packets.sort((a, b) => (isInOrder([a, b]) ? -1 : 1));
+
+  const sortedStrings = sortedPackets.map((packet) => JSON.stringify(packet));
+  const two = sortedStrings.indexOf('[[2]]') + 1;
+  const six = sortedStrings.indexOf('[[6]]') + 1;
+  console.log(two, six);
+  return two * six;
+};
+
+/**
+ * Takes an array of two "packets".
+ * Returns true if the packets are "in order" meaning the first packet is "less than" the second.
+ * Packets should be numbers or arrays of (arrays of) numbers.
+ */
+const isInOrder = (pair) => {
+  const [left, right] = pair;
+  for (let i = 0; i < left.length; i++) {
+    if (right[i] === undefined) {
+      return false;
+    }
+
+    if (typeof left[i] === 'number' && typeof right[i] === 'number') {
+      if (left[i] < right[i]) {
+        return true;
+      } else if (left[i] > right[i]) {
+        return false;
+      } else {
+        continue;
+      }
+    }
+
+    const leftValue = typeof left[i] === 'number' ? [left[i]] : left[i];
+    const rightValue = typeof right[i] === 'number' ? [right[i]] : right[i];
+
+    if (JSON.stringify(leftValue) === JSON.stringify(rightValue)) {
+      continue;
+    } else {
+      return isInOrder([leftValue, rightValue]);
+    }
+  }
+
+  return true;
+};
