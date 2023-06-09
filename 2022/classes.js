@@ -105,6 +105,23 @@ class ElevationNode {
 }
 
 class ElevationPath {
+  constructor(node, pathLength = 1) {
+    this.currentNode = node;
+    this.pathLength = pathLength;
+  }
+
+  getLength() {
+    return this.pathLength;
+  }
+
+  visitNode(node) {
+    node.setVisited();
+    return new ElevationPath(node, this.pathLength + 1);
+  }
+}
+
+// My first attempt, then I made it better
+class ElevationPathFirstImpl {
   constructor(nodes) {
     this.path = nodes;
     this.last = nodes.at(-1);

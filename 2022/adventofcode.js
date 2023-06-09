@@ -885,12 +885,12 @@ const day12puzzle2 = (input) => {
 };
 
 const calculateBestPath = (startNode, max) => {
-  let paths = [new ElevationPath([startNode])];
+  let paths = [new ElevationPath(startNode)];
   let rounds = 0;
   while (paths.length > 0) {
     const newPaths = [];
     for (const path of paths) {
-      for (const n of path.last.neighbors) {
+      for (const n of path.currentNode.neighbors) {
         const pathLength = path.getLength();
         if (max && pathLength >= max) {
           return max;
@@ -898,7 +898,7 @@ const calculateBestPath = (startNode, max) => {
           console.log('new best', pathLength);
           return pathLength;
         } else if (!n.visited) {
-          newPaths.push(path.newWithAddedNode(n));
+          newPaths.push(path.visitNode(n));
         }
       }
     }
