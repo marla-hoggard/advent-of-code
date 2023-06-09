@@ -866,7 +866,48 @@ const parseMonkeys = (input) => {
   return monkeys;
 };
 
-// ---- TODO Day 12 ----- //
+const day12puzzle1 = (input) => {
+  const map = new ElevationMap(input);
+  return calculateBestPath(map.start);
+};
+
+const day12puzzle2 = (input) => {
+  const map = new ElevationMap(input);
+  let bestPath = calculateBestPath(map.start);
+  for (const startNode of map.getAdditionalStartNodes()) {
+    map.resetNodes();
+    const len = calculateBestPath(startNode, bestPath);
+    if (len < bestPath) {
+      bestPath = len;
+    }
+  }
+  return bestPath;
+};
+
+const calculateBestPath = (startNode, max) => {
+  let paths = [new ElevationPath([startNode])];
+  let rounds = 0;
+  while (paths.length > 0) {
+    const newPaths = [];
+    for (const path of paths) {
+      for (const n of path.last.neighbors) {
+        const pathLength = path.getLength();
+        if (max && pathLength >= max) {
+          return max;
+        } else if (n.isEnd) {
+          console.log('new best', pathLength);
+          return pathLength;
+        } else if (!n.visited) {
+          newPaths.push(path.newWithAddedNode(n));
+        }
+      }
+    }
+    paths = [...newPaths];
+    rounds++;
+  }
+
+  return max;
+};
 
 /**
  * For each pair of "packet", determines if they are provided in order.
