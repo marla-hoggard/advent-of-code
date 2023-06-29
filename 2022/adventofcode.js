@@ -986,3 +986,144 @@ const isInOrder = (pair) => {
 
   return true;
 };
+
+const day14puzzle1 = (input) => {
+  const { grid, maxY } = parseInput14(input);
+  let sand = 0;
+  const startX = 500;
+  const startY = 0;
+  let x = startX;
+  let y = startY;
+
+  while (y <= maxY) {
+    // Move down
+    if (!grid[x]?.[y + 1]) {
+      y++;
+    }
+    // Move down left
+    else if (!grid[x - 1]?.[y + 1]) {
+      x--;
+      y++;
+    }
+    // Move down right
+    else if (!grid[x + 1]?.[y + 1]) {
+      x++;
+      y++;
+    }
+    // Settled
+    else {
+      sand++;
+      if (!grid[x]) {
+        grid[x] = {};
+      }
+      grid[x][y] = 'S';
+      x = startX;
+      y = startY;
+    }
+  }
+
+  return sand;
+};
+
+const day14puzzle2 = (input) => {
+  const { grid, maxY } = parseInput14(input);
+  let sand = 0;
+  const startX = 500;
+  const startY = 0;
+  let x = startX;
+  let y = startY;
+
+  while (true) {
+    let moved = false;
+    // Move down
+    if (!grid[x]?.[y + 1]) {
+      y++;
+      moved = true;
+    }
+    // Move down left
+    else if (!grid[x - 1]?.[y + 1]) {
+      x--;
+      y++;
+      moved = true;
+    }
+    // Move down right
+    else if (!grid[x + 1]?.[y + 1]) {
+      x++;
+      y++;
+      moved = true;
+    }
+
+    // Settled by movement or on bottom
+    if (!moved || y > maxY) {
+      sand++;
+      if (!grid[x]) {
+        grid[x] = {};
+      }
+      grid[x][y] = 'S';
+
+      // Settled location = start location
+      if (x === startX && y === startY) {
+        return sand;
+      }
+      x = startX;
+      y = startY;
+    }
+  }
+};
+
+const parseInput14 = (input) => {
+  const grid = {};
+  let maxY = 0;
+  for (const line of input.split('\n')) {
+    const points = line.split(' -> ');
+    for (let i = 0; i < points.length - 1; i++) {
+      const [startX, startY] = points[i].split(',').map((el) => +el);
+      const [endX, endY] = points[i + 1].split(',').map((el) => +el);
+
+      if (startX === endX) {
+        const x = startX;
+        if (!grid[x]) {
+          grid[x] = {};
+        }
+
+        if (startY > endY) {
+          if (startY > maxY) {
+            maxY = startY;
+          }
+          for (let y = startY; y >= endY; y--) {
+            grid[x][y] = '#';
+          }
+        } else {
+          if (endY > maxY) {
+            maxY = endY;
+          }
+          for (let y = startY; y <= endY; y++) {
+            grid[x][y] = '#';
+          }
+        }
+      } else {
+        const y = startY;
+        if (y > maxY) {
+          maxY = y;
+        }
+        if (startX > endX) {
+          for (let x = startX; x >= endX; x--) {
+            if (!grid[x]) {
+              grid[x] = {};
+            }
+            grid[x][y] = '#';
+          }
+        } else {
+          for (let x = startX; x <= endX; x++) {
+            if (!grid[x]) {
+              grid[x] = {};
+            }
+            grid[x][y] = '#';
+          }
+        }
+      }
+    }
+  }
+
+  return { grid, maxY };
+};
