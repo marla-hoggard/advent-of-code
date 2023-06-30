@@ -739,11 +739,11 @@ const day10puzzle2 = (input) => {
     x += value;
   }
 
-  drawPixels(pixels);
+  drawPixels10(pixels);
   return 'See visualization';
 };
 
-const drawPixels = (displayGrid) => {
+const drawPixels10 = (displayGrid) => {
   const imageDiv = document.getElementById('day10visualization');
   imageDiv.innerHTML = '';
   displayGrid.forEach((row) => {
@@ -988,7 +988,9 @@ const isInOrder = (pair) => {
 };
 
 const day14puzzle1 = (input) => {
-  const { grid, maxY } = parseInput14(input);
+  const { grid, maxX, maxY } = parseInput14(input);
+  drawInitialGrid14(grid, maxX, maxY, 1);
+
   let sand = 0;
   const startX = 500;
   const startY = 0;
@@ -1017,6 +1019,7 @@ const day14puzzle1 = (input) => {
         grid[x] = {};
       }
       grid[x][y] = 'S';
+      updateGrid14(x, y, 'red', 1);
       x = startX;
       y = startY;
     }
@@ -1026,7 +1029,8 @@ const day14puzzle1 = (input) => {
 };
 
 const day14puzzle2 = (input) => {
-  const { grid, maxY } = parseInput14(input);
+  const { grid, maxX, maxY } = parseInput14(input);
+  drawInitialGrid14(grid, maxX, maxY, 2);
   let sand = 0;
   const startX = 500;
   const startY = 0;
@@ -1060,6 +1064,7 @@ const day14puzzle2 = (input) => {
         grid[x] = {};
       }
       grid[x][y] = 'S';
+      updateGrid14(x, y, 'red', 2);
 
       // Settled location = start location
       if (x === startX && y === startY) {
@@ -1073,6 +1078,7 @@ const day14puzzle2 = (input) => {
 
 const parseInput14 = (input) => {
   const grid = {};
+  let maxX = 0;
   let maxY = 0;
   for (const line of input.split('\n')) {
     const points = line.split(' -> ');
@@ -1082,6 +1088,9 @@ const parseInput14 = (input) => {
 
       if (startX === endX) {
         const x = startX;
+        if (x > maxX) {
+          maxX = x;
+        }
         if (!grid[x]) {
           grid[x] = {};
         }
@@ -1107,6 +1116,9 @@ const parseInput14 = (input) => {
           maxY = y;
         }
         if (startX > endX) {
+          if (startX > maxX) {
+            maxX = startX;
+          }
           for (let x = startX; x >= endX; x--) {
             if (!grid[x]) {
               grid[x] = {};
@@ -1114,6 +1126,9 @@ const parseInput14 = (input) => {
             grid[x][y] = '#';
           }
         } else {
+          if (endX > maxX) {
+            maxX = endX;
+          }
           for (let x = startX; x <= endX; x++) {
             if (!grid[x]) {
               grid[x] = {};
@@ -1125,5 +1140,33 @@ const parseInput14 = (input) => {
     }
   }
 
-  return { grid, maxY };
+  return { grid, maxX, maxY };
+};
+
+const drawInitialGrid14 = (grid, maxX, maxY, puzzle) => {
+  const imageDiv = document.getElementById('day14visualization1');
+  imageDiv.innerHTML = '';
+  for (let y = 0; y <= maxY + 2; y++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day14row');
+    rowDiv.id = `day14${puzzle}-row${y}`;
+
+    for (let x = 0; x <= maxX * 2; x++) {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day14cell');
+      if (grid[x]?.[y]) {
+        const value = grid[x][y];
+        cellDiv.classList.add(value === '#' ? 'black' : 'red');
+      }
+      cellDiv.id = `day14${puzzle}-row${y}-cell${x}`;
+      rowDiv.appendChild(cellDiv);
+    }
+    imageDiv.appendChild(rowDiv);
+  }
+  imageDiv.style.visibility = 'visible';
+};
+
+const updateGrid14 = (x, y, color, puzzle) => {
+  const cellDiv = document.getElementById(`day14${puzzle}-row${y}-cell${x}`);
+  cellDiv.classList.add(color);
 };

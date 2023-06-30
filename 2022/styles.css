@@ -6,9 +6,23 @@
   width: 400px;
 }
 
+#day14visualiztion1 #day14visualization2 {
+  visibility: hidden;
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  /* width: 1400px; */
+}
+
 .day10row {
   display: flex;
   height: 10px;
+  margin: auto;
+}
+
+.day14row {
+  display: flex;
+  height: 5px;
   margin: auto;
 }
 
@@ -17,6 +31,16 @@
   text-align: center;
 }
 
+.day14cell {
+  min-width: 5px;
+  max-width: 5px;
+  text-align: center;
+}
+
 .black {
   background-color: black;
+}
+
+.red {
+  background-color: red;
 }
