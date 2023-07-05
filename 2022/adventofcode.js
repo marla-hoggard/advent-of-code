@@ -1170,3 +1170,184 @@ const updateGrid14 = (x, y, color, puzzle) => {
   const cellDiv = document.getElementById(`day14${puzzle}-row${y}-cell${x}`);
   cellDiv.classList.add(color);
 };
+
+const day15puzzle1 = (input, rowY = 10) => {
+  const inRange = new Set();
+
+  input.split('\n').forEach((line) => {
+    const matches = line.match(day15regex);
+    if (!matches?.groups) {
+      console.log("Regex didn't match.", line);
+      return;
+    }
+
+    const { sensorX, sensorY, beaconX, beaconY } = Object.entries(matches.groups).reduce(
+      (groups, [key, val]) => {
+        groups[key] = +val;
+        return groups;
+      },
+      {},
+    );
+
+    const maxDist = manhattanDistance([sensorX, sensorY], [beaconX, beaconY]);
+    const distToRow = Math.abs(sensorY - rowY);
+    const diff = maxDist - distToRow;
+
+    if (diff < 0) {
+      return;
+    }
+
+    for (let x = sensorX - diff; x < sensorX + diff; x++) {
+      inRange.add(x);
+    }
+  });
+
+  return inRange.size;
+};
+
+const day15puzzle2 = (input, max = 20) => {
+  const inputs = [];
+  input.split('\n').forEach((line) => {
+    const matches = line.match(day15regex);
+
+    const { sensorX, sensorY, beaconX, beaconY } = Object.entries(matches.groups).reduce(
+      (groups, [key, val]) => {
+        groups[key] = +val;
+        return groups;
+      },
+      {},
+    );
+
+    const maxDist = manhattanDistance([sensorX, sensorY], [beaconX, beaconY]);
+    inputs.push({ sensorX, sensorY, maxDist });
+  });
+
+  for (let y = 0; y <= max; y++) {
+    let range = { min: 0, max, low: max, high: 0, series: [] };
+
+    for (const { sensorX, sensorY, maxDist } of inputs) {
+      const distToRow = Math.abs(sensorY - y);
+      const diff = maxDist - distToRow;
+
+      if (diff < 0) {
+        continue;
+      }
+
+      range = combineRange(range, sensorX - diff, sensorX + diff);
+
+      // Once we have a range that goes from min to max, there's no reason to keep processing
+      if (range.series.find((r) => r.low === 0 && r.high === max)) {
+        range.series = [{ low: 0, high: max }];
+        continue;
+      }
+    }
+
+    // If we have two series, then we found our missing space.
+    // The expectation is the series are [{ low: 0, high: x - 1 }, { low: x + 1, high: max}]
+    // where x is the value we're looking for
+    if (range.series.length > 1) {
+      if (range.series.length !== 2) {
+        console.log('uh oh', y, range);
+      }
+
+      console.log(range.series);
+
+      const x = range.series.find((r) => r.low === 0).high + 1;
+
+      console.log({ x, y });
+
+      return x * 4000000 + y;
+    }
+  }
+};
+
+/**
+ * A range object represents a list of integers as a more compact series of ranges.
+ * The range object has the following properties:
+ * min - minimum allowed value
+ * max - maximum allowed value
+ * low - lowest low of any range in the series
+ * high - highest high of any range in the series
+ * series - an array of ranges with two properties, low & high, to represent a series of integers
+ *
+ * For example, the following range object (without min/max), represents this list of integers:
+ * [1,2,3,7,8,9,23,24,25] -> { low: 1, high: 25, series: [{ low: 1, high: 3 }, { low: 7, high: 9 }, { low: 23, high: 25 }]}
+ *
+ * This method will take a range object and an new low/high value representing an addition sequence of numbers,
+ * and return an updated range object including the newest set of integers.
+ *
+ * @param {*} prevRange - Existing range object to update
+ * @param {*} newRangeLow - The lowest value of the new integers to add (inclusive)
+ * @param {*} newRangeHigh - The highest value of the new integers to add (inclusive)
+ *
+ * For example, if we want to add [3,4,5,6,7] to [4,5,11,12], the new list would be [3,4,5,6,7,11,12].
+ * This method would look as follows:
+ * prevRange: { low: 4, high: 12, series: [{ low: 4, high: 5 }, { low: 11, high: 12 }]}
+ * combineRange(prevRange, 3, 7) = { low: 3, high: 12, series: [{ low: 3, high: 7 }, { low: 11, high: 12 }]}
+ */
+const combineRange = (prevRange, newRangeLow, newRangeHigh) => {
+  let min = prevRange.min;
+  let max = prevRange.max;
+
+  const low = Math.max(newRangeLow, min);
+  const high = Math.min(newRangeHigh, max);
+
+  const newRange = {
+    min,
+    max,
+    low: Math.min(low, prevRange.low),
+    high: Math.max(high, prevRange.high),
+    series: prevRange.series,
+  };
+
+  // The range is outside all existing ranges. Add it and return
+  if (!prevRange.series.length || low > prevRange.high + 1 || high < prevRange.low - 1) {
+    newRange.series.push({ low, high });
+    return newRange;
+  }
+
+  // The range falls within an existing range. Just return the previous data
+  if (prevRange.series.find((r) => r.low <= low && r.high >= high)) {
+    return newRange;
+  }
+
+  let leftOverlap = null;
+  let rightOverlap = null;
+  const intact = [];
+
+  prevRange.series.forEach((r) => {
+    if (low <= r.low && high >= r.high) {
+      // This range is swallowed by the new range, remove it
+    } else if (low <= r.low && high >= r.low - 1 && high <= r.high) {
+      leftOverlap = r;
+    } else if (low >= r.low && low <= r.high + 1 && high >= r.high) {
+      rightOverlap = r;
+    } else {
+      intact.push(r);
+    }
+  });
+
+  if (leftOverlap && rightOverlap) {
+    newRange.series = intact.concat({
+      low: rightOverlap.low,
+      high: leftOverlap.high,
+    });
+  } else if (leftOverlap) {
+    newRange.series = intact.concat({
+      low,
+      high: leftOverlap.high,
+    });
+  } else if (rightOverlap) {
+    newRange.series = intact.concat({
+      low: rightOverlap.low,
+      high,
+    });
+  } else {
+    newRange.series = intact.concat({ low, high });
+  }
+
+  return newRange;
+};
+
+const day15regex =
+  /^Sensor at x=(?<sensorX>-?\d+), y=(?<sensorY>-?\d+): closest beacon is at x=(?<beaconX>-?\d+), y=(?<beaconY>-?\d+)$/;

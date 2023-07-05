@@ -207,6 +207,16 @@ const create2DArrayObject = (width, height, val) => {
 };
 
 /**
+ * Creates an array of numbers, in series, from min to max, inclusive.
+ * Ex: createSeriesArray(3,6) = [3, 4, 5, 6];
+ */
+const createSeriesArray = (min, max) => {
+  return Array(max - min + 1)
+    .fill(null)
+    .map((_el, i) => i + min);
+};
+
+/**
  * Reverses the keys and values of an object.
  * All values must be unique or else data will be lost.
  */
