@@ -148,3 +148,155 @@ const cubePowers = (input) => {
 
   return sum;
 };
+
+// ----------- DAY 3 ---------- //
+const partNumbers = (input) => {
+  const partNumRegex = /\d+/g;
+  const symbolRegex = /[^.1-9]/;
+
+  let sum = 0;
+
+  input.split('\n').forEach((row, whichRow, rows) => {
+    const matches = [...row.matchAll(partNumRegex)];
+    for (const match of matches) {
+      const value = +match[0];
+      const startLoc = match.index - 1;
+      const endLoc = match.index + match[0].length;
+
+      if (whichRow !== 0) {
+        const adjBefore = rows[whichRow - 1].substring(startLoc, endLoc + 1);
+        if (symbolRegex.test(adjBefore)) {
+          sum += value;
+          continue;
+        }
+      }
+
+      if (whichRow !== rows.length - 1) {
+        const adjAfter = rows[whichRow + 1].substring(startLoc, endLoc + 1);
+        if (symbolRegex.test(adjAfter)) {
+          sum += value;
+          continue;
+        }
+      }
+
+      if (startLoc !== -1) {
+        if (symbolRegex.test(row[startLoc])) {
+          sum += value;
+          continue;
+        }
+      }
+
+      if (endLoc !== row.length) {
+        if (symbolRegex.test(row[endLoc])) {
+          sum += value;
+          continue;
+        }
+      }
+    }
+  });
+
+  return sum;
+};
+
+const gearRatios = (input) => {
+  const isNumber = (char) => /\d/.test(char);
+
+  const processNumLeft = (rowToProcess, index) => {
+    if (index >= 0 && isNumber(rowToProcess[index - 1])) {
+      let loc = index - 1;
+      let cur = rowToProcess[loc];
+      let val = '';
+      while (loc >= 0 && isNumber(cur)) {
+        val = `${cur}${val}`;
+        loc--;
+        cur = rowToProcess[loc];
+      }
+
+      return val;
+    } else {
+      return '';
+    }
+  };
+
+  const processNumRight = (rowToProcess, index) => {
+    if (index < rowToProcess.length && isNumber(rowToProcess[index + 1])) {
+      let loc = index + 1;
+      let cur = rowToProcess[loc];
+      let val = '';
+      while (loc < rowToProcess.length && isNumber(cur)) {
+        val = `${val}${cur}`;
+        loc++;
+        cur = rowToProcess[loc];
+      }
+      return val;
+    } else {
+      return '';
+    }
+  };
+
+  const processRow = (rowToProcess, index) => {
+    const adjNumbers = [];
+
+    const leftVal = processNumLeft(rowToProcess, index);
+    const rightVal = processNumRight(rowToProcess, index);
+
+    // The middle char is a '.' so process left and right separately
+    if (rowToProcess[index] === '.') {
+      if (leftVal) {
+        adjNumbers.push(leftVal);
+      }
+
+      if (rightVal) {
+        adjNumbers.push(rightVal);
+      }
+    } else {
+      // There is at most one number. Process both directions then smoosh it together
+      const val = `${leftVal}${rowToProcess[index]}${rightVal}`;
+      if (val) {
+        adjNumbers.push(val);
+      }
+    }
+    return adjNumbers;
+  };
+
+  let sum = 0;
+
+  input.split('\n').forEach((row, whichRow, rows) => {
+    const stars = [...row.matchAll(/\*/g)];
+
+    for (const star of stars) {
+      const index = star.index;
+      let adjNumbers = [];
+
+      // Check the row before
+      if (whichRow !== 0) {
+        adjNumbers = adjNumbers.concat(processRow(rows[whichRow - 1], index));
+      }
+
+      // Check the row after
+      if (whichRow !== rows.length - 1) {
+        adjNumbers = adjNumbers.concat(processRow(rows[whichRow + 1], index));
+      }
+
+      // Check directly to the left
+      if (index !== 0) {
+        if (isNumber(row[index - 1])) {
+          adjNumbers.push(processNumLeft(row, index));
+        }
+      }
+
+      // Check directly to the right
+      if (index !== row.length - 1) {
+        if (isNumber(row[index + 1])) {
+          adjNumbers.push(processNumRight(row, index));
+        }
+      }
+
+      if (adjNumbers.length == 2) {
+        sum += adjNumbers[0] * adjNumbers[1];
+      }
+    }
+  });
+
+  return sum;
+};
