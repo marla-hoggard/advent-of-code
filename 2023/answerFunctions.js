@@ -35,10 +35,10 @@ const placeholder = () => 'incomplete';
 // If the answer function requires other parameters, write an anonymous function that takes input
 // i.e. (input) => fn(input, extraParam)
 const ANSWERS = {
-  '1-1': placeholder,
-  '1-2': placeholder,
-  '2-1': placeholder,
-  '2-2': placeholder,
+  '1-1': callibration,
+  '1-2': callibration2,
+  '2-1': possibleGames,
+  '2-2': cubePowers,
   '3-1': placeholder,
   '3-2': placeholder,
   '4-1': placeholder,
