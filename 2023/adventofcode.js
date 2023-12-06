@@ -300,3 +300,61 @@ const gearRatios = (input) => {
 
   return sum;
 };
+
+// -------------- DAY 4 ----------------------
+const winningNumbers = (input) => {
+  let sum = 0;
+  input.split('\n').forEach((card) => {
+    const [_title, winning, mine] = card.split(/:\s+|\s+\|\s+/g);
+    const winningNumbers = winning.split(/\s+/g);
+    const myNumbers = mine.split(/\s+/g);
+    let winningCount = 0;
+
+    myNumbers.forEach((num) => {
+      if (winningNumbers.includes(num)) {
+        winningCount++;
+      }
+    });
+
+    // 0, 1, 2, 4, 8, ...
+    if (winningCount > 2) {
+      winningCount = 2 ** (winningCount - 1);
+    }
+
+    sum += winningCount;
+  });
+
+  return sum;
+};
+
+const scratchcards = (input) => {
+  const scores = [];
+
+  // Calculate the score (count of winning numbers) of each card
+  input.split('\n').forEach((card) => {
+    const [_title, winning, mine] = card.split(/:\s+|\s+\|\s+/g);
+    const winningNumbers = winning.split(/\s+/g);
+    const myNumbers = mine.split(/\s+/g);
+    let score = 0;
+
+    myNumbers.forEach((num) => {
+      if (winningNumbers.includes(num)) {
+        score++;
+      }
+    });
+
+    scores.push({ score, count: 1 });
+  });
+
+  // For each winning number on each copy of card X, increment the count of card X+1...X+score
+  scores.forEach((card, index, scores) => {
+    if (card.score) {
+      for (let i = index + 1; i < index + 1 + card.score; i++) {
+        scores[i].count += card.count;
+      }
+    }
+  });
+
+  // Total up the counts of all the cards
+  return scores.reduce((sum, cur) => sum + cur.count, 0);
+};
