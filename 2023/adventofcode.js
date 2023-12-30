@@ -568,3 +568,149 @@ const boatRaceQuadratic = (input) => {
 
   return diff;
 };
+
+// -------------- DAY 7 ----------------------
+const camelCards = (input, puzzle) => {
+  const hands = input.split('\n').map((row) => {
+    const [hand, bid] = row.split(' ');
+    const handType = puzzle === 2 ? getHandType2(hand) : getHandType1(hand);
+    return { hand, bid: +bid, handRank: handRanks[handType] };
+  });
+
+  hands.sort((a, b) => compareHands(a, b, puzzle));
+
+  let score = 0;
+  hands.forEach(({ bid }, i) => {
+    score += bid * (i + 1);
+  });
+
+  return score;
+};
+
+const cardRanks1 = {
+  A: 14,
+  K: 13,
+  Q: 12,
+  J: 11, // jack
+  T: 10,
+  9: 9,
+  8: 8,
+  7: 7,
+  6: 6,
+  5: 5,
+  4: 4,
+  3: 3,
+  2: 2,
+};
+
+const cardRanks2 = {
+  ...cardRanks1,
+  J: 1, // joker
+};
+
+const handRanks = {
+  fiveOfAKind: 7,
+  fourOfAKind: 6,
+  fullHouse: 5,
+  threeOfAKind: 4,
+  twoPair: 3,
+  pair: 2,
+  highCard: 1,
+};
+
+const getHandType1 = (hand) => {
+  const countMap = {};
+  hand.split('').forEach((card) => {
+    if (countMap[card]) {
+      countMap[card]++;
+    } else {
+      countMap[card] = 1;
+    }
+  });
+
+  const counts = Object.values(countMap).sort((a, b) => b - a);
+  if (counts[0] === 5) {
+    return 'fiveOfAKind';
+  } else if (counts[0] === 4) {
+    return 'fourOfAKind';
+  } else if (counts[0] === 3) {
+    if (counts[1] === 2) {
+      return 'fullHouse';
+    } else {
+      return 'threeOfAKind';
+    }
+  } else if (counts[0] === 2) {
+    if (counts[1] === 2) {
+      return 'twoPair';
+    } else {
+      return 'pair';
+    }
+  }
+
+  return 'highCard';
+};
+
+const getHandType2 = (hand) => {
+  const countMap = {};
+  let jokers = 0;
+
+  hand.split('').forEach((card) => {
+    if (card === 'J') {
+      jokers++;
+    } else if (countMap[card]) {
+      countMap[card]++;
+    } else {
+      countMap[card] = 1;
+    }
+  });
+
+  const counts = Object.values(countMap).sort((a, b) => b - a);
+  if (jokers === 5) {
+    return 'fiveOfAKind';
+  } else {
+    counts[0] += jokers;
+  }
+
+  if (counts[0] === 5) {
+    return 'fiveOfAKind';
+  } else if (counts[0] === 4) {
+    return 'fourOfAKind';
+  } else if (counts[0] === 3) {
+    if (counts[1] === 2) {
+      return 'fullHouse';
+    } else {
+      return 'threeOfAKind';
+    }
+  } else if (counts[0] === 2) {
+    if (counts[1] === 2) {
+      return 'twoPair';
+    } else {
+      return 'pair';
+    }
+  }
+
+  return 'highCard';
+};
+
+/**
+ * A comparison method to pass into a sort function to order an array of hands by value, ascending
+ */
+const compareHands = (hand1, hand2, puzzle) => {
+  const cardRanks = puzzle === 2 ? cardRanks2 : cardRanks1;
+
+  if (hand1.handRank !== hand2.handRank) {
+    return hand1.handRank - hand2.handRank;
+  }
+
+  const cardRanksHand1 = hand1.hand.split('').map((card) => cardRanks[card]);
+  const cardRanksHand2 = hand2.hand.split('').map((card) => cardRanks[card]);
+
+  for (let i = 0; i < cardRanksHand1.length; i++) {
+    const diff = cardRanksHand1[i] - cardRanksHand2[i];
+    if (diff !== 0) {
+      return diff;
+    }
+  }
+
+  return 0;
+};
