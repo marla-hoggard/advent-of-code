@@ -358,3 +358,213 @@ const scratchcards = (input) => {
   // Total up the counts of all the cards
   return scores.reduce((sum, cur) => sum + cur.count, 0);
 };
+
+// ------------- DAY 5 ---------------- //
+const seedLocation = (input) => {
+  const [seedList, ...mapList] = input.split('\n\n');
+  let seeds = seedList
+    .split(' ')
+    .slice(1)
+    .map((el) => +el)
+    .sort();
+
+  const maps = mapList.map((text) => {
+    const [_title, ...list] = text.split('\n');
+    const ranges = list.map((content) => {
+      const [dest, source, len] = content.split(' ').map((el) => +el);
+      const diff = dest - source;
+      const range = [source, source + len - 1];
+      return { range, diff };
+    });
+    return ranges;
+  });
+
+  maps.forEach((translation) => {
+    seeds = seeds.map((seed) => {
+      const rule = translation.find(({ range }) => range[0] <= seed && range[1] >= seed);
+      if (rule) {
+        return seed + rule.diff;
+      } else {
+        return seed;
+      }
+    });
+  });
+
+  return Math.min(...seeds);
+};
+
+const seedLocation2 = (input) => {
+  const [seedList, ...mapList] = input.split('\n\n');
+
+  const seeds = seedList
+    .split(' ')
+    .slice(1)
+    .map((el) => +el);
+
+  let ranges = [];
+  for (let i = 0; i < seeds.length; i += 2) {
+    ranges.push([seeds[i], seeds[i] + seeds[i + 1] - 1]);
+  }
+
+  const maps = mapList.map((text) => {
+    const [_title, ...list] = text.split('\n');
+    return list.map((content) => {
+      const [dest, source, len] = content.split(' ').map((el) => +el);
+      const diff = dest - source;
+      return { min: source, max: source + len - 1, diff };
+    });
+  });
+
+  maps.forEach((map) => {
+    let newRanges = [];
+
+    ranges.forEach((range) => {
+      newRanges = newRanges.concat(transformRange(range, map));
+    });
+
+    ranges = reduceRanges(newRanges);
+  });
+
+  return ranges[0][0];
+};
+
+/**
+ *
+ * @param {*} range : A tuple representing a range, i.e. [0,3] => 0,1,2,3
+ * @param {*} map : A mapping object with properties min, max and diff
+ * @returns An array of ranges representing the output of the range with the map applied
+ */
+const transformRange = (range, map) => {
+  let [min, max] = range;
+  let newRanges = [];
+  let done = false;
+
+  while (!done) {
+    let rule = map.find((m) => min >= m.min && min <= m.max);
+    if (rule) {
+      // The whole current range fits into this range rule
+      if (max <= rule.max) {
+        newRanges.push([min + rule.diff, max + rule.diff]);
+        done = true;
+      } else {
+        newRanges.push([min + rule.diff, rule.max + rule.diff]);
+        min = rule.max + 1;
+      }
+    } else {
+      rule = map.find((m) => max >= m.min && max <= m.max);
+      if (rule) {
+        newRanges.push([min, rule.min - 1]);
+        newRanges.push([rule.min + rule.diff, max + rule.diff]);
+        done = true;
+      } else {
+        newRanges.push([min, max]);
+        done = true;
+      }
+    }
+  }
+
+  return newRanges;
+};
+
+/**
+ * Takes an array of ranges and combines any that overlap or are back to back
+ * i.e. [[0,3], [4,6]] => [[0,6]]
+ * i.e. [[0,3], [1,2]] => [[0,3]]
+ * i.e. [[0,3], [1,6]] => [[0,6]]
+ *
+ * The resulting array should be sorted ascending
+ */
+const reduceRangesComplete = (ranges) => {
+  ranges.sort((a, b) => a[0] - b[0]);
+  let i = 0;
+  while (i < ranges.length - 1) {
+    const now = ranges[i];
+    const next = ranges[i + 1];
+    if (next[0] >= now[0] && next[1] <= now[1]) {
+      console.log('next inside now', { now, next, i, ranges });
+      ranges.splice(i + 1, 1);
+    } else if (now[0] >= next[0] && now[1] <= next[1]) {
+      console.log('now inside next', { now, next, i, ranges });
+      ranges.splice(i, 1);
+    } else if (next[0] <= now[1]) {
+      console.log('overlapping', { now, next, i, ranges });
+      ranges.splice(i, 2, [now[0], next[1]]);
+    } else if (next[0] === now[1] + 1) {
+      console.log('back to back', { now, next, i, ranges });
+      ranges.splice(i, 2, [now[0], next[1]]);
+    } else {
+      i++;
+    }
+  }
+  return ranges;
+};
+
+/**
+ * Takes an array of ranges and combines any that are back to back:
+ * i.e. [[0,3], [4,6]] => [[0,6]]
+ *
+ * The resulting array should be sorted ascending.
+ *
+ * This is a faster, simplified version of reduceRangesComplete, because this puzzle has no overlapping ranges
+ */
+const reduceRanges = (ranges) => {
+  ranges.sort((a, b) => a[0] - b[0]);
+  let i = 0;
+  while (i < ranges.length - 1) {
+    const now = ranges[i];
+    const next = ranges[i + 1];
+    if (next[0] === now[1] + 1) {
+      ranges.splice(i, 2, [now[0], next[1]]);
+    } else {
+      i++;
+    }
+  }
+  return ranges;
+};
+
+// -------------- DAY 6 ----------------------
+const boatRaces = (input) => {
+  const races = [];
+  const [times, distances] = input.split('\n').map((row) => row.split(/\s+/).slice(1));
+  times.forEach((time) => races.push({ time: +time }));
+  distances.forEach((dist, i) => (races[i].distance = +dist));
+
+  const options = races.map(({ time, distance: goal }) => {
+    let count = 0;
+    for (let i = 1; i < time; i++) {
+      const dist = (time - i) * i;
+      if (dist > goal) {
+        count++;
+      } else if (count > 0) {
+        // We've passed the last option, break early
+        break;
+      }
+    }
+
+    return count;
+  });
+
+  return options.reduce((total, next) => total * next, 1);
+};
+
+// Note: The quadratic algorithm would work for part 1 or 2, but the input parsing is different
+const boatRaceQuadratic = (input) => {
+  const [time, distance] = input.split('\n').map((row) => row.split(':')[1].replace(/\s+/g, ''));
+
+  // We can find the min and max solutions by solving a quadratic equation of the form
+  // x^2 - tx + d < 0 where t = time and d = distance
+  const solutions = quadratic(1, -time, +distance).sort((a, b) => a - b);
+
+  // Find the number of integers between min and max, exclusive
+  let diff = Math.floor(solutions[1]) - Math.ceil(solutions[0]) + 1;
+
+  if (Math.floor(solutions[1]) === solutions[1]) {
+    diff--;
+  }
+
+  if (Math.ceil(solutions[0]) === solutions[0]) {
+    diff--;
+  }
+
+  return diff;
+};

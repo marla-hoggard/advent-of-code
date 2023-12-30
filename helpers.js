@@ -271,3 +271,14 @@ const removeVal = (array, val) => {
   }
   return array;
 };
+
+/**
+ * Solves the quadratic equation in the form of ax^2 + bx + c
+ * Pass in a, b, c
+ * Returns [x1, x2] - the two solutions
+ */
+const quadratic = (a, b, c) => {
+  const x1 = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+  const x2 = (-b - Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+  return [x1, x2];
+};
