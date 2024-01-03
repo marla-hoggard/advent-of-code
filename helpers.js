@@ -26,15 +26,15 @@ const gcd = (a, b) => {
 /**
  * Finds the lowest common multiple of a and b
  */
-const lcm2 = (a, b) => {
+const lcm = (a, b) => {
   return (a * b) / gcd(a, b);
 };
 
 /**
- * Finds the lowest common multiple of a, b and c
+ * Finds the lowest common multiple of an array of numbers
  */
-const lcm3 = (a, b, c) => {
-  return lcm2(lcm2(a, b), c);
+const lcmArray = (arr) => {
+  return arr.reduce(lcm, 1);
 };
 
 /**

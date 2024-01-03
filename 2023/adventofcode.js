@@ -714,3 +714,85 @@ const compareHands = (hand1, hand2, puzzle) => {
 
   return 0;
 };
+
+// -------------- DAY 8 ----------------------
+const wasteland = (input) => {
+  const [directions, nodeText] = input.split('\n\n');
+  const nodes = {};
+  nodeText.split('\n').forEach((str) => {
+    const matches = str.match(/(?<node>\w{3})\s=\s\((?<left>\w{3}),\s(?<right>\w{3})\)/);
+    if (matches?.groups) {
+      const { node, left, right } = matches.groups;
+      nodes[node] = { left, right };
+    }
+  });
+
+  let steps = 0;
+  let i = 0;
+  let cur = 'AAA';
+  while (cur != 'ZZZ') {
+    if (directions[i] === 'L') {
+      cur = nodes[cur].left;
+    } else {
+      cur = nodes[cur].right;
+    }
+
+    steps++;
+    i++;
+    if (i === directions.length) {
+      i = 0;
+    }
+
+    // console.log(cur);
+  }
+
+  return steps;
+};
+
+const hauntedWasteland = (input) => {
+  const [directions, nodeText] = input.split('\n\n');
+  const nodes = {};
+  let starters = [];
+  nodeText.split('\n').forEach((str) => {
+    const matches = str.match(/(?<node>\w{3})\s=\s\((?<left>\w{3}),\s(?<right>\w{3})\)/);
+    if (matches?.groups) {
+      const { node, left, right } = matches.groups;
+      const endsInA = node[2] === 'A';
+      const endsInZ = node[2] === 'Z';
+      nodes[node] = { left, right, endsInZ };
+      if (endsInA) {
+        starters.push(node);
+      }
+    }
+  });
+
+  // Find the first time each one finishes -- from there, they cycle
+  const finishes = starters.map((n) => {
+    let steps = 0;
+    let i = 0;
+    let cur = n;
+    while (true) {
+      if (directions[i] === 'L') {
+        cur = nodes[cur].left;
+      } else {
+        cur = nodes[cur].right;
+      }
+
+      steps++;
+
+      if (nodes[cur].endsInZ) {
+        return steps;
+      }
+
+      i++;
+      if (i === directions.length) {
+        i = 0;
+      }
+    }
+  });
+
+  console.log(finishes);
+
+  // Find the lowest common denominator of all the individual finishes
+  return lcmArray(finishes);
+};
