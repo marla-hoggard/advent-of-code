@@ -796,3 +796,70 @@ const hauntedWasteland = (input) => {
   // Find the lowest common denominator of all the individual finishes
   return lcmArray(finishes);
 };
+
+// -------------- DAY 9 ----------------------
+const diffPyramid = (input) => {
+  return input.split('\n').reduce((sum, row) => {
+    const array = row.split(' ').map((el) => +el);
+    const next = findNextInSequence(array);
+    return sum + next;
+  }, 0);
+};
+
+const findNextInSequence = (array) => {
+  const rows = [array];
+  let cur = array;
+  while (cur.some((val) => val !== 0)) {
+    let next = [];
+    for (let i = 0; i < cur.length - 1; i++) {
+      next.push(cur[i + 1] - cur[i]);
+    }
+    rows.push(next);
+    cur = next;
+  }
+
+  let diff = 0;
+  let i = rows.length - 2;
+  while (i >= 0) {
+    const lastVal = rows[i].at(-1);
+    const nextVal = lastVal + diff;
+    rows[i].push(nextVal);
+    diff = nextVal;
+    i--;
+  }
+
+  return rows[0].at(-1);
+};
+
+const diffPyramid2 = (input) => {
+  return input.split('\n').reduce((sum, row) => {
+    const array = row.split(' ').map((el) => +el);
+    const next = findPrevInSequence(array);
+    return sum + next;
+  }, 0);
+};
+
+const findPrevInSequence = (array) => {
+  const rows = [array];
+  let cur = array;
+  while (cur.some((val) => val !== 0)) {
+    let next = [];
+    for (let i = 0; i < cur.length - 1; i++) {
+      next.push(cur[i + 1] - cur[i]);
+    }
+    rows.push(next);
+    cur = next;
+  }
+
+  let diff = 0;
+  let i = rows.length - 2;
+  while (i >= 0) {
+    const firstVal = rows[i][0];
+    const prevVal = firstVal - diff;
+    rows[i].unshift(prevVal);
+    diff = prevVal;
+    i--;
+  }
+
+  return rows[0][0];
+};
