@@ -53,7 +53,7 @@ const ANSWERS = {
   '8-2': hauntedWasteland,
   '9-1': diffPyramid,
   '9-2': diffPyramid2,
-  '10-1': placeholder,
+  '10-1': pipeLoop,
   '10-2': placeholder,
   '11-1': placeholder,
   '11-2': placeholder,

@@ -863,3 +863,94 @@ const findPrevInSequence = (array) => {
 
   return rows[0][0];
 };
+
+// -------------- DAY 10 ----------------------
+const pipeLoop = (input) => {
+  const rows = input.split('\n');
+  const startRow = rows.findIndex((row) => row.includes('S'));
+  const startCol = rows[startRow].indexOf('S');
+
+  // Make our first move
+  let { r, c, prev } = firstMove(rows, startRow, startCol);
+  let cur = rows[r][c];
+  let moves = 1;
+
+  const moveLeft = () => {
+    c--;
+    prev = 'right';
+  };
+
+  const moveRight = () => {
+    c++;
+    prev = 'left';
+  };
+
+  const moveUp = () => {
+    r--;
+    prev = 'down';
+  };
+
+  const moveDown = () => {
+    r++;
+    prev = 'up';
+  };
+
+  while (cur !== 'S') {
+    switch (cur) {
+      case '|':
+        prev === 'down' ? moveUp() : moveDown();
+        break;
+      case '-':
+        prev === 'left' ? moveRight() : moveLeft();
+        break;
+      case 'L':
+        prev === 'up' ? moveRight() : moveUp();
+        break;
+      case 'J':
+        prev === 'up' ? moveLeft() : moveUp();
+        break;
+      case '7':
+        prev === 'left' ? moveDown() : moveLeft();
+        break;
+      case 'F':
+        prev === 'right' ? moveDown() : moveRight();
+        break;
+      default:
+        console.log(`Unexpected value: ${cur}`);
+        return;
+    }
+
+    moves++;
+    cur = rows[r][c];
+  }
+
+  return moves / 2;
+};
+
+const firstMove = (map, r, c) => {
+  if (r > 0) {
+    const up = map[r - 1][c];
+    if (up === '|' || up === '7' || up === 'F') {
+      return { r: r - 1, c, prev: 'down' };
+    }
+  }
+  if (r < map.length - 1) {
+    const down = map[r + 1][c];
+    if (down === '|' || down === 'L' || down === 'J') {
+      return { r: r + 1, c, prev: 'up' };
+    }
+  }
+  if (c > 0) {
+    const left = map[r][c - 1];
+    if (left === '-' || left === 'L' || left === 'F') {
+      return { r, c: c - 1, prev: 'right' };
+    }
+  }
+  if (c < map[r].length - 1) {
+    const right = map[r][c + 1];
+    if (right === '-' || right === '7' || right === 'J') {
+      return { r, c: c + 1, prev: 'left' };
+    }
+  }
+  console.log('Could not make first move');
+};
