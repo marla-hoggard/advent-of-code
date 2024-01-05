@@ -954,3 +954,126 @@ const firstMove = (map, r, c) => {
   }
   console.log('Could not make first move');
 };
+
+// -------------- TODO DAY 10 Part 2 ----------
+
+// -------------- DAY 11 ----------------------
+// Part 1 - Replaced by part 2 impl
+// Since expandGalaxy actually adds the rows, we can just use plain manhttan distance
+const shortestGalaxyPaths = (input) => {
+  const expanded = expandGalaxy(input);
+  const galaxies = [];
+  let total = 0;
+  expanded.forEach((row, r) => {
+    row.split('').forEach((cell, c) => {
+      if (cell === '#') {
+        galaxies.forEach((gal) => {
+          total += manhattanDistance(gal, [r, c]);
+        });
+        galaxies.push([r, c]);
+      }
+    });
+  });
+  return total;
+};
+
+// Part 1 - Replaced by part 2 impl
+// Returns an "expanded" gallery for part 1, by phyisically adding extra rows and columns
+const expandGalaxy = (input) => {
+  let rows = input.split('\n');
+
+  // Expand columns
+  let i = 0;
+  while (i < rows[0].length) {
+    if (rows.every((row) => row[i] === '.')) {
+      rows = rows.map((row) => row.slice(0, i).concat('.', row.slice(i)));
+      i += 2;
+    } else {
+      i++;
+    }
+  }
+
+  // Expand rows
+  i = 0;
+  while (i < rows.length) {
+    if (rows[i].includes('#')) {
+      i++;
+    } else {
+      rows.splice(i, 0, rows[i]);
+      i += 2;
+    }
+  }
+
+  return rows;
+};
+/**
+ * @param {*} input puzzle input
+ * @param {*} expandTo how many lines to expand an "old" line to
+ *
+ * This can be used for parts 1 and 2, but the orig part 1 implementation was faster for it
+ */
+const shortestGalaxyPathsMulti = (input, expandTo) => {
+  const { expandedCols, expandedRows } = getExpansionData(input);
+  const galaxies = [];
+  let total = 0;
+  input.split('\n').forEach((row, r) => {
+    row.split('').forEach((cell, c) => {
+      if (cell === '#') {
+        galaxies.forEach((gal) => {
+          total += findGalaxyDistance(expandTo, expandedCols, expandedRows, gal, [r, c]);
+        });
+        galaxies.push([r, c]);
+      }
+    });
+  });
+  return total;
+};
+
+/**
+ * Returns the indexes of the rows and columns to be expanded
+ */
+const getExpansionData = (input) => {
+  let galaxy = input.split('\n');
+  let expandedRows = [];
+  let expandedCols = [];
+
+  // Find expanded columns
+  for (let i = 0; i < galaxy[0].length; i++) {
+    if (galaxy.every((row) => row[i] === '.')) {
+      expandedCols.push(i);
+    }
+  }
+
+  // Find expanded rows
+  for (let i = 0; i < galaxy.length; i++) {
+    if (!galaxy[i].includes('#')) {
+      expandedRows.push(i);
+    }
+  }
+
+  return { expandedCols, expandedRows };
+};
+
+/**
+ * Finds the distance between gal1 and gal2
+ * @param {*} expandTo how many rows an expanded galaxy represents
+ * @param {*} expandedCols which columns are expanded
+ * @param {*} expandedRows which rows are expanded
+ * @param {*} gal1 coords of the first galaxy [r, c]
+ * @param {*} gal2 coords of the first galaxy [r, c]
+ * @returns
+ */
+const findGalaxyDistance = (expandTo, expandedCols, expandedRows, gal1, gal2) => {
+  const minR = Math.min(gal1[0], gal2[0]);
+  const maxR = Math.max(gal1[0], gal2[0]);
+  const minC = Math.min(gal1[1], gal2[1]);
+  const maxC = Math.max(gal1[1], gal2[1]);
+
+  // Find the number of expanded rows and columns between the two galaxies
+  const colCount = expandedCols.filter((col) => col > minC && col < maxC).length;
+  const rowCount = expandedRows.filter((row) => row > minR && row < maxR).length;
+
+  // Find the regular distance between the two, then add the expansion amount for each expanded line
+  // Using expandTo - 1 since the original row/col was already counted in manhattanDistance
+  return manhattanDistance(gal1, gal2) + (expandTo - 1) * (colCount + rowCount);
+};
