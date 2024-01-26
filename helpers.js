@@ -82,6 +82,21 @@ const numOccurrences = (set, val) => {
 };
 
 /**
+ * Returns the indexes of the occurrences of @val in the iterable @iter
+ * @iter can be an array or a string.
+ * Note: If @iter is an array, @val must be a full match of an element in the array
+ */
+const findOccurrences = (iter, val) => {
+  let indexes = [];
+  let i = iter.indexOf(val);
+  while (i !== -1) {
+    indexes.push(i);
+    i = iter.indexOf(val, i + 1);
+  }
+  return indexes;
+};
+
+/**
  * Checks if @array1 and @array2 have the same content
  * Works for all array depths uses deep equality on object elements
  */

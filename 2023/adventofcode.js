@@ -1077,3 +1077,103 @@ const findGalaxyDistance = (expandTo, expandedCols, expandedRows, gal1, gal2) =>
   // Using expandTo - 1 since the original row/col was already counted in manhattanDistance
   return manhattanDistance(gal1, gal2) + (expandTo - 1) * (colCount + rowCount);
 };
+
+// -------------- DAY 12 ----------------------
+const springArrangments = (input) => {
+  let validCount = 0;
+  input.split('\n').forEach((row) => {
+    const [record, nums] = row.split(' ');
+    const counts = nums.split(',').map((el) => +el);
+    const total = sum(counts);
+    validCount += countArrangements(record, counts, total);
+  });
+  return validCount;
+};
+
+// As expected, this brute force takes forever. Need a better plan
+const foldedSpringArrangments = (input) => {
+  let validCount = 0;
+  input.split('\n').forEach((row) => {
+    const [record, nums] = row.split(' ');
+    const counts = nums.split(',').map((el) => +el);
+    const total = sum(counts);
+    const origCount = countArrangements(record, counts, total);
+    const foldedRecord = `${record}?${record}`;
+    const foldedCounts = counts.concat(counts);
+    const folded = countArrangements(foldedRecord, foldedCounts, total * 2);
+    const arrangments = origCount * (folded / origCount) ** 4;
+    console.log(row, arrangments);
+    validCount += arrangments;
+  });
+  return validCount;
+};
+
+const countArrangements = (record, counts, total) => {
+  const existing = numOccurrences(record, '#');
+  const missing = total - existing;
+  // if (missing === 0) {
+  //   console.log("nothing's missing");
+  //   return 1;
+  // }
+  const qLocations = findOccurrences(record, '?');
+  // if (missing > qLocations) {
+  //   console.log('too many missing');
+  //   return 0;
+  // }
+
+  const permutations = springPermutations(qLocations.length, missing);
+  let validCount = 0;
+  permutations.forEach((perm) => {
+    const indexes = perm.map((i) => qLocations[i]);
+    const springMap = replaceSprings(record, indexes);
+    if (isValidSpringMap(springMap, counts)) {
+      // console.log(`Valid: ${springMap}, ${counts}`);
+      validCount++;
+    }
+  });
+  // console.log(validCount);
+  return validCount;
+};
+
+const isValidSpringMap = (record, counts) => {
+  const groups = record.split(/\.+/).filter((el) => el.length);
+  if (groups.length !== counts.length) {
+    return false;
+  }
+
+  return counts.every((count, i) => groups[i].length === count);
+};
+
+const replaceSpringsOld = (record, springs, nulls) => {
+  const springMap = record.split('');
+  springs.forEach((i) => {
+    springMap[i] = '#';
+  });
+  nulls.forEach((i) => {
+    springMap[i] = '.';
+  });
+  return springMap.join('');
+};
+
+const replaceSprings = (record, springs) => {
+  const springMap = record.split('');
+  springs.forEach((index) => {
+    springMap[index] = '#';
+  });
+  return springMap.join('').replace(/\?/g, '.');
+};
+
+const springPermutations = (max, count) => {
+  let permutations = [[]];
+  for (let len = 0; len < count; len++) {
+    let updated = [];
+    permutations.forEach((per) => {
+      for (let i = (per.at(-1) ?? -1) + 1; i < max; i++) {
+        updated.push(per.concat(i));
+      }
+    });
+    permutations = updated;
+  }
+
+  return permutations;
+};
