@@ -1079,6 +1079,7 @@ const findGalaxyDistance = (expandTo, expandedCols, expandedRows, gal1, gal2) =>
 };
 
 // -------------- DAY 12 ----------------------
+// TODO PART TWO
 const springArrangments = (input) => {
   let validCount = 0;
   input.split('\n').forEach((row) => {
@@ -1176,4 +1177,142 @@ const springPermutations = (max, count) => {
   }
 
   return permutations;
+};
+
+// -------------- DAY 13 ----------------------
+const mirrorLocations = (input) => {
+  return input.split('\n\n').reduce((total, pattern) => {
+    const score = findMirror(pattern);
+    return total + score;
+  }, 0);
+};
+
+const findMirror = (pattern) => {
+  const rows = pattern.split('\n');
+  const horiz = findHorizMirrorLocation(rows);
+  if (horiz !== null) {
+    // console.log(`Horizontal, row ${horiz}`);
+    return 100 * (horiz + 1);
+  }
+
+  const swapped = reverseGrid(rows);
+  const vert = findHorizMirrorLocation(swapped);
+  if (vert !== null) {
+    // console.log(`Vertical, column ${vert}`);
+    return vert + 1;
+  }
+
+  console.log("Uh oh, we didn't find it");
+};
+
+/**
+ * Given an array of rows, finds where there is a horizontal reflection line - if there is one
+ */
+const findHorizMirrorLocation = (rows) => {
+  for (let i = 0; i < rows.length - 1; i++) {
+    if (rows[i] === rows[i + 1]) {
+      let j = i - 1;
+      let k = i + 2;
+      let good = true;
+      while (j >= 0 && k < rows.length && good) {
+        if (rows[j] === rows[k]) {
+          j--;
+          k++;
+        } else {
+          good = false;
+        }
+      }
+
+      if (good) {
+        return i;
+      }
+    }
+  }
+
+  return null;
+};
+
+// Part 2
+const smudgedMirrors = (input) => {
+  return input.split('\n\n').reduce((total, pattern) => {
+    const score = findSmudgedMirror(pattern);
+    return total + score;
+  }, 0);
+};
+
+const findSmudgedMirror = (pattern) => {
+  const rows = pattern.split('\n');
+  // Looks for a horizontal reflection line
+  const horiz = findSmudgedHorizMirrorLocation(rows);
+  if (horiz !== null) {
+    // console.log(`Horizontal, row ${horiz}`);
+    return 100 * (horiz + 1);
+  }
+
+  // If we didn't find one, swaps the rows and columns, then tries again
+  const swapped = reverseGrid(rows);
+  const vert = findSmudgedHorizMirrorLocation(swapped);
+  if (vert !== null) {
+    // console.log(`Vertical, column ${vert}`);
+    return vert + 1;
+  }
+
+  console.log("Uh oh, we didn't find it");
+};
+
+/**
+ * Given an array of rows, finds where there is a horizontal reflection line
+ * with exactly one "smudge", if it exists.
+ * Meaning, if you change exactly one character in the whole pattern,
+ * then this would be the horizontal reflection line.
+ */
+const findSmudgedHorizMirrorLocation = (rows) => {
+  for (let i = 0; i < rows.length - 1; i++) {
+    if (rows[i] === rows[i + 1] || smudgeMatch(rows[i], rows[i + 1])) {
+      let j = i - 1;
+      let k = i + 2;
+      let smudged = rows[i] !== rows[i + 1];
+      let good = true;
+      while (j >= 0 && k < rows.length && good) {
+        if (rows[j] === rows[k]) {
+          j--;
+          k++;
+        } else if (!smudged && smudgeMatch(rows[j], rows[k])) {
+          j--;
+          k++;
+          smudged = true;
+        } else {
+          good = false;
+        }
+      }
+
+      if (smudged && good) {
+        return i;
+      }
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Takes two strings of the same length.
+ * Returns true if they are identical except for one character.
+ */
+const smudgeMatch = (row1, row2) => {
+  if (row1 === row2) {
+    return false;
+  }
+
+  let smudged = false;
+  for (let i = 0; i <= row1.length; i++) {
+    if (row1[i] !== row2[i]) {
+      if (smudged) {
+        return false;
+      } else {
+        smudged = true;
+      }
+    }
+  }
+  return true;
 };

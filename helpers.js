@@ -243,6 +243,26 @@ const reverseObject = (obj) => {
 };
 
 /**
+ * Takes array of same-length strings and swaps the rows for columns:
+ * Ex: reverseGrid(['AAA', 'BBB', 'CCC', 'DDD']) = ['ABCD', 'ABCD', ABCD']
+ *
+ * AAA      ABCD
+ * BBB  =>  ABCD
+ * CCC      ABCD
+ * DDD
+ */
+const reverseGrid = (array) => {
+  let grid = new Array(array[0].length).fill('');
+  for (const row of array) {
+    row.split('').forEach((letter, i) => {
+      grid[i] += letter;
+    });
+  }
+
+  return grid;
+};
+
+/**
  * Inserts @value into @array at @index and returns the updated array
  * Does not mutate the underlying array, as long as it's an array of primitives
  * @returns a new array with the value inserted.

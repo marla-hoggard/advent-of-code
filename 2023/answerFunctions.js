@@ -58,9 +58,9 @@ const ANSWERS = {
   '11-1': shortestGalaxyPaths,
   '11-2': (input) => shortestGalaxyPathsMulti(input, 1_000_000),
   '12-1': springArrangments,
-  '12-2': foldedSpringArrangments,
-  '13-1': placeholder,
-  '13-2': placeholder,
+  '12-2': placeholder, // TODO
+  '13-1': mirrorLocations,
+  '13-2': smudgedMirrors,
   '14-1': placeholder,
   '14-2': placeholder,
   '15-1': placeholder,
