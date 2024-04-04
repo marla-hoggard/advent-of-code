@@ -1316,3 +1316,172 @@ const smudgeMatch = (row1, row2) => {
   }
   return true;
 };
+
+// ----------- DAY 14 ----------------
+const singleTilt = (input) => {
+  const rows = input.split('\n');
+  let sum = 0;
+  for (let x = 0; x < rows[0].length; x++) {
+    const col = [];
+    for (let y = 0; y < rows.length; y++) {
+      col.unshift(rows[y][x]);
+    }
+    col.unshift('.');
+
+    for (let i = col.lastIndexOf('O'); i >= 0; i--) {
+      if (col[i] !== 'O') {
+        continue;
+      }
+
+      let j = i + 1;
+      while (j < col.length) {
+        if (col[j] === '.') {
+          j++;
+        } else {
+          break;
+        }
+      }
+      col[i] = '.';
+      col[j - 1] = 'O';
+      sum += j - 1;
+    }
+  }
+  return sum;
+};
+
+const cycleTiltRepeat = (input) => {
+  let grid = input.split('\n').map((row) => row.split(''));
+
+  // We expect the grids to cycle at some point, so save each one until we get a match
+  const grids = [grid.map((row) => row.join('')).join('\n')];
+
+  let count = 0;
+  while (true) {
+    count++;
+    grid = tiltCycle(grid);
+    const flattened = grid.map((row) => row.join('')).join('\n');
+
+    // We got a match so a cycle has started
+    // Now, we just have to calculate where 1000000000 would hit in this cycle
+    if (grids.includes(flattened)) {
+      const firstMatch = grids.indexOf(flattened); // Index of the last time we had the same pattern
+      const cadence = count - firstMatch; // How long ago was it? This is the length of a cycle
+      const cycleGrids = grids.slice(firstMatch); // Delete all the grids before the first natch, not in cycle
+      const index = (1000000000 - firstMatch) % cadence; // Since first match is 0, subtract in, then take mod
+
+      const winner = cycleGrids[index]; // This should match the 1000000000th iteration
+      return calcNorthLoad(winner.split('\n').map((row) => row.split('')));
+    } else {
+      grids.push(flattened);
+    }
+  }
+};
+
+const calcNorthLoad = (grid) => {
+  const reversed = grid.reverse();
+  let sum = 0;
+  reversed.forEach((row, i) => {
+    sum += numOccurrences(row, 'O') * (i + 1);
+  });
+  return sum;
+};
+
+const tiltCycle = (grid) => {
+  return tiltEast(tiltSouth(tiltWest(tiltNorth(grid))));
+};
+
+const tiltNorth = (grid) => {
+  // Evaluate each column, from left to right
+  for (let x = 0; x < grid[0].length; x++) {
+    // For each O in the column, move it up as far as it can go, starting from the top
+    for (let y = 0; y < grid.length; y++) {
+      if (grid[y][x] !== 'O') {
+        continue;
+      }
+
+      // travel past as many . up until we hit a rock
+      let j = y - 1;
+      while (j >= 0) {
+        if (grid[j][x] === '.') {
+          j--;
+        } else {
+          break;
+        }
+      }
+      // swap the rock and the last . we found (one before we stopped)
+      grid[y][x] = '.';
+      grid[j + 1][x] = 'O';
+    }
+  }
+
+  return grid;
+};
+
+const tiltSouth = (grid) => {
+  for (let x = 0; x < grid[0].length; x++) {
+    for (let y = grid.length - 1; y >= 0; y--) {
+      if (grid[y][x] !== 'O') {
+        continue;
+      }
+
+      let j = y + 1;
+      while (j < grid.length) {
+        if (grid[j][x] === '.') {
+          j++;
+        } else {
+          break;
+        }
+      }
+      grid[y][x] = '.';
+      grid[j - 1][x] = 'O';
+    }
+  }
+
+  return grid;
+};
+
+const tiltWest = (grid) => {
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[0].length; x++) {
+      if (grid[y][x] !== 'O') {
+        continue;
+      }
+
+      let j = x - 1;
+      while (j >= 0) {
+        if (grid[y][j] === '.') {
+          j--;
+        } else {
+          break;
+        }
+      }
+      grid[y][x] = '.';
+      grid[y][j + 1] = 'O';
+    }
+  }
+
+  return grid;
+};
+
+const tiltEast = (grid) => {
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = grid[0].length - 1; x >= 0; x--) {
+      if (grid[y][x] !== 'O') {
+        continue;
+      }
+
+      let j = x + 1;
+      while (j < grid[0].length) {
+        if (grid[y][j] === '.') {
+          j++;
+        } else {
+          break;
+        }
+      }
+      grid[y][x] = '.';
+      grid[y][j - 1] = 'O';
+    }
+  }
+
+  return grid;
+};

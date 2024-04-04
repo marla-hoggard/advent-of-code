@@ -61,8 +61,8 @@ const ANSWERS = {
   '12-2': placeholder, // TODO
   '13-1': mirrorLocations,
   '13-2': smudgedMirrors,
-  '14-1': placeholder,
-  '14-2': placeholder,
+  '14-1': singleTilt,
+  '14-2': cycleTiltRepeat,
   '15-1': placeholder,
   '15-2': placeholder,
   '16-1': placeholder,
