@@ -1485,3 +1485,50 @@ const tiltEast = (grid) => {
 
   return grid;
 };
+
+// ----------- DAY 15 ----------
+const hashString = (input) => {
+  return input.split(',').reduce((sum, str) => sum + hash(str), 0);
+};
+
+const hash = (str) => {
+  let val = 0;
+  str.split('').forEach((char) => {
+    val += char.charCodeAt(0);
+    val *= 17;
+    val %= 256;
+  });
+  return val;
+};
+
+const hashMap = (input) => {
+  const boxes = Array(256)
+    .fill(null)
+    .map(() => []);
+
+  input.split(',').forEach((str) => {
+    // The grouping in the regex allows us to keep the delimiter we're splitting on
+    // ex: 'pn=3' => ['pn', '=', '3']
+    const [label, op, val] = str.split(/([=-])/g);
+    const index = hash(label);
+    const box = boxes[index];
+    if (op === '=') {
+      const existing = box.find((el) => el.label === label);
+      if (existing) {
+        existing.val = +val;
+      } else {
+        box.push({ label, val: +val });
+      }
+    } else {
+      boxes[index] = box.filter((el) => el.label !== label);
+    }
+  });
+
+  let sum = 0;
+  boxes.forEach((box, boxIndex) => {
+    box.forEach((item, itemIndex) => {
+      sum += (boxIndex + 1) * (itemIndex + 1) * item.val;
+    });
+  });
+  return sum;
+};
