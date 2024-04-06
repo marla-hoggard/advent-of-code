@@ -1532,3 +1532,158 @@ const hashMap = (input) => {
   });
   return sum;
 };
+
+// ----------- DAY 16 -------------
+const beamMap = (grid, startX, startY, startDir) => {
+  const maxX = grid[0].length - 1;
+  const maxY = grid.length - 1;
+
+  let beams = [{ x: startX, y: startY, dir: startDir }];
+  while (beams.length) {
+    const beam = beams.shift();
+    // Move one step in the right direction
+    // If that moves us off the edge, break out
+    switch (beam.dir) {
+      case '>':
+        beam.x++;
+        if (beam.x > maxX) continue;
+        break;
+      case '<':
+        beam.x--;
+        if (beam.x < 0) continue;
+        break;
+      case '^':
+        beam.y--;
+        if (beam.y < 0) continue;
+        break;
+      case 'V':
+        beam.y++;
+        if (beam.y > maxY) continue;
+        break;
+    }
+    // Entering an infinite loop, break out
+    const cell = grid[beam.y][beam.x];
+    if (cell.moves.includes(beam.dir)) continue;
+
+    cell.moves.push(beam.dir);
+
+    switch (cell.val) {
+      case '.':
+        beams.push(beam);
+        break;
+      case '\\':
+        switch (beam.dir) {
+          case '>':
+            beams.push({ ...beam, dir: 'V' });
+            break;
+          case '<':
+            beams.push({ ...beam, dir: '^' });
+            break;
+          case '^':
+            beams.push({ ...beam, dir: '<' });
+            break;
+          case 'V':
+            beams.push({ ...beam, dir: '>' });
+            break;
+        }
+        break;
+      case '/':
+        switch (beam.dir) {
+          case '>':
+            beams.push({ ...beam, dir: '^' });
+            break;
+          case '<':
+            beams.push({ ...beam, dir: 'V' });
+            break;
+          case '^':
+            beams.push({ ...beam, dir: '>' });
+            break;
+          case 'V':
+            beams.push({ ...beam, dir: '<' });
+            break;
+        }
+        break;
+      case '|':
+        if (beam.dir === '^' || beam.dir === 'V') {
+          beams.push(beam);
+        } else {
+          beams.push({ ...beam, dir: '^' }, { ...beam, dir: 'V' });
+        }
+        break;
+      case '-':
+        if (beam.dir === '^' || beam.dir === 'V') {
+          beams.push({ ...beam, dir: '<' }, { ...beam, dir: '>' });
+        } else {
+          beams.push(beam);
+        }
+        break;
+    }
+  }
+
+  let count = 0;
+  grid.forEach((row) =>
+    row.forEach((cell) => {
+      if (cell.moves.length) {
+        count++;
+      }
+    }),
+  );
+  return count;
+};
+
+const parseBeamInput = (input) =>
+  input.split('\n').map((row) => row.split('').map((el) => ({ val: el, moves: [] })));
+
+// Puzzle 1 - Just come in from top left corner moving left
+const baseBeamMap = (input) => {
+  const grid = parseBeamInput(input);
+  return beamMap(grid, -1, 0, '>');
+};
+
+// Try every entrance and find the max
+const bestBeamMap = (input) => {
+  const rows = input.split('\n');
+  const leftEdge = -1;
+  const topEdge = -1;
+  const rightEdge = rows[0].length;
+  const bottomEdge = rows.length;
+  let max = 0;
+
+  // Down from top
+  for (let x = 0; x < rightEdge; x++) {
+    const grid = parseBeamInput(input);
+    const score = beamMap(grid, x, topEdge, 'V');
+    if (score > max) {
+      max = score;
+    }
+  }
+
+  // Up from bottom
+  for (let x = 0; x < rightEdge; x++) {
+    const grid = parseBeamInput(input);
+    const score = beamMap(grid, x, bottomEdge, '^');
+    if (score > max) {
+      max = score;
+    }
+  }
+
+  // In from left
+  for (let y = 0; y < bottomEdge; y++) {
+    const grid = parseBeamInput(input);
+    const score = beamMap(grid, leftEdge, y, '>');
+    if (score > max) {
+      max = score;
+    }
+  }
+
+  // In from right
+  for (let y = 0; y < bottomEdge; y++) {
+    const grid = parseBeamInput(input);
+    const score = beamMap(grid, rightEdge, y, '<');
+    if (score > max) {
+      max = score;
+    }
+  }
+
+  return max;
+};
