@@ -3,11 +3,14 @@
   <head>
     <title>Advent of Code</title>
     <script type="text/javascript" src="adventofcode.js"></script>
-    <script type="text/javascript" src="../md5.js"></script>
+    <script type="text/javascript" src="inputs.js"></script>
+    <script type="text/javascript" src="answerFunctions.js"></script>
+    <script type="text/javascript" src="../helpers.js"></script>
     <link rel="stylesheet" href="../styles.css" />
   </head>
+
   <body>
-    <h2>Advent of Code 2016</h2>
+    <h2>Advent of Code</h2>
     <div class="yearLinks">
       <a href="../2015/adventofcode.html">2015</a>
       <a href="../2016/adventofcode.html">2016</a>
@@ -19,5 +22,45 @@
       <a href="../2022/adventofcode.html">2022</a>
       <a href="../2023/adventofcode.html">2023</a>
     </div>
+    <div id="puzzles"></div>
   </body>
+
+  <script>
+    const numComplete = 12; // CHANGE THIS EVERY TIME WE ADD A DAY
+
+    let puzzleDiv = document.getElementById('puzzles');
+    for (let day = 1; day <= numComplete; day++) {
+      const puzzleDay = document.createElement('div');
+      puzzleDay.classList.add('puzzle');
+      puzzleDay.innerHTML = `
+			<h4>DAY ${day}</h4>
+			<button id="d${day}p1">Puzzle 1</button>
+			<button id="d${day}p2">Puzzle 2</button>
+			<p class="answer" id="d${day}p1-answer"></p>
+			<p class="answer" id="d${day}p2-answer"></p>
+		`;
+      puzzleDiv.appendChild(puzzleDay);
+
+      for (let puzzle = 1; puzzle <= 2; puzzle++) {
+        const id = `d${day}p${puzzle}`;
+        const button = document.getElementById(id);
+        button.addEventListener('click', () => {
+          const para = document.getElementById(`${id}-answer`);
+          para.innerHTML = `Puzzle ${puzzle}: Calculating...`;
+
+          // Allows 'Calculating...' to render to the DOM before starting calculation
+          // https://stackoverflow.com/questions/16876394/dom-refresh-on-long-running-function
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const calcAnswer = ANSWERS[`${day}-${puzzle}`];
+              console.time(`Day ${day}, Part ${puzzle}`);
+              const result = calcAnswer(INPUTS[day]);
+              console.timeEnd(`Day ${day}, Part ${puzzle}`);
+              para.innerHTML = `Puzzle ${puzzle}: <b>${result}</b>`;
+            });
+          });
+        });
+      }
+    }
+  </script>
 </html>
