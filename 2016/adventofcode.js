@@ -736,3 +736,77 @@ const monorailProgram = (input, data) => {
 
   return data.a;
 };
+
+/**
+ * Day 13, Puzzle 1
+ * Returns how many moves it takes to get from [1,1] to [31.39]
+ */
+const cubicleMaze = () => {
+  let minPath = Number.MAX_VALUE;
+  const queue = [new CubiclePath(1, 1)];
+  while (queue.length) {
+    const currentPath = queue.shift();
+    if (currentPath.pathLength >= minPath) continue;
+    const neighbors = currentPath.currentNode.neighbors;
+    const neighborsToVisit = neighbors.filter((n) => !currentPath.isNodeInPath(n));
+    neighborsToVisit.forEach((node) => {
+      if (node.is(31, 39)) {
+        const len = currentPath.pathLength;
+        if (len < minPath) {
+          minPath = len;
+        }
+      } else {
+        const newPath = currentPath.visitNode(node);
+        queue.push(newPath);
+      }
+    });
+  }
+
+  return minPath;
+};
+
+/**
+ * Day 13, Puzzle 2
+ * Returns how many locations can be reached
+ * in less than 50 moves from [1,1].
+ *
+ * Takes about 20 seconds - probably not the best algo
+ */
+const nearbyCubicles = () => {
+  let count = 0;
+  for (let x = 0; x <= 51; x++) {
+    for (let y = 0; y <= 51; y++) {
+      if (manhattanDistance([1, 1], [x, y]) <= 50) {
+        const isNearby = isNearbyCubicle(x, y);
+        if (isNearby) {
+          count++;
+        }
+      }
+    }
+  }
+  return count;
+};
+
+/**
+ * Returns whether [endX, endY] can be reached in 50 steps or less from [1,1]
+ */
+const isNearbyCubicle = (endX, endY) => {
+  if (endX === 1 && endY === 1) return true;
+  const MAX_LENGTH = 50;
+  const queue = [new CubiclePath(1, 1)];
+  while (queue.length) {
+    const currentPath = queue.shift();
+    const neighbors = currentPath.currentNode.neighbors;
+    const neighborsToVisit = neighbors.filter((n) => !currentPath.isNodeInPath(n));
+    for (const node of neighborsToVisit) {
+      if (node.is(endX, endY)) {
+        return true;
+      } else if (currentPath.pathLength < MAX_LENGTH) {
+        const newPath = currentPath.visitNode(node);
+        queue.push(newPath);
+      }
+    }
+  }
+
+  return false;
+};

@@ -5898,7 +5898,7 @@ dec d
 jnz d -2
 dec c
 jnz c -5`;
-const DAY13 = ``;
+const DAY13 = 1358;
 const DAY14 = ``;
 const DAY15 = ``;
 const DAY16 = ``;
