@@ -877,3 +877,36 @@ const slotMachine = (input, extraDisc) => {
 const isSlot = ({ loc, slots, start }, time) => {
   return (start + time + loc) % slots === 0;
 };
+
+/**
+ * Day 16, Puzzle 1
+ */
+const dragonCheck = (input, len) => {
+  const curve = dragonCurve(input, len);
+  return dragonCheckSum(curve, len);
+};
+
+const dragonCurve = (value, len) => {
+  let val = value;
+  do {
+    val =
+      val +
+      '0' +
+      val
+        .split('')
+        .reverse()
+        .map((el) => (el === '1' ? 0 : 1))
+        .join('');
+  } while (val.length < len);
+  return val;
+};
+
+const dragonCheckSum = (value, len) => {
+  let val = value.slice(0, len);
+  do {
+    val = splitArrayInChunks(val.split(''), 2)
+      .map((pair) => (pair[0] === pair[1] ? 1 : 0))
+      .join('');
+  } while (val.length % 2 === 0);
+  return val;
+};
