@@ -100,7 +100,7 @@ function pathRepeat(directions) {
 }
 
 // Day 2 - Puzzle 1
-// Takes an array of direction strings
+// Takes a list of direction strings
 // Returns the door code
 function bathroomCode(directions) {
   const keypad = [
@@ -112,7 +112,7 @@ function bathroomCode(directions) {
     y = 1;
   let code = '';
 
-  directions.forEach((line) => {
+  directions.split('\n').forEach((line) => {
     line.split('').forEach((dir) => {
       switch (dir) {
         case 'U':
@@ -159,7 +159,7 @@ function bathroomCodeWeird(directions) {
     x = 0;
   let code = '';
 
-  directions.forEach((line) => {
+  directions.split('\n').forEach((line) => {
     line.split('').forEach((dir) => {
       switch (dir) {
         case 'U':
@@ -192,9 +192,15 @@ function bathroomCodeWeird(directions) {
 }
 
 // Day 3 - Puzzle 1
-// Takes a 2D array of triples
+// Converts the input into a 2D array of triples
 // Returns the number of triples that could be valid triangle sides
-function checkTriangleList(list) {
+function checkTriangleList(input) {
+  const list = input.split('\n').map((row) =>
+    row
+      .trim()
+      .split(/\s+/)
+      .map((el) => +el),
+  );
   return list.filter(([a, b, c]) => isTriangle(a, b, c)).length;
 }
 
@@ -219,21 +225,46 @@ function transposeTriangleList(list) {
   return newList;
 }
 
+function checkTriangleListColumns(input) {
+  const origList = input.split('\n').map((row) =>
+    row
+      .trim()
+      .split(/\s+/)
+      .map((el) => +el),
+  );
+  const newList = [];
+  let i = 0;
+  col = 0;
+  while (col < 3) {
+    const tri = [];
+    for (let t = 0; t < 3; t++) {
+      tri.push(origList[i][col]);
+      i++;
+      if (i === origList.length) {
+        i = 0;
+        col++;
+      }
+    }
+    newList.push(tri);
+  }
+  return newList.filter(([a, b, c]) => isTriangle(a, b, c)).length;
+}
+
 // Day 4 - Puzzle 1
 // Takes an array of room strings
 // Returns the sum of the ids of the real rooms
-function sumRealIds(data) {
+function sumRealIds(input) {
   let sum = 0;
-  data.forEach((room) => {
+  input.split('\n').forEach((room) => {
     const { name, id, checksum } = parseRoom(room);
-    if (getCheckSum(name) === checksum) {
+    if (getRoomCheckSum(name) === checksum) {
       sum += id;
     }
   });
   return sum;
 }
 
-//Takes a room string and returns an object of the form
+// Takes a room string and returns an object of the form
 // { name: string, id: number, checksum: string }
 function parseRoom(string) {
   const [full, name, id, checksum] = string.match(/([\w-]+)-(\d+)\[(\w{5})\]/);
@@ -246,7 +277,7 @@ function parseRoom(string) {
 
 // Takes a string, returns a string containing the
 // five most common letters, ordered by occurences then alpha
-function getCheckSum(string) {
+function getRoomCheckSum(string) {
   const letters = string.split('');
   const letterSet = new Set(letters);
 
@@ -276,10 +307,11 @@ function getCheckSum(string) {
 // Day 4 - Puzzle 2
 // Takes an array of room strings
 // Logs the name and returns the id of the room whose decrypted name includes northpole
-function findNorthPole(data) {
+function findNorthPole(input) {
+  const data = input.split('\n');
   const northpole = data.find((room) => {
     const { name, id, checksum } = parseRoom(room);
-    return getCheckSum(name) === checksum && shift(name, id).includes('northpole');
+    return getRoomCheckSum(name) === checksum && shift(name, id).includes('northpole');
   });
   if (northpole) console.log(shift(parseRoom(northpole).name, parseRoom(northpole).id));
   return northpole ? parseRoom(northpole).id : 'not found';
@@ -342,9 +374,10 @@ function chessPassword2(string) {
 }
 
 // Day 6 - Puzzle 1
-// Takes an array of same-length strings
+// Takes a list of same-length strings
 // Returns a string of that length with the MOST-common char at each position
-function repititionCode(array) {
+function repetitionCode(input) {
+  const array = input.split('\n');
   let freq = Array(array[0].length)
     .fill(null)
     .map((cell) => (cell = {}));
@@ -368,9 +401,10 @@ function repititionCode(array) {
 }
 
 // Day 6 - Puzzle 2
-// Takes an array of same-length strings
+// Takes a list of same-length strings
 // Returns a string of that length with the LEAST-common char at each position
-function repititionCode2(array) {
+function repititionCode2(input) {
+  const array = input.split('\n');
   let freq = Array(array[0].length)
     .fill(null)
     .map((cell) => (cell = {}));
@@ -394,11 +428,11 @@ function repititionCode2(array) {
 }
 
 // Day 7 - Puzzle 1
-// Takes an array of strings
+// Takes a list of strings
 // Returns how many strings are "TLS"
-function numTLS(array) {
+function numTLS(input) {
   let count = 0;
-  array.forEach((ip) => {
+  input.split('\n').forEach((ip) => {
     let isTLS = true;
     const segments = ip.split(/[\[\]]/g);
     if (segments.some((seg, i) => i % 2 === 1 && hasABBA(seg))) {
@@ -428,11 +462,11 @@ function hasABBA(str) {
 }
 
 // Day 7 - Puzzle 2
-// Takes an array of strings
+// Takes a list of strings
 // Returns how many strings are "SSL"
-function numSSL(array) {
+function numSSL(input) {
   let count = 0;
-  array.forEach((ip) => {
+  input.split('\n').forEach((ip) => {
     const segments = ip.split(/[\[\]]/g);
     let ABAarray = [],
       BABarray = [];
@@ -477,13 +511,13 @@ function areInverse(first, second) {
 }
 
 // Day 8 - Puzzle 1 & 2
-// Takes an array of strings of directions
+// Takes a list of strings of directions
 // Returns the number of pixels lit after all directions
-function tinyScreen(directions) {
+function tinyScreen(input, seeViz = false) {
   let screen = Array(6)
     .fill(null)
     .map((row) => Array(50).fill(0));
-  directions.forEach((dir) => {
+  input.split('\n').forEach((dir) => {
     if (dir.includes('rect')) {
       const [x, y] = dir
         .split(/[\sx]/g)
@@ -513,11 +547,33 @@ function tinyScreen(directions) {
       });
     }
   });
-  console.log(screen);
+  if (seeViz) {
+    drawScreen(screen);
+    return 'See visualization';
+  }
   return screen
     .map((row) => row.reduce((prev, cur) => prev + cur))
     .reduce((prev, cur) => prev + cur);
 }
+
+const drawScreen = (displayGrid) => {
+  const imageDiv = document.getElementById('day8visualization');
+  imageDiv.innerHTML = '';
+  displayGrid.forEach((row) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day8row');
+    row.forEach((cell) => {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day8cell');
+      if (cell) {
+        cellDiv.classList.add('black');
+      }
+      rowDiv.appendChild(cellDiv);
+    });
+    imageDiv.appendChild(rowDiv);
+  });
+  imageDiv.style.visibility = 'visible';
+};
 
 // Day 9 - Puzzle 1
 // Takes a string
@@ -636,7 +692,7 @@ const botMicrochips = (input, val1 = 17, val2 = 61) => {
   console.log('Completed all steps without finding it');
 };
 
-// Day 10 - Puzzle 1
+// Day 10 - Puzzle 2
 // Follows all instructions for microchip passing between bots
 // Returns the product of the values at output 0, 1 and 2
 const botMicrochipsOutput = (input) => {
@@ -813,6 +869,7 @@ const isNearbyCubicle = (endX, endY) => {
 
 /**
  * Day 14, Puzzle 1 & 2
+ * Takes too long...
  */
 const hashKeys = (input, hashAlg) => {
   let keys = 0;
@@ -879,7 +936,7 @@ const isSlot = ({ loc, slots, start }, time) => {
 };
 
 /**
- * Day 16, Puzzle 1
+ * Day 16, Puzzle 1 & 2
  */
 const dragonCheck = (input, len) => {
   const curve = dragonCurve(input, len);
