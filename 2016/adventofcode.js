@@ -810,3 +810,40 @@ const isNearbyCubicle = (endX, endY) => {
 
   return false;
 };
+
+/**
+ * Day 14, Puzzle 1 & 2
+ */
+const hashKeys = (input, hashAlg) => {
+  let keys = 0;
+  let i = -1;
+  let cache = {};
+  while (keys < 64) {
+    if (i % 1000 === 2) console.log(i, keys);
+    i++;
+    const hash = cache[i] || hashAlg(`${input}${i}`);
+    cache[i] = hash;
+    const [_, repeatChar] = hash.match(/(\w)\1\1/) || [];
+    if (repeatChar) {
+      const str = repeatChar.repeat(5);
+      for (let j = i + 1; j <= i + 1000; j++) {
+        const h = cache[j] || hashAlg(`${input}${j}`);
+        cache[j] = h;
+        delete cache[j - 1002];
+        if (h.includes(str)) {
+          keys++;
+          break;
+        }
+      }
+    }
+  }
+  return i;
+};
+
+const stretchedHash = (value) => {
+  let hashed = md5(value);
+  for (let i = 0; i < 2016; i++) {
+    hashed = md5(hashed);
+  }
+  return hashed;
+};
