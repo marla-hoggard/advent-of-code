@@ -847,3 +847,33 @@ const stretchedHash = (value) => {
   }
   return hashed;
 };
+
+/**
+ * Day 15, Puzzle 1 & 2
+ * Brute force method
+ * There's probably a mathematical algorithm, but this returned very quickly
+ */
+const slotMachine = (input, extraDisc) => {
+  const discs = input.split('\n').map((str) => {
+    const [_, loc, slots, start] = str
+      .match(/^Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).$/)
+      .map((el) => +el);
+    return { loc, slots, start };
+  });
+
+  if (extraDisc) {
+    discs.push({ loc: discs.length + 1, ...extraDisc });
+  }
+
+  let i = 0;
+  while (true) {
+    if (discs.every((d) => isSlot(d, i))) {
+      return i;
+    }
+    i++;
+  }
+};
+
+const isSlot = ({ loc, slots, start }, time) => {
+  return (start + time + loc) % slots === 0;
+};
