@@ -967,3 +967,68 @@ const dragonCheckSum = (value, len) => {
   } while (val.length % 2 === 0);
   return val;
 };
+
+/**
+ * Day 17, Puzzle 1 & 2
+ * @param pathType - 'shortest' for pt1,  'longest' for pt2
+ */
+const vaultPath = (input, pathType) => {
+  const queue = [{ x: 0, y: 0, path: '' }];
+  let minLength = Number.MAX_VALUE;
+  let maxLength = 0;
+  let bestPath = '';
+  let worstPath = '';
+  while (queue.length) {
+    const { path, x, y } = queue.shift();
+    if (x === 3 && y === 3) {
+      if (path.length < minLength) {
+        minLength = path.length;
+        bestPath = path;
+      }
+      if (path.length > maxLength) {
+        maxLength = path.length;
+        worstPath = path;
+      }
+      continue;
+    }
+    const dirs = getOpenDoors(input, path, x, y);
+    dirs.forEach((dir) => {
+      switch (dir) {
+        case 'U':
+          queue.push({ x, y: y - 1, path: path + dir });
+          break;
+        case 'D':
+          queue.push({ x, y: y + 1, path: path + dir });
+          break;
+        case 'L':
+          queue.push({ x: x - 1, y, path: path + dir });
+          break;
+        case 'R':
+          queue.push({ x: x + 1, y, path: path + dir });
+          break;
+      }
+    });
+  }
+  if (pathType === 'shortest') {
+    return bestPath;
+  } else {
+    return worstPath.length;
+  }
+};
+
+const getOpenDoors = (input, path, x, y) => {
+  const hash = md5(`${input}${path}`);
+  const directions = 'UDLR';
+  return hash
+    .slice(0, 4)
+    .split('')
+    .flatMap((el, i) => {
+      if (!'bcdef'.includes(el)) return [];
+      const dir = directions[i];
+      if (dir == 'U' && y === 0) return [];
+      if (dir === 'D' && y === 3) return [];
+      if (dir === 'L' && x === 0) return [];
+      if (dir === 'R' && x === 3) return [];
+      return [dir];
+    });
+};

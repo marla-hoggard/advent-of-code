@@ -67,8 +67,8 @@ const ANSWERS = {
   '15-2': (input) => slotMachine(input, { slots: 11, start: 0 }),
   '16-1': (input) => dragonCheck(input, 272),
   '16-2': (input) => dragonCheck(input, 35651584), // 11 sec
-  '17-1': placeholder,
-  '17-2': placeholder,
+  '17-1': (input) => vaultPath(input, 'shortest'),
+  '17-2': (input) => vaultPath(input, 'longest'),
   '18-1': placeholder,
   '18-2': placeholder,
   '19-1': placeholder,
