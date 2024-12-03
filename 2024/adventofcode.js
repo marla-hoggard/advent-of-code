@@ -55,3 +55,55 @@ const similarityScore = (input) => {
   });
   return score;
 };
+
+/**
+ * Day 2 - Puzzle 1
+ */
+const safeReports = (input) => {
+  let safeCount = 0;
+  input.split('\n').forEach((report) => {
+    if (isSafeReport(report)) {
+      safeCount++;
+    }
+  });
+  return safeCount;
+};
+
+/**
+ * Day 2 - Puzzle 2
+ */
+const tolerantSafeReports = (input) => {
+  let safeCount = 0;
+  input.split('\n').forEach((report) => {
+    if (isSafeReport(report)) {
+      safeCount++;
+      return;
+    }
+
+    for (let i = 0; i < report.length; i++) {
+      if (isSafeReport(report, i)) {
+        safeCount++;
+        return;
+      }
+    }
+  });
+  return safeCount;
+};
+
+const isSafeReport = (report, indexToRemove) => {
+  let values = report.split(' ').map(Number);
+  if (indexToRemove !== undefined) {
+    values = values.toSpliced(indexToRemove, 1);
+  }
+  let isIncreasing = values[1] > values[0];
+  for (let i = 1; i < values.length; i++) {
+    const diff = values[i] - values[i - 1];
+    if (diff > 3 || diff < -3 || diff === 0) {
+      return false;
+    }
+    if ((isIncreasing && diff < 0) || (!isIncreasing && diff > 0)) {
+      return false;
+    }
+  }
+  return true;
+};

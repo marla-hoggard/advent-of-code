@@ -37,8 +37,8 @@ const placeholder = () => 'incomplete';
 const ANSWERS = {
   '1-1': diffLists,
   '1-2': similarityScore,
-  '2-1': placeholder,
-  '2-2': placeholder,
+  '2-1': safeReports,
+  '2-2': tolerantSafeReports,
   '3-1': placeholder,
   '3-2': placeholder,
   '4-1': placeholder,
