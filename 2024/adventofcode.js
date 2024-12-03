@@ -58,6 +58,7 @@ const similarityScore = (input) => {
 
 /**
  * Day 2 - Puzzle 1
+ * Counts the number of safe reports, where a report is a line of the input
  */
 const safeReports = (input) => {
   let safeCount = 0;
@@ -71,6 +72,8 @@ const safeReports = (input) => {
 
 /**
  * Day 2 - Puzzle 2
+ * Counts the number of reports that are safe as is
+ * or would be with a single item removed
  */
 const tolerantSafeReports = (input) => {
   let safeCount = 0;
@@ -90,6 +93,12 @@ const tolerantSafeReports = (input) => {
   return safeCount;
 };
 
+/**
+ * A report is safe if:
+ * - It is strictly increasing or decreasing
+ * - The difference between each neighboring pair of values is between 1-3
+ * @param indexToRemove - If provided, remove the value at this index before testing
+ */
 const isSafeReport = (report, indexToRemove) => {
   let values = report.split(' ').map(Number);
   if (indexToRemove !== undefined) {
@@ -106,4 +115,62 @@ const isSafeReport = (report, indexToRemove) => {
     }
   }
   return true;
+};
+
+/**
+ * Day 3 - Puzzle 1
+ * Find all instances of mul(a,b) where a and b can be 1-3 digit numbers
+ * Return the sum of each product a*b
+ */
+const decodeAndMultiply = (input) => {
+  const regex = /mul\((?<first>\d{1,3}),(?<second>\d{1,3})\)/g;
+  const matches = [...input.matchAll(regex)];
+  let sum = 0;
+  for (const match of matches) {
+    sum += match.groups.first * match.groups.second;
+  }
+  return sum;
+};
+
+/**
+ * Day 3 - Puzzle 2
+ * Find all instances of mul(a,b) where a and b can be 1-3 digit numbers
+ * However, if don't() appears, then ignore everything after it, until a do() appears
+ * Return the sum of each product that's found in the enabled sections on the input
+ */
+const disabledMultiply = (input) => {
+  const mulRegex = /mul\((?<first>\d{1,3}),(?<second>\d{1,3})\)/g;
+  const doRegex = /do\(\)/g;
+  const dontRegex = /don't\(\)/g;
+
+  const mulMatches = [...input.matchAll(mulRegex)].map((m) => ({
+    type: 'mul',
+    first: m.groups.first,
+    second: m.groups.second,
+    index: m.index,
+  }));
+  const doIndexes = [...input.matchAll(doRegex)].map((m) => ({ type: 'do', index: m.index }));
+  const dontIndexes = [...input.matchAll(dontRegex)].map((m) => ({ type: 'dont', index: m.index }));
+
+  // Combine all the matches into a single array, sorted by index
+  const combined = mulMatches.concat(doIndexes, dontIndexes).sort((a, b) => a.index - b.index);
+
+  let enabled = true;
+  let sum = 0;
+  for (const m of combined) {
+    switch (m.type) {
+      case 'mul':
+        if (enabled) {
+          sum += m.first * m.second;
+        }
+        break;
+      case 'do':
+        enabled = true;
+        break;
+      case 'dont':
+        enabled = false;
+        break;
+    }
+  }
+  return sum;
 };
