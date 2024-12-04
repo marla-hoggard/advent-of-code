@@ -174,3 +174,92 @@ const disabledMultiply = (input) => {
   }
   return sum;
 };
+
+/**
+ * Count all the occurrences of "XMAS" in the word search.
+ * All 8 directions are valid, including backwards and diagonals.
+ */
+const xmasWordSearch = (input) => {
+  const grid = input.split('\n').map((row) => row.split(''));
+  let count = 0;
+
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[0].length; x++) {
+      if (grid[y][x] !== 'X') continue;
+      if (grid[y - 1]?.[x] === 'M' && grid[y - 2]?.[x] === 'A' && grid[y - 3]?.[x] === 'S') {
+        count++;
+      }
+      if (grid[y + 1]?.[x] === 'M' && grid[y + 2]?.[x] === 'A' && grid[y + 3]?.[x] === 'S') {
+        count++;
+      }
+      if (grid[y]?.[x - 1] === 'M' && grid[y]?.[x - 2] === 'A' && grid[y]?.[x - 3] === 'S') {
+        count++;
+      }
+      if (grid[y]?.[x + 1] === 'M' && grid[y]?.[x + 2] === 'A' && grid[y]?.[x + 3] === 'S') {
+        count++;
+      }
+
+      if (
+        grid[y - 1]?.[x - 1] === 'M' &&
+        grid[y - 2]?.[x - 2] === 'A' &&
+        grid[y - 3]?.[x - 3] === 'S'
+      ) {
+        count++;
+      }
+      if (
+        grid[y - 1]?.[x + 1] === 'M' &&
+        grid[y - 2]?.[x + 2] === 'A' &&
+        grid[y - 3]?.[x + 3] === 'S'
+      ) {
+        count++;
+      }
+      if (
+        grid[y + 1]?.[x - 1] === 'M' &&
+        grid[y + 2]?.[x - 2] === 'A' &&
+        grid[y + 3]?.[x - 3] === 'S'
+      ) {
+        count++;
+      }
+      if (
+        grid[y + 1]?.[x + 1] === 'M' &&
+        grid[y + 2]?.[x + 2] === 'A' &&
+        grid[y + 3]?.[x + 3] === 'S'
+      ) {
+        count++;
+      }
+    }
+  }
+  return count;
+};
+
+/**
+ * Counts the occurrences of "MAS" crossing itself in an X shape in the word search
+ * M M
+ *  A
+ * S S
+ */
+const x_masWordSearch = (input) => {
+  const grid = input.split('\n').map((row) => row.split(''));
+  let count = 0;
+
+  for (let y = 1; y < grid.length - 1; y++) {
+    for (let x = 1; x < grid[0].length - 1; x++) {
+      if (grid[y][x] !== 'A') continue;
+      const tl = grid[y - 1][x - 1];
+      const tr = grid[y - 1][x + 1];
+      const bl = grid[y + 1][x - 1];
+      const br = grid[y + 1][x + 1];
+      const letters = { S: 0, M: 0 };
+      [tl, tr, bl, br].forEach((letter) => {
+        if (letter in letters) {
+          letters[letter]++;
+        }
+      });
+
+      if (letters.S === 2 && letters.M === 2 && tl !== br) {
+        count++;
+      }
+    }
+  }
+  return count;
+};
