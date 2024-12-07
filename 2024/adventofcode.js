@@ -263,3 +263,50 @@ const x_masWordSearch = (input) => {
   }
   return count;
 };
+
+/**
+ * Day 5 - Puzzle 1 & 2
+ * - Determines which updates are properly ordered.
+ * - Takes the sum of the middle pages from each update that is being tracked
+ * - track = 'ordered' to look at ordered updates, track = 'unordered' to count out-of-order updates
+ */
+const pageOrdering = (input, track) => {
+  const [orders, updates] = input.split('\n\n');
+  const orderMap = {};
+
+  // Create a mapping of each page to a list of the pages it comes after
+  for (const order of orders.split('\n')) {
+    const [first, second] = order.split('|');
+    orderMap[first] ??= [];
+    orderMap[first].push(second);
+  }
+
+  let sum = 0;
+  for (const update of updates.split('\n')) {
+    const pages = update.split(',');
+    pages.sort((a, b) => {
+      const orderA = orderMap[a];
+      if (orderA.includes(b)) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+
+    const getMiddlPage = (pages) => {
+      const middleIndex = Math.floor(pages.length / 2);
+      const middle = +pages[middleIndex];
+      return middle;
+    };
+
+    if (pages.join(',') === update) {
+      if (track === 'ordered') {
+        sum += getMiddlPage(pages);
+      }
+    } else if (track === 'unordered') {
+      sum += getMiddlPage(pages);
+    }
+  }
+
+  return sum;
+};
