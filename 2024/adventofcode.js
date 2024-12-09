@@ -310,3 +310,147 @@ const pageOrdering = (input, track) => {
 
   return sum;
 };
+
+/**
+ * Day 6, Puzzle 1
+ */
+const guardTracker = (input) => {
+  let x = 0;
+  let y = 0;
+  let dir = 0; // up
+  const visited = new Set();
+  const blocks = new Set();
+  const rows = input.split('\n');
+  const maxX = rows[0].length - 1;
+  const maxY = rows.length - 1;
+
+  // Find the blocks and starting point
+  rows.forEach((row, whichRow) => {
+    row.split('').forEach((cell, whichCol) => {
+      switch (cell) {
+        case '#':
+          blocks.add(`${whichCol},${whichRow}`);
+          break;
+        case '^':
+          x = whichCol;
+          y = whichRow;
+          break;
+      }
+    });
+  });
+
+  // Calculate the path
+  while (x >= 0 && x <= maxX && y >= 0 && y <= maxY) {
+    visited.add(`${x},${y}`);
+    let nextX = x;
+    let nextY = y;
+    switch (dir) {
+      case 0: // up
+        nextY = y - 1;
+        break;
+      case 1: // right
+        nextX = x + 1;
+        break;
+      case 2: // down
+        nextY = y + 1;
+        break;
+      case 3: // left
+        nextX = x - 1;
+        break;
+    }
+    if (blocks.has(`${nextX},${nextY}`)) {
+      dir++;
+      dir %= 4;
+    } else {
+      x = nextX;
+      y = nextY;
+    }
+  }
+
+  return visited.size;
+};
+
+/**
+ * Day 6, Puzzle 2
+ * Bit of a brute force - took 17 seconds
+ */
+const guardLoops = (input) => {
+  let startX = 0;
+  let startY = 0;
+  let loops = 0;
+  const blocks = new Set();
+  const rows = input.split('\n');
+  const maxX = rows[0].length - 1;
+  const maxY = rows.length - 1;
+
+  // Set up blocks
+  rows.forEach((row, whichRow) => {
+    row.split('').forEach((cell, whichCol) => {
+      switch (cell) {
+        case '#':
+          blocks.add(`${whichCol},${whichRow}`);
+          break;
+        case '^':
+          startX = whichCol;
+          startY = whichRow;
+          break;
+      }
+    });
+  });
+
+  for (let blockX = 0; blockX <= maxX; blockX++) {
+    for (let blockY = 0; blockY <= maxY; blockY++) {
+      if (blockX === startX && blockY === startY) {
+        continue;
+      }
+
+      if (guardPathHasLoop({ blockSet: blocks, startX, startY, maxX, maxY, blockX, blockY })) {
+        loops++;
+      }
+    }
+  }
+
+  return loops;
+};
+
+const guardPathHasLoop = ({ blockSet, startX, startY, maxX, maxY, blockX, blockY }) => {
+  const blocks = new Set(blockSet);
+  blocks.add(`${blockX},${blockY}`);
+
+  let x = startX;
+  let y = startY;
+  let dir = 0; // up
+  let visited = new Set();
+  while (x >= 0 && x <= maxX && y >= 0 && y <= maxY) {
+    const visitHash = `${x},${y},${dir}`;
+    if (visited.has(visitHash)) {
+      return true;
+    }
+
+    visited.add(visitHash);
+    let nextX = x;
+    let nextY = y;
+    switch (dir) {
+      case 0: // up
+        nextY = y - 1;
+        break;
+      case 1: // right
+        nextX = x + 1;
+        break;
+      case 2: // down
+        nextY = y + 1;
+        break;
+      case 3: // left
+        nextX = x - 1;
+        break;
+    }
+    if (blocks.has(`${nextX},${nextY}`)) {
+      dir++;
+      dir %= 4;
+    } else {
+      x = nextX;
+      y = nextY;
+    }
+  }
+  return false;
+};
