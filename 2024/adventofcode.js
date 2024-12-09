@@ -313,77 +313,31 @@ const pageOrdering = (input, track) => {
 
 /**
  * Day 6, Puzzle 1
+ * Find the total number of spaces the guard visits before exiting the map bounds
  */
 const guardTracker = (input) => {
-  let x = 0;
-  let y = 0;
-  let dir = 0; // up
-  const visited = new Set();
-  const blocks = new Set();
-  const rows = input.split('\n');
-  const maxX = rows[0].length - 1;
-  const maxY = rows.length - 1;
-
   // Find the blocks and starting point
-  rows.forEach((row, whichRow) => {
-    row.split('').forEach((cell, whichCol) => {
-      switch (cell) {
-        case '#':
-          blocks.add(`${whichCol},${whichRow}`);
-          break;
-        case '^':
-          x = whichCol;
-          y = whichRow;
-          break;
-      }
-    });
-  });
+  const data = setupBlocks(input);
 
-  // Calculate the path
-  while (x >= 0 && x <= maxX && y >= 0 && y <= maxY) {
-    visited.add(`${x},${y}`);
-    let nextX = x;
-    let nextY = y;
-    switch (dir) {
-      case 0: // up
-        nextY = y - 1;
-        break;
-      case 1: // right
-        nextX = x + 1;
-        break;
-      case 2: // down
-        nextY = y + 1;
-        break;
-      case 3: // left
-        nextX = x - 1;
-        break;
-    }
-    if (blocks.has(`${nextX},${nextY}`)) {
-      dir++;
-      dir %= 4;
-    } else {
-      x = nextX;
-      y = nextY;
-    }
-  }
+  // Find all the visited locations
+  const visited = getGuardVisits(data);
 
   return visited.size;
 };
 
 /**
- * Day 6, Puzzle 2
- * Bit of a brute force - took 17 seconds
+ * Parses the input and returns a Set of block coordinates,
+ * plus the start location and map bounds
  */
-const guardLoops = (input) => {
-  let startX = 0;
-  let startY = 0;
-  let loops = 0;
-  const blocks = new Set();
+const setupBlocks = (input) => {
   const rows = input.split('\n');
   const maxX = rows[0].length - 1;
   const maxY = rows.length - 1;
 
-  // Set up blocks
+  const blocks = new Set();
+  let startX = 0;
+  let startY = 0;
+
   rows.forEach((row, whichRow) => {
     row.split('').forEach((cell, whichCol) => {
       switch (cell) {
@@ -398,21 +352,84 @@ const guardLoops = (input) => {
     });
   });
 
-  for (let blockX = 0; blockX <= maxX; blockX++) {
-    for (let blockY = 0; blockY <= maxY; blockY++) {
-      if (blockX === startX && blockY === startY) {
-        continue;
-      }
+  return { blocks, startX, startY, maxX, maxY };
+};
 
-      if (guardPathHasLoop({ blockSet: blocks, startX, startY, maxX, maxY, blockX, blockY })) {
-        loops++;
-      }
-    }
+/**
+ * Executes a single move or turn of the guard
+ */
+const moveGuard = (blocks, x, y, dir) => {
+  let nextX = x;
+  let nextY = y;
+  switch (dir) {
+    case 0: // up
+      nextY = y - 1;
+      break;
+    case 1: // right
+      nextX = x + 1;
+      break;
+    case 2: // down
+      nextY = y + 1;
+      break;
+    case 3: // left
+      nextX = x - 1;
+      break;
   }
+  if (blocks.has(`${nextX},${nextY}`)) {
+    return { x, y, dir: (dir + 1) % 4 };
+  } else {
+    return { x: nextX, y: nextY, dir };
+  }
+};
+
+/**
+ * Returns a Set of "x,y" coordinates that the guard visits,
+ * given the blocks, start location, and map bounds
+ */
+const getGuardVisits = ({ blocks, startX, startY, maxX, maxY }) => {
+  const visited = new Set();
+  let x = startX;
+  let y = startY;
+  let dir = 0; // up
+
+  // Calculate the path
+  while (x >= 0 && x <= maxX && y >= 0 && y <= maxY) {
+    visited.add(`${x},${y}`);
+    ({ x, y, dir } = moveGuard(blocks, x, y, dir));
+  }
+
+  return visited;
+};
+
+/**
+ * Day 6, Puzzle 2
+ * Determines all locations in which adding a block in that location
+ * (and only that location) would cause the guard to get stuck in a loop
+ *
+ * This is attempt2, down from 17 to 4 seconds, but still not as fast as I'd like
+ */
+const guardLoops = (input) => {
+  const data = setupBlocks(input);
+  const visited = getGuardVisits(data);
+  const { blocks: blockSet, ...values } = data;
+
+  let loops = 0;
+
+  // The only places that could affect the path must be on the path,
+  // so iterate though each path location and check if adding a block there creates a loop
+  visited.forEach((loc) => {
+    const [blockX, blockY] = loc.split(',').map(Number);
+    if (guardPathHasLoop({ ...values, blockSet, blockX, blockY })) {
+      loops++;
+    }
+  });
 
   return loops;
 };
 
+/**
+ * Adds blockX,blockY to the blocks list and then checks if the path now contains a loop
+ */
 const guardPathHasLoop = ({ blockSet, startX, startY, maxX, maxY, blockX, blockY }) => {
   const blocks = new Set(blockSet);
   blocks.add(`${blockX},${blockY}`);
@@ -428,29 +445,7 @@ const guardPathHasLoop = ({ blockSet, startX, startY, maxX, maxY, blockX, blockY
     }
 
     visited.add(visitHash);
-    let nextX = x;
-    let nextY = y;
-    switch (dir) {
-      case 0: // up
-        nextY = y - 1;
-        break;
-      case 1: // right
-        nextX = x + 1;
-        break;
-      case 2: // down
-        nextY = y + 1;
-        break;
-      case 3: // left
-        nextX = x - 1;
-        break;
-    }
-    if (blocks.has(`${nextX},${nextY}`)) {
-      dir++;
-      dir %= 4;
-    } else {
-      x = nextX;
-      y = nextY;
-    }
+    ({ x, y, dir } = moveGuard(blocks, x, y, dir));
   }
   return false;
 };
