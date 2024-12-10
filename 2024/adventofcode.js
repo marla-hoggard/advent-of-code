@@ -449,3 +449,84 @@ const guardPathHasLoop = ({ blockSet, startX, startY, maxX, maxY, blockX, blockY
   }
   return false;
 };
+
+/**
+ * Day 7, Puzzle 1
+ */
+const calibratedEquations1 = (input) => {
+  let sum = 0;
+  input.split('\n').forEach((line) => {
+    const [goal, values] = line.split(': ').map((val, index) => {
+      if (index === 0) {
+        return +val;
+      } else {
+        return val.split(' ').map(Number);
+      }
+    });
+
+    if (values.length === 1) {
+      if (goal === values[0]) {
+        sum += goal;
+      }
+      return;
+    }
+
+    let results = [values[0]];
+    for (let i = 1; i < values.length; i++) {
+      const sums = results.map((val) => val + values[i]);
+      const products = results.map((val) => val * values[i]);
+      results = sums.concat(products);
+    }
+    if (results.some((val) => val === goal)) {
+      sum += goal;
+    }
+  });
+  return sum;
+};
+
+/**
+ * Day 7, Puzzle 2
+ */
+const calibratedEquations2 = (input) => {
+  let sum = 0;
+  input.split('\n').forEach((line) => {
+    const [goal, values] = line.split(': ').map((val, index) => {
+      if (index === 0) {
+        return +val;
+      } else {
+        return val.split(' ').map(Number);
+      }
+    });
+
+    if (values.length === 1) {
+      if (goal === values[0]) {
+        sum += goal;
+      }
+      return;
+    }
+
+    let results = [values[0]];
+    for (let i = 1; i < values.length; i++) {
+      let newResults = [];
+      for (const val of results) {
+        const sum = val + values[i];
+        if (sum <= goal) {
+          newResults.push(sum);
+        }
+        const prod = val * values[i];
+        if (prod <= goal) {
+          newResults.push(prod);
+        }
+        const concat = Number(`${val}${values[i]}`);
+        if (concat <= goal) {
+          newResults.push(concat);
+        }
+      }
+      results = newResults;
+    }
+    if (results.some((val) => val === goal)) {
+      sum += goal;
+    }
+  });
+  return sum;
+};
