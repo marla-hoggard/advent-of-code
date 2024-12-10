@@ -530,3 +530,109 @@ const calibratedEquations2 = (input) => {
   });
   return sum;
 };
+
+/**
+ * Day 8, Puzzle 1
+ * For each pair of antennae with matching frequency,
+ * find two antenodes, which are located along the line connecting the pair
+ * at exactly the same distance past one antenna as separates the two.
+ *
+ * Find how many unique locations within the map bounds contain an antenode.
+ * If an antenode falls in the same spot as an antenna, it counts.
+ */
+const antenodes1 = (input) => {
+  const antennae = {};
+  const rows = input.split('\n');
+  const maxX = rows[0].length - 1;
+  const maxY = rows.length - 1;
+  rows.forEach((row, y) => {
+    row.split('').forEach((cell, x) => {
+      if (cell === '.') {
+        return;
+      }
+      const loc = `${x},${y}`;
+      antennae[cell] ??= [];
+      antennae[cell].push(loc);
+    });
+  });
+
+  const antenodes = new Set();
+  Object.values(antennae).forEach((list) => {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const [firstX, firstY] = list[i].split(',').map(Number);
+        const [secondX, secondY] = list[j].split(',').map(Number);
+
+        const x1 = firstX + firstX - secondX;
+        const y1 = firstY + firstY - secondY;
+        const x2 = secondX + secondX - firstX;
+        const y2 = secondY + secondY - firstY;
+
+        if (x1 >= 0 && x1 <= maxX && y1 >= 0 && y1 <= maxY) {
+          antenodes.add(`${x1},${y1}`);
+        }
+        if (x2 >= 0 && x2 <= maxX && y2 >= 0 && y2 <= maxY) {
+          antenodes.add(`${x2},${y2}`);
+        }
+      }
+    }
+  });
+
+  return antenodes.size;
+};
+
+/**
+ * Day 8, Puzzle 2
+ * For each pair of antennae with matching frequency,
+ * find all integer locations on the map including the antennae themselves
+ * that fall directly on the line that connects the two antennae.
+ *
+ */
+const antenodes2 = (input) => {
+  const antennae = {};
+  const rows = input.split('\n');
+  const maxX = rows[0].length - 1;
+  const maxY = rows.length - 1;
+  rows.forEach((row, y) => {
+    row.split('').forEach((cell, x) => {
+      if (cell === '.') {
+        return;
+      }
+      const loc = `${x},${y}`;
+      antennae[cell] ??= [];
+      antennae[cell].push(loc);
+    });
+  });
+
+  const antenodes = new Set();
+  Object.values(antennae).forEach((list) => {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const [firstX, firstY] = list[i].split(',').map(Number);
+        const [secondX, secondY] = list[j].split(',').map(Number);
+
+        antenodes.add(`${firstX},${firstY}`);
+        antenodes.add(`${secondX},${secondY}`);
+
+        let x1 = firstX + firstX - secondX;
+        let y1 = firstY + firstY - secondY;
+        while (x1 >= 0 && x1 <= maxX && y1 >= 0 && y1 <= maxY) {
+          antenodes.add(`${x1},${y1}`);
+          x1 = x1 + firstX - secondX;
+          y1 = y1 + firstY - secondY;
+        }
+
+        let x2 = secondX + secondX - firstX;
+        let y2 = secondY + secondY - firstY;
+
+        while (x2 >= 0 && x2 <= maxX && y2 >= 0 && y2 <= maxY) {
+          antenodes.add(`${x2},${y2}`);
+          x2 = x2 + secondX - firstX;
+          y2 = y2 + secondY - firstY;
+        }
+      }
+    }
+  });
+
+  return antenodes.size;
+};
