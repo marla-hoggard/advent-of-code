@@ -636,3 +636,49 @@ const antenodes2 = (input) => {
 
   return antenodes.size;
 };
+
+const amphipodByBlock = (input) => {
+  let id = 0;
+  let i = 0;
+  let isFile = true;
+  let amph = [];
+  let blanks = [];
+  input.split('').forEach((el) => {
+    for (let idx = 0; idx < +el; idx++) {
+      if (isFile) {
+        amph.push(id);
+      } else {
+        amph.push('X');
+        blanks.push(i);
+      }
+      i++;
+    }
+    if (!isFile) {
+      id++;
+    }
+    isFile = !isFile;
+  });
+
+  i--;
+
+  let blank = blanks.shift();
+
+  do {
+    while (amph[i] === 'X') {
+      i--;
+    }
+    amph[blank] = amph[i];
+    amph[i] = 'X';
+
+    blank = blanks.shift();
+  } while (blanks.length && i >= blank);
+
+  let checksum = 0;
+  for (let idx = 0; idx < amph.length && amph[idx] !== 'X'; idx++) {
+    checksum += amph[idx] * idx;
+  }
+
+  return checksum;
+};
+
+const amphipodByFile = (input) => {};
