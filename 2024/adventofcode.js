@@ -681,4 +681,75 @@ const amphipodByBlock = (input) => {
   return checksum;
 };
 
-const amphipodByFile = (input) => {};
+const amphipodByFile = (input) => {
+  let files = [];
+  let blanks = [];
+  let id = 0;
+  let index = 0;
+  let isFile = true;
+  input.split('').forEach((el) => {
+    const val = +el;
+    if (isFile) {
+      files.push({
+        index,
+        id,
+        size: val,
+      });
+      id++;
+    } else {
+      blanks.push({ index, size: val });
+    }
+    index += val;
+    isFile = !isFile;
+  });
+
+  for (let f = id - 1; f > 0; f--) {
+    const file = files[f];
+    const blankIndex = blanks.findIndex((b) => b.size >= file.size && b.index < file.index);
+    if (blankIndex !== -1) {
+      // NOTE: For completeness, we should blank out the space where the file was,
+      // but it turns out we don't need to, because we never try to move anything there again,
+      // and we don't care about spaces for the checksum
+      // ------------------------------------------------
+      // const blankBefore = blanks.findLast((b) => b.index < file.index);
+      // const blankAfter = blanks.find((b) => b.index > file.index);
+      // const beforeIsBlank = blankBefore
+      //   ? blankBefore.index + blankBefore.size === file.index
+      //   : false;
+      // const afterIsBlank = blankAfter ? file.index + file.size === blankAfter.index : false;
+      // if (beforeIsBlank) {
+      //   blankBefore.size += file.size;
+      //   if (afterIsBlank) {
+      //     blankBefore.size += blankAfter.size;
+      //     blanks = blanks.filter((b) => b.index !== blankAfter.index);
+      //   }
+      // } else if (afterIsBlank) {
+      //   blankAfter.index -= file.size;
+      //   blankAfter.size += file.size;
+      // } else {
+      //   blanks.push({ index: file.index, size: file.size });
+      //   blanks.sort((a, b) => a.index - b.index);
+      // }
+      // ------------------------------------------------
+
+      // Move the file to the space
+      const blank = blanks[blankIndex];
+      if (blank.size === file.size) {
+        file.index = blank.index;
+        blanks.splice(blankIndex, 1);
+      } else {
+        file.index = blank.index;
+        blank.index += file.size;
+        blank.size -= file.size;
+      }
+    }
+  }
+
+  let checksum = 0;
+  files.forEach(({ index, id, size }) => {
+    for (let i = index; i < index + size; i++) {
+      checksum += i * id;
+    }
+  });
+  return checksum;
+};
