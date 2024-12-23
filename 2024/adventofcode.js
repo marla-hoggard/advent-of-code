@@ -637,6 +637,14 @@ const antenodes2 = (input) => {
   return antenodes.size;
 };
 
+/**
+ * Day 9, Puzzle 1
+ * Sets up an "amphipod" file/space map based on the puzzle input.
+ * Fills in all the blank spaces by going one index at a time,
+ * moving the right-most file spot into the left-most open space.
+ *
+ * Returns a checksum which is the sum of (index * value) for all spaces with numeric (file) values.
+ */
 const amphipodByBlock = (input) => {
   let id = 0;
   let i = 0;
@@ -681,6 +689,16 @@ const amphipodByBlock = (input) => {
   return checksum;
 };
 
+/**
+ * Day 9, Puzzle 2
+ * Sets up an "amphipod" file/space map based on the puzzle input.
+ * Iterates through each whole file from right to left (highest id to lowest id),
+ * attempting exactly once for each file to move it to an open space to the left of itself,
+ * choosing the left-most space to its left in which it can fit.
+ * Only try once for each file. If it can't be moved, it never moves and we check the next file.å
+ *
+ * Returns a checksum which is the sum of (index * value) for all spaces with numeric (file) values.
+ */
 const amphipodByFile = (input) => {
   let files = [];
   let blanks = [];
@@ -752,4 +770,93 @@ const amphipodByFile = (input) => {
     }
   });
   return checksum;
+};
+
+/**
+ * Day 10, Puzzle 1
+ * Finds the number of trailhead (0) to trailend (9) pairings that can be made,
+ * where a trail always goes 0123456789 moving orthogonally.
+ * We only need to find how many 9s each 0 can reach, not how many ways it can get there.
+ */
+const findTrails = (input) => {
+  const trails = new Set();
+  const trailheads = [];
+  const grid = input.split('\n').map((row, y) =>
+    row.split('').map((cell, x) => {
+      const val = +cell;
+      if (val === 0) {
+        trailheads.push({ startX: x, startY: y, curX: x, curY: y, val });
+      }
+      return val;
+    }),
+  );
+
+  for (const trailhead of trailheads) {
+    let paths = [trailhead];
+    while (paths.length) {
+      const path = paths.shift();
+      function move(x, y) {
+        const newVal = grid[y]?.[x];
+        if (newVal !== path.val + 1) {
+          return;
+        }
+        if (newVal === 9) {
+          trails.add(`(${path.startX},${path.startY})-(${x},${y})`);
+        } else {
+          paths.push({ ...path, curX: x, curY: y, val: newVal });
+        }
+      }
+
+      move(path.curX - 1, path.curY);
+      move(path.curX + 1, path.curY);
+      move(path.curX, path.curY - 1);
+      move(path.curX, path.curY + 1);
+    }
+  }
+
+  return trails.size;
+};
+
+/**
+ * Day 10, Puzzle 2
+ * Finds the number of distinct trails that can be made,
+ * where a trail goes 0123456789 with only orthogonal movements.
+ */
+const findDistinctTrails = (input) => {
+  let trailCount = 0;
+  const trailheads = [];
+  const grid = input.split('\n').map((row, y) =>
+    row.split('').map((cell, x) => {
+      const val = +cell;
+      if (val === 0) {
+        trailheads.push({ startX: x, startY: y, curX: x, curY: y, val });
+      }
+      return val;
+    }),
+  );
+
+  for (const trailhead of trailheads) {
+    let paths = [trailhead];
+    while (paths.length) {
+      const path = paths.shift();
+      function move(x, y) {
+        const newVal = grid[y]?.[x];
+        if (newVal !== path.val + 1) {
+          return;
+        }
+        if (newVal === 9) {
+          trailCount++;
+        } else {
+          paths.push({ ...path, curX: x, curY: y, val: newVal });
+        }
+      }
+
+      move(path.curX - 1, path.curY);
+      move(path.curX + 1, path.curY);
+      move(path.curX, path.curY - 1);
+      move(path.curX, path.curY + 1);
+    }
+  }
+
+  return trailCount;
 };
