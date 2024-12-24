@@ -863,8 +863,44 @@ const findDistinctTrails = (input) => {
 
 /**
  * Day 11, Puzzle 1 & 2
+ * Determines how many "pebbles" there will be after the given number of "blinks"
  */
 const pebbleBlinks = (input, blinks) => {
+  // pebbles maps values to the count of pebbles with that value
+  let pebbles = {};
+  let pebbleCount = 0;
+
+  input.split(' ').forEach((val) => {
+    incrementObjVal(pebbles, val, 1);
+    pebbleCount++;
+  });
+
+  for (let i = 0; i < blinks; i++) {
+    let newPebbles = {};
+    for (const [val, count] of Object.entries(pebbles)) {
+      if (val === '0') {
+        incrementObjVal(newPebbles, '1', count);
+      } else if (val.length % 2 === 0) {
+        const mid = val.length / 2;
+        incrementObjVal(newPebbles, `${+val.slice(0, mid)}`, count);
+        incrementObjVal(newPebbles, `${+val.slice(mid)}`, count);
+        // This is the only step in which pebbles are added,
+        // so incremement the pebbleCount but the number of pebbles we just added
+        pebbleCount += count;
+      } else {
+        incrementObjVal(newPebbles, `${+val * 2024}`, count);
+      }
+    }
+    pebbles = newPebbles;
+  }
+
+  return pebbleCount;
+};
+
+// This was my first attempt, which worked well for part one,
+// but got slow somewhere in the 30s and would completely overflow in the mid-40s.
+// Even various attempts at batching still never made it to 50, let alone 75 blinks.
+const pebbleBlinksOld = (input, blinks) => {
   let pebbles = input.split(' ');
   let pebbleCount = 0;
   while (pebbles.length) {

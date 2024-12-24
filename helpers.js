@@ -306,3 +306,18 @@ const quadratic = (a, b, c) => {
   const x2 = (-b - Math.sqrt(b * b - 4 * a * c)) / (2 * a);
   return [x1, x2];
 };
+
+/**
+ * @param {*} obj An object with numeric values
+ * @param {*} key The key whose value should be incremented
+ * @param {*} amt The amount to increment that key's value by
+ *
+ * Increments obj[key] by amt, in place.
+ * If obj[key] wasn't present, sets obj[key] to amt
+ *
+ * This will directly mutate obj.
+ */
+const incrementObjVal = (obj, key, amt = 1) => {
+  obj[key] ??= 0;
+  obj[key] += amt;
+};
