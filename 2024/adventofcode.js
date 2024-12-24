@@ -860,3 +860,37 @@ const findDistinctTrails = (input) => {
 
   return trailCount;
 };
+
+/**
+ * Day 11, Puzzle 1 & 2
+ */
+const pebbleBlinks = (input, blinks) => {
+  let pebbles = input.split(' ');
+  let pebbleCount = 0;
+  while (pebbles.length) {
+    const pebble = pebbles.shift();
+    let pebblesToProcess = [pebble];
+    for (let i = 0; i < blinks; i++) {
+      let newPebbles = [];
+      for (const p of pebblesToProcess) {
+        const blinked = blink(p);
+        newPebbles.push(...blinked);
+      }
+      pebblesToProcess = newPebbles;
+    }
+    pebbleCount += pebblesToProcess.length;
+  }
+
+  return pebbleCount;
+};
+
+const blink = (val) => {
+  if (val === '0') {
+    return ['1'];
+  }
+  if (val.length % 2 === 0) {
+    const mid = val.length / 2;
+    return [`${+val.slice(0, mid)}`, `${+val.slice(mid)}`];
+  }
+  return [`${+val * 2024}`];
+};
