@@ -262,17 +262,6 @@ const reverseGrid = (array) => {
   return grid;
 };
 
-/**
- * Inserts @value into @array at @index and returns the updated array
- * Does not mutate the underlying array, as long as it's an array of primitives
- * @returns a new array with the value inserted.
- */
-const insertIntoArray = (array, index, value) => {
-  const copy = [...array];
-  copy.splice(index, 0, value);
-  return copy;
-};
-
 // @indices = a number or an array of numbers
 // Removes the index/indices of @indices from array and returns array
 /**

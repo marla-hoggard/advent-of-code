@@ -553,7 +553,7 @@ const getAllPaths = (distances) => {
     paths.forEach((path) => {
       let pathsToAdd = [];
       for (let i = 0; i <= path.length; i++) {
-        pathsToAdd.push(insertIntoArray(path, i, city));
+        pathsToAdd.push(path.toSpliced(i, 0, city));
       }
       newPaths = newPaths.concat(pathsToAdd);
     });
@@ -777,7 +777,7 @@ const day13Puzzle2 = (input) => {
 
   let fitMeIn = [];
   for (let i = 0; i <= bestOrder.length; i++) {
-    fitMeIn.push(insertIntoArray(bestOrder, i, 'you'));
+    fitMeIn.push(bestOrder.toSpliced(i, 0, 'you'));
   }
 
   maxScore = 0;
@@ -835,7 +835,7 @@ const getAllSeatingArrangements = (scores) => {
     arrangements.forEach((arrangement) => {
       let arrangementsToAdd = [];
       for (let i = 0; i <= arrangement.length; i++) {
-        arrangementsToAdd.push(insertIntoArray(arrangement, i, name));
+        arrangementsToAdd.push(arrangement.toSpliced(i, 0, name));
       }
       newArrangements = newArrangements.concat(arrangementsToAdd);
     });
