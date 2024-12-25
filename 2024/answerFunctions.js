@@ -57,7 +57,7 @@ const ANSWERS = {
   '10-2': findDistinctTrails,
   '11-1': (input) => pebbleBlinks(input, 25),
   '11-2': (input) => pebbleBlinks(input, 75),
-  '12-1': placeholder,
+  '12-1': gardenFences,
   '12-2': placeholder,
   '13-1': placeholder,
   '13-2': placeholder,

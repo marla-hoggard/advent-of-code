@@ -930,3 +930,47 @@ const blink = (val) => {
   }
   return [`${+val * 2024}`];
 };
+
+/**
+ * Day 12, Puzzle 1
+ * Calculates the price of garden fences by computing:
+ *   For each contiguous region of the same letter,
+ *   Multiply the area (number of cells with the letter)
+ *   by the simple perimeter (length of its entire border).
+ * Returns the sum of these products
+ *
+ * Note that the same fence is typically counted twice, once for the region on each side
+ */
+const gardenFences = (input) => {
+  let counted = new Set();
+  const grid = input.split('\n').map((row) => row.split(''));
+  let price = 0;
+
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[0].length; col++) {
+      if (counted.has(`${row},${col}`)) continue;
+      const val = grid[row][col];
+      const coords = new Set([`${row},${col}`]);
+      coords.forEach((loc) => {
+        const [r, c] = loc.split(',').map(Number);
+        if (grid[r - 1]?.[c] === val) coords.add(`${r - 1},${c}`);
+        if (grid[r + 1]?.[c] === val) coords.add(`${r + 1},${c}`);
+        if (grid[r]?.[c - 1] === val) coords.add(`${r},${c - 1}`);
+        if (grid[r]?.[c + 1] === val) coords.add(`${r},${c + 1}`);
+      });
+      const area = coords.size;
+      let perimeter = 0;
+      coords.forEach((loc) => {
+        const [r, c] = loc.split(',').map(Number);
+        if (grid[r - 1]?.[c] !== val) perimeter++;
+        if (grid[r + 1]?.[c] !== val) perimeter++;
+        if (grid[r]?.[c - 1] !== val) perimeter++;
+        if (grid[r]?.[c + 1] !== val) perimeter++;
+      });
+      // console.log(`${val}: ${area} * ${perimeter}`);
+      price += area * perimeter;
+      counted = counted.union(coords);
+    }
+  }
+  return price;
+};
