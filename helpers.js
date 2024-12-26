@@ -321,3 +321,24 @@ const incrementObjVal = (obj, key, amt = 1) => {
   obj[key] ??= 0;
   obj[key] += amt;
 };
+
+/**
+ * Solves a system of linear equations of the form:
+ * ax + by = res1;
+ * cx + dy = res2;
+ *
+ * @param eq1 = [a, b, res1]
+ * @param es2 = [c, d, res2]
+ * @returns the values of x and y as [x, y];
+ */
+const solveLinearSystem = (eq1, eq2) => {
+  const [a, b, res1] = eq1.map((el) => el * eq2[1]);
+  const [c, d, res2] = eq2.map((el) => el * eq1[1]);
+  if (b !== d) {
+    throw new Error('I messed up');
+  }
+  const x = (res2 - res1) / (c - a);
+  const y = (res1 - a * x) / b;
+
+  return [x, y];
+};

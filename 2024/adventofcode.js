@@ -1064,3 +1064,39 @@ const gardenFenceSides = (input) => {
   }
   return price;
 };
+
+/**
+ * Day 13, Puzzle 1 & 2
+ * Determines how many tokens it will take to solve each solvable crane game.
+ * It costs 3 tokens to press A and 1 token to press B.
+ * A game is solvable if there are integer values for pressing buttons A and B that will reach the target X,Y coordinate
+ *
+ * The function opttionally takes an offset value which will be added to the prize values of each provided crane game (for part 2)
+ *
+ * Each crane game can be converted to a system of equations like so:
+ *   Button A: X+94, Y+34
+ *   Button B: X+22, Y+67
+ *   Prize: X=8400, Y=5400
+ *
+ *   94a + 22b = 8400 + offset
+ *   34a + 67b = 5400 + offset
+ *
+ * This game, with 0 offset, solves to a = 80 and b = 40.
+ * so it would cost 3 * 80 + 1 * 40 = 280 tokens to win this game.
+ */
+const craneGame = (input, offset = 0) => {
+  let tokens = 0;
+  for (const game of input.split('\n\n')) {
+    const matches = game.match(craneGameRegex);
+    const { a1, a2, b1, b2, res1, res2 } = matches.groups;
+    const [a, b] = solveLinearSystem([+a1, +a2, +res1 + offset], [+b1, +b2, +res2 + offset]);
+    // Verify that a and b are both integers, and if so, add the corresponding token cound
+    if (Math.floor(a) === Math.ceil(a) && Math.floor(b) === Math.ceil(b)) {
+      tokens += 3 * a + b;
+    }
+  }
+  return tokens;
+};
+
+const craneGameRegex =
+  /Button A: X\+(?<a1>\d+), Y\+(?<b1>\d+)\nButton B: X\+(?<a2>\d+), Y\+(?<b2>\d+)\nPrize: X=(?<res1>\d+), Y=(?<res2>\d+)/m;
