@@ -941,10 +941,60 @@ const blink = (val) => {
  *
  * Note that the same fence is typically counted twice, once for the region on each side
  */
-const gardenFences = (input) => {
+const gardenFencePerimeter = (input) => {
   let counted = new Set();
-  const grid = input.split('\n').map((row) => row.split(''));
   let price = 0;
+  const grid = input.split('\n').map((row) => row.split(''));
+
+  // Iterate through each element of the grid, and find the whole region it's in
+  // (once that region's been tracked, will skip additional processing on the rest of its elements)
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[0].length; col++) {
+      if (counted.has(`${row},${col}`)) continue;
+      const val = grid[row][col]; // The letter of the garden region
+      const coords = new Set([`${row},${col}`]); // Will contain all the coordinates of this region
+
+      // Iterate over all the coords we've already foound, and add their neighbors in the region to the list we're iterating over
+      coords.forEach((loc) => {
+        const [r, c] = loc.split(',').map(Number);
+        if (grid[r - 1]?.[c] === val) coords.add(`${r - 1},${c}`);
+        if (grid[r + 1]?.[c] === val) coords.add(`${r + 1},${c}`);
+        if (grid[r]?.[c - 1] === val) coords.add(`${r},${c - 1}`);
+        if (grid[r]?.[c + 1] === val) coords.add(`${r},${c + 1}`);
+      });
+      const area = coords.size;
+      let perimeter = 0;
+
+      // Iterate over each coordinate and check each of its four sides.
+      // if it's neighbor is not a member of this region (another region or an edge, add to the perimeter count
+      coords.forEach((loc) => {
+        const [r, c] = loc.split(',').map(Number);
+        if (grid[r - 1]?.[c] !== val) perimeter++;
+        if (grid[r + 1]?.[c] !== val) perimeter++;
+        if (grid[r]?.[c - 1] !== val) perimeter++;
+        if (grid[r]?.[c + 1] !== val) perimeter++;
+      });
+      // console.log(`${val}: ${area} * ${perimeter}`);
+      price += area * perimeter;
+      // Add all the region coords to our list of tracked coords, so we don't double count this region
+      counted = counted.union(coords);
+    }
+  }
+  return price;
+};
+
+/**
+ * Day 12, Puzzle 2
+ * Calculates the price of garden fences by computing:
+ *   For each contiguous region of the same letter,
+ *   Multiply the area (number of cells with the letter)
+ *   by number of sides its border has (regardless of side length).
+ * Returns the sum of these products
+ */
+const gardenFenceSides = (input) => {
+  let counted = new Set();
+  let price = 0;
+  const grid = input.split('\n').map((row) => row.split(''));
 
   for (let row = 0; row < grid.length; row++) {
     for (let col = 0; col < grid[0].length; col++) {
@@ -959,16 +1009,56 @@ const gardenFences = (input) => {
         if (grid[r]?.[c + 1] === val) coords.add(`${r},${c + 1}`);
       });
       const area = coords.size;
-      let perimeter = 0;
+
+      // Create an object for each of the four sides of a square, it will have numeric keys, and values of number[]
+      // We will add the index each fence segment to the correct array in the correct object
+      // We will then iterate through each array in each object and count distinct fence regions, by tracking how many
+      // nonconsecutive groups there are. For instance: [1,2,3] = 1. [1,2,3,6,11,12] = 3
+      let tops = {};
+      let bottoms = {};
+      let lefts = {};
+      let rights = {};
       coords.forEach((loc) => {
         const [r, c] = loc.split(',').map(Number);
-        if (grid[r - 1]?.[c] !== val) perimeter++;
-        if (grid[r + 1]?.[c] !== val) perimeter++;
-        if (grid[r]?.[c - 1] !== val) perimeter++;
-        if (grid[r]?.[c + 1] !== val) perimeter++;
+        if (grid[r - 1]?.[c] !== val) {
+          tops[r] ??= [];
+          tops[r].push(c);
+        }
+        if (grid[r + 1]?.[c] !== val) {
+          bottoms[r + 1] ??= [];
+          bottoms[r + 1].push(c);
+        }
+        if (grid[r]?.[c - 1] !== val) {
+          lefts[c] ??= [];
+          lefts[c].push(r);
+        }
+        if (grid[r]?.[c + 1] !== val) {
+          rights[c + 1] ??= [];
+          rights[c + 1].push(r);
+        }
       });
-      // console.log(`${val}: ${area} * ${perimeter}`);
-      price += area * perimeter;
+
+      // Counts the number of groups of consecutive numbers in arr, when sorted
+      // Ex: [1,2,3] = 1.
+      //      [1,2,3, 6, 11,12] = 3
+      const countSides = (total, arr) => {
+        let count = 1;
+        arr.sort((a, b) => a - b);
+        for (let i = 0, j = 1; j < arr.length; i++, j++) {
+          if (arr[j] - arr[i] > 1) {
+            count++;
+          }
+        }
+        return total + count;
+      };
+
+      const sides =
+        Object.values(tops).reduce(countSides, 0) +
+        Object.values(bottoms).reduce(countSides, 0) +
+        Object.values(lefts).reduce(countSides, 0) +
+        Object.values(rights).reduce(countSides, 0);
+      // console.log(`${val}: ${area} * ${sides}`);
+      price += area * sides;
       counted = counted.union(coords);
     }
   }
