@@ -61,7 +61,7 @@ const ANSWERS = {
   '12-2': gardenFenceSides,
   '13-1': craneGame,
   '13-2': (input) => craneGame(input, 10000000000000),
-  '14-1': placeholder,
+  '14-1': bathroomRobots,
   '14-2': placeholder,
   '15-1': placeholder,
   '15-2': placeholder,

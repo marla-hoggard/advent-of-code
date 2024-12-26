@@ -1086,8 +1086,10 @@ const gardenFenceSides = (input) => {
  */
 const craneGame = (input, offset = 0) => {
   let tokens = 0;
+  const regex =
+    /Button A: X\+(?<a1>\d+), Y\+(?<b1>\d+)\nButton B: X\+(?<a2>\d+), Y\+(?<b2>\d+)\nPrize: X=(?<res1>\d+), Y=(?<res2>\d+)/m;
   for (const game of input.split('\n\n')) {
-    const matches = game.match(craneGameRegex);
+    const matches = game.match(regex);
     const { a1, a2, b1, b2, res1, res2 } = matches.groups;
     const [a, b] = solveLinearSystem([+a1, +a2, +res1 + offset], [+b1, +b2, +res2 + offset]);
     // Verify that a and b are both integers, and if so, add the corresponding token cound
@@ -1098,5 +1100,52 @@ const craneGame = (input, offset = 0) => {
   return tokens;
 };
 
-const craneGameRegex =
-  /Button A: X\+(?<a1>\d+), Y\+(?<b1>\d+)\nButton B: X\+(?<a2>\d+), Y\+(?<b2>\d+)\nPrize: X=(?<res1>\d+), Y=(?<res2>\d+)/m;
+/**
+ * Determines where the robots will be when given:
+ * @param input - their starting positions and velocity
+ * @param width - the width of the map, robots will wrap around when hitting an edge
+ * @param height - the height of the map, robots will wrap around when hitting an edge
+ * @param seconds - how many seconds elapse (number of moves to make)
+ *
+ * After making all the moves, groups the robots into four quadrants, TL, BL, TR and BR,
+ * counts how many are in each quadrant, and returns the product of these four values.
+ * If given odd width/height, the dividing lines could contain robots - ignore them.
+ */
+const bathroomRobots = (input, width = 101, height = 103, seconds = 100) => {
+  const regex = /^p=(-?\d+),(-?\d+) v=(-?\d+),(-?\d+)$/;
+  const robots = input.split('\n').map((row) => {
+    const [x, y, vx, vy] = row.match(regex).slice(1).map(Number);
+    return { x, y, vx, vy };
+  });
+  let TL = 0;
+  let TR = 0;
+  let BL = 0;
+  let BR = 0;
+  for (const robot of robots) {
+    let { x, y, vx, vy } = robot;
+    for (let i = 0; i < seconds; i++) {
+      x += vx;
+      while (x < 0) {
+        x += width;
+      }
+      x %= width;
+      y += vy;
+      while (y < 0) {
+        y += height;
+      }
+      y %= height;
+    }
+    const xMid = Math.floor(width / 2);
+    const yMid = Math.floor(height / 2);
+    if (x < xMid && y < yMid) {
+      TL++;
+    } else if (x < xMid && y > yMid) {
+      BL++;
+    } else if (x > xMid && y < yMid) {
+      TR++;
+    } else if (x > xMid && y > yMid) {
+      BR++;
+    }
+  }
+  return TL * BL * TR * BR;
+};
