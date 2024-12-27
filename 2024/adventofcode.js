@@ -1101,6 +1101,7 @@ const craneGame = (input, offset = 0) => {
 };
 
 /**
+ * Day 14, Part 1
  * Determines where the robots will be when given:
  * @param input - their starting positions and velocity
  * @param width - the width of the map, robots will wrap around when hitting an edge
@@ -1148,4 +1149,128 @@ const bathroomRobots = (input, width = 101, height = 103, seconds = 100) => {
     }
   }
   return TL * BL * TR * BR;
+};
+
+let xmasRobots = [];
+let xmasRobotMoves = 0;
+const xmasRobotMapWidth = 101;
+const xmasRobotMapHeight = 103;
+
+/**
+ * Day 14, Part 2
+ * Determines how many moves it takes for the bathroom robots
+ * to end up forming a christmas tree.
+ *
+ * Since I had no idea what this xmas tree would look like, I originally had to brute force it
+ * to draw each iteration to the screen and manually move until I saw it.
+ * After seeing what it actually looked like, I came up with a simple way to check for it
+ * that wasn't just hard-coding the answer -- my assumption (which proved correct) was that
+ * an xmas tree would have a column of at least 20 consecutive robots, and that wouldn't happen otherwise.
+ *
+ * This proved true, so that's the logic that this method now runs with.
+ */
+const christmasTreeRobots = (input) => {
+  const regex = /^p=(-?\d+),(-?\d+) v=(-?\d+),(-?\d+)$/;
+  xmasRobots = input.split('\n').map((row) => {
+    const [x, y, vx, vy] = row.match(regex).slice(1).map(Number);
+    return { x, y, vx, vy };
+  });
+
+  while (!detectXmasTree()) {
+    moveXmasRobots();
+  }
+
+  drawXmasRobots();
+  return xmasRobotMoves;
+};
+
+const moveXmasRobots = () => {
+  xmasRobots = xmasRobots.map((robot) => {
+    const { x: oldX, y: oldY, vx, vy } = robot;
+    let x = oldX + vx;
+    while (x < 0) {
+      x += xmasRobotMapWidth;
+    }
+    x %= xmasRobotMapWidth;
+    let y = oldY + vy;
+    while (y < 0) {
+      y += xmasRobotMapHeight;
+    }
+    y %= xmasRobotMapHeight;
+    return { x, y, vx, vy };
+  });
+  xmasRobotMoves++;
+};
+
+const undoMoveXmasRobots = () => {
+  xmasRobots = xmasRobots.map((robot) => {
+    const { x: oldX, y: oldY, vx, vy } = robot;
+    let x = oldX - vx;
+    while (x < 0) {
+      x += xmasRobotMapWidth;
+    }
+    x %= xmasRobotMapWidth;
+    let y = oldY - vy;
+    while (y < 0) {
+      y += xmasRobotMapHeight;
+    }
+    y %= xmasRobotMapHeight;
+    return { x, y, vx, vy };
+  });
+  xmasRobotMoves--;
+};
+
+/**
+ * Returns true if the current robot config contains a column of at least 20 consecutive robots
+ */
+const detectXmasTree = () => {
+  const longestConsecutiveGroup = (arr) => {
+    const sorted = arr.toSorted((a, b) => a - b);
+    let maxGroup = 0;
+    let curGroup = 1;
+    for (let i = 0, j = 1; j < sorted.length; i++, j++) {
+      if (sorted[j] - sorted[i] === 1) {
+        curGroup++;
+      } else {
+        if (curGroup > maxGroup) {
+          maxGroup = curGroup;
+        }
+        curGroup = 1;
+      }
+    }
+    return maxGroup;
+  };
+
+  let cols = [];
+  xmasRobots.forEach(({ x, y }) => {
+    cols[x] ??= [];
+    cols[x].push(y);
+  });
+
+  return cols.some((col) => longestConsecutiveGroup(col) > 20);
+};
+
+const drawXmasRobots = () => {
+  const imageDiv = document.getElementById('day14visualization');
+  imageDiv.innerHTML = '';
+  for (let r = 0; r < xmasRobotMapHeight; r++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('day14row');
+    for (let c = 0; c < xmasRobotMapWidth; c++) {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('day14cell');
+      if (xmasRobots.some(({ x, y }) => x === c && y === r)) {
+        cellDiv.classList.add('green');
+      } else {
+        cellDiv.classList.add('black');
+      }
+      rowDiv.appendChild(cellDiv);
+    }
+    imageDiv.appendChild(rowDiv);
+  }
+
+  document.getElementById('day14').style.display = 'block';
+
+  const subtitleDiv = document.getElementById('day14subtitle');
+  subtitleDiv.innerHTML = `Moves: ${xmasRobotMoves}`;
 };
