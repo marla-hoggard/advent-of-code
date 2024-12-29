@@ -1274,3 +1274,280 @@ const drawXmasRobots = () => {
   const subtitleDiv = document.getElementById('day14subtitle');
   subtitleDiv.innerHTML = `Moves: ${xmasRobotMoves}`;
 };
+
+/**
+ * Day 15, Puzzle 1
+ */
+const lanternBoxes = (input) => {
+  let curX = 0; // robot X (column)
+  let curY = 0; // robot Y (row)
+  let boxes = new Set(); // coordinates of boxes
+  let walls = new Set(); // coordinates of walls
+
+  const coord = (x, y) => `${x},${y}`;
+
+  const [map, moves] = input.split('\n\n');
+  map.split('\n').forEach((row, y) => {
+    row.split('').forEach((cell, x) => {
+      switch (cell) {
+        case '@':
+          curX = x;
+          curY = y;
+          break;
+        case '#':
+          walls.add(coord(x, y));
+          break;
+        case 'O':
+          boxes.add(coord(x, y));
+          break;
+      }
+    });
+  });
+
+  moves.split('').forEach((move) => {
+    switch (move) {
+      case '^':
+        if (walls.has(coord(curX, curY - 1))) {
+          break;
+        }
+        if (boxes.has(coord(curX, curY - 1))) {
+          let nextUp = curY - 2;
+          while (boxes.has(coord(curX, nextUp))) {
+            nextUp--;
+          }
+          if (walls.has(coord(curX, nextUp))) {
+            break;
+          } else {
+            boxes.delete(coord(curX, curY - 1));
+            boxes.add(coord(curX, nextUp));
+          }
+        }
+        curY--;
+        break;
+      case 'v':
+        if (walls.has(coord(curX, curY + 1))) {
+          break;
+        }
+        if (boxes.has(coord(curX, curY + 1))) {
+          let nextUp = curY + 2;
+          while (boxes.has(coord(curX, nextUp))) {
+            nextUp++;
+          }
+          if (walls.has(coord(curX, nextUp))) {
+            break;
+          } else {
+            boxes.delete(coord(curX, curY + 1));
+            boxes.add(coord(curX, nextUp));
+          }
+        }
+        curY++;
+        break;
+      case '<':
+        if (walls.has(coord(curX - 1, curY))) {
+          break;
+        }
+        if (boxes.has(coord(curX - 1, curY))) {
+          let nextUp = curX - 2;
+          while (boxes.has(coord(nextUp, curY))) {
+            nextUp--;
+          }
+          if (walls.has(coord(nextUp, curY))) {
+            break;
+          } else {
+            boxes.delete(coord(curX - 1, curY));
+            boxes.add(coord(nextUp, curY));
+          }
+        }
+        curX--;
+        break;
+      case '>':
+        if (walls.has(coord(curX + 1, curY))) {
+          break;
+        }
+        if (boxes.has(coord(curX + 1, curY))) {
+          let nextUp = curX + 2;
+          while (boxes.has(coord(nextUp, curY))) {
+            nextUp++;
+          }
+          if (walls.has(coord(nextUp, curY))) {
+            break;
+          } else {
+            boxes.delete(coord(curX + 1, curY));
+            boxes.add(coord(nextUp, curY));
+          }
+        }
+        curX++;
+        break;
+    }
+  });
+
+  // console.log({ curX, curY, boxes });
+  let gps = 0;
+  boxes.forEach((box) => {
+    const [x, y] = box.split(',').map(Number);
+    gps += x + 100 * y;
+  });
+  return gps;
+};
+
+/**
+ * Day 15, Puzzle 2
+ */
+const lanternDoubleBoxes = (input) => {
+  let curX = 0; // robot X (column)
+  let curY = 0; // robot Y (row)
+  let items = {}; // coordinates of boxes: 'left' | 'right' | 'wall'
+
+  const coord = (x, y) => `${x},${y}`;
+  const coordVals = (coords) => coords.split(',').map(Number);
+
+  const [map, moves] = input.split('\n\n');
+  map.split('\n').forEach((row, y) => {
+    row.split('').forEach((cell, x) => {
+      const x1 = x * 2;
+      const x2 = x1 + 1;
+
+      switch (cell) {
+        case '@':
+          curX = x1;
+          curY = y;
+          break;
+        case '#':
+          items[coord(x1, y)] = 'wall';
+          items[coord(x2, y)] = 'wall';
+          break;
+        case 'O':
+          items[coord(x1, y)] = 'left';
+          items[coord(x2, y)] = 'right';
+          break;
+      }
+    });
+  });
+
+  const getNextX = (move, x) => {
+    switch (move) {
+      case '^':
+      case 'v':
+        return x;
+      case '<':
+        return x - 1;
+      case '>':
+        return x + 1;
+    }
+  };
+
+  const getNextY = (move, y) => {
+    switch (move) {
+      case '^':
+        return y - 1;
+      case 'v':
+        return y + 1;
+      case '<':
+      case '>':
+        return y;
+    }
+  };
+
+  moves.split('').forEach((move) => {
+    let hitWall = false;
+    let boxes = {};
+    switch (move) {
+      case '^':
+      case 'v': {
+        let nextY = getNextY(move, curY);
+        let currentRow = new Set([curX]);
+        let hasBoxes = true;
+        while (!hitWall && hasBoxes) {
+          const nextRow = new Set();
+          hasBoxes = false;
+          for (const x of currentRow) {
+            const nextCoords = coord(x, nextY);
+            const nextVal = items[nextCoords];
+            if (nextVal === 'wall') {
+              hitWall = true;
+              break;
+            } else if (nextVal === 'left') {
+              nextRow.add(x);
+              nextRow.add(x + 1);
+              boxes[nextCoords] = nextVal;
+              boxes[coord(x + 1, nextY)] = 'right';
+              hasBoxes = true;
+            } else if (nextVal === 'right') {
+              nextRow.add(x);
+              nextRow.add(x - 1);
+              boxes[nextCoords] = nextVal;
+              boxes[coord(x - 1, nextY)] = 'left';
+              hasBoxes = true;
+            }
+          }
+          currentRow = new Set(nextRow);
+          nextY = getNextY(move, nextY);
+        }
+
+        if (hitWall) {
+          break;
+        }
+        // Move
+        Object.keys(boxes).forEach((coords) => delete items[coords]);
+        Object.entries(boxes).forEach(([coords, val]) => {
+          const [x, y] = coordVals(coords);
+          const nextCoord = coord(getNextX(move, x), getNextY(move, y));
+          items[nextCoord] = val;
+        });
+        curX = getNextX(move, curX);
+        curY = getNextY(move, curY);
+        break;
+      }
+      case '<':
+      case '>': {
+        let nextX = getNextX(move, curX);
+        let isBox = true;
+        while (!hitWall && isBox) {
+          isBox = false;
+          const nextCoords = coord(nextX, curY);
+          const nextVal = items[nextCoords];
+          if (nextVal === 'wall') {
+            hitWall = true;
+            break;
+          } else if (nextVal) {
+            boxes[nextCoords] = nextVal;
+            isBox = true;
+          }
+          nextX = getNextX(move, nextX);
+        }
+
+        if (hitWall) {
+          break;
+        }
+        // Move
+        Object.keys(boxes).forEach((coords) => delete items[coords]);
+        Object.entries(boxes).forEach(([coords, val]) => {
+          const [x, y] = coordVals(coords);
+          const nextCoord = coord(getNextX(move, x), getNextY(move, y));
+          items[nextCoord] = val;
+        });
+        curX = getNextX(move, curX);
+        curY = getNextY(move, curY);
+        break;
+      }
+    }
+    if (!hitWall) {
+      // Object.keys(boxes).forEach((coords) => delete items[coords]);
+      // Object.entries(boxes).forEach(([coords, val]) => {
+      //   const [x, y] = coordVals(coords);
+      //   const nextCoord = coord(getNextX(move, x), getNextY(move, y));
+      //   items[nextCoord] = val;
+      // });
+      // curX = getNextX(move, curX);
+      // curY = getNextY(move, curY);
+    }
+  });
+
+  let gps = 0;
+  Object.entries(items).forEach(([coords, val]) => {
+    if (val !== 'left') return;
+    const [x, y] = coordVals(coords);
+    gps += x + 100 * y;
+  });
+  return gps;
+};
