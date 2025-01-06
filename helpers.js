@@ -342,3 +342,6 @@ const solveLinearSystem = (eq1, eq2) => {
 
   return [x, y];
 };
+
+const xyToString = (x, y) => `${x},${y}`;
+const getXY = (coords) => coords.split(',').map(Number);

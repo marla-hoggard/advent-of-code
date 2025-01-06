@@ -65,7 +65,7 @@ const ANSWERS = {
   '14-2': christmasTreeRobots,
   '15-1': lanternBoxes,
   '15-2': lanternDoubleBoxes,
-  '16-1': placeholder,
+  '16-1': reindeerMaze,
   '16-2': placeholder,
   '17-1': placeholder,
   '17-2': placeholder,

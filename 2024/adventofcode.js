@@ -1295,10 +1295,10 @@ const lanternBoxes = (input) => {
           curY = y;
           break;
         case '#':
-          walls.add(coord(x, y));
+          walls.add(xyToString(x, y));
           break;
         case 'O':
-          boxes.add(coord(x, y));
+          boxes.add(xyToString(x, y));
           break;
       }
     });
@@ -1307,73 +1307,73 @@ const lanternBoxes = (input) => {
   moves.split('').forEach((move) => {
     switch (move) {
       case '^':
-        if (walls.has(coord(curX, curY - 1))) {
+        if (walls.has(xyToString(curX, curY - 1))) {
           break;
         }
-        if (boxes.has(coord(curX, curY - 1))) {
+        if (boxes.has(xyToString(curX, curY - 1))) {
           let nextUp = curY - 2;
-          while (boxes.has(coord(curX, nextUp))) {
+          while (boxes.has(xyToString(curX, nextUp))) {
             nextUp--;
           }
-          if (walls.has(coord(curX, nextUp))) {
+          if (walls.has(xyToString(curX, nextUp))) {
             break;
           } else {
-            boxes.delete(coord(curX, curY - 1));
-            boxes.add(coord(curX, nextUp));
+            boxes.delete(xyToString(curX, curY - 1));
+            boxes.add(xyToString(curX, nextUp));
           }
         }
         curY--;
         break;
       case 'v':
-        if (walls.has(coord(curX, curY + 1))) {
+        if (walls.has(xyToString(curX, curY + 1))) {
           break;
         }
-        if (boxes.has(coord(curX, curY + 1))) {
+        if (boxes.has(xyToString(curX, curY + 1))) {
           let nextUp = curY + 2;
-          while (boxes.has(coord(curX, nextUp))) {
+          while (boxes.has(xyToString(curX, nextUp))) {
             nextUp++;
           }
-          if (walls.has(coord(curX, nextUp))) {
+          if (walls.has(xyToString(curX, nextUp))) {
             break;
           } else {
-            boxes.delete(coord(curX, curY + 1));
-            boxes.add(coord(curX, nextUp));
+            boxes.delete(xyToString(curX, curY + 1));
+            boxes.add(xyToString(curX, nextUp));
           }
         }
         curY++;
         break;
       case '<':
-        if (walls.has(coord(curX - 1, curY))) {
+        if (walls.has(xyToString(curX - 1, curY))) {
           break;
         }
-        if (boxes.has(coord(curX - 1, curY))) {
+        if (boxes.has(xyToString(curX - 1, curY))) {
           let nextUp = curX - 2;
-          while (boxes.has(coord(nextUp, curY))) {
+          while (boxes.has(xyToString(nextUp, curY))) {
             nextUp--;
           }
-          if (walls.has(coord(nextUp, curY))) {
+          if (walls.has(xyToString(nextUp, curY))) {
             break;
           } else {
-            boxes.delete(coord(curX - 1, curY));
-            boxes.add(coord(nextUp, curY));
+            boxes.delete(xyToString(curX - 1, curY));
+            boxes.add(xyToString(nextUp, curY));
           }
         }
         curX--;
         break;
       case '>':
-        if (walls.has(coord(curX + 1, curY))) {
+        if (walls.has(xyToString(curX + 1, curY))) {
           break;
         }
-        if (boxes.has(coord(curX + 1, curY))) {
+        if (boxes.has(xyToString(curX + 1, curY))) {
           let nextUp = curX + 2;
-          while (boxes.has(coord(nextUp, curY))) {
+          while (boxes.has(xyToString(nextUp, curY))) {
             nextUp++;
           }
-          if (walls.has(coord(nextUp, curY))) {
+          if (walls.has(xyToString(nextUp, curY))) {
             break;
           } else {
-            boxes.delete(coord(curX + 1, curY));
-            boxes.add(coord(nextUp, curY));
+            boxes.delete(xyToString(curX + 1, curY));
+            boxes.add(xyToString(nextUp, curY));
           }
         }
         curX++;
@@ -1398,9 +1398,6 @@ const lanternDoubleBoxes = (input) => {
   let curY = 0; // robot Y (row)
   let items = {}; // coordinates of boxes: 'left' | 'right' | 'wall'
 
-  const coord = (x, y) => `${x},${y}`;
-  const coordVals = (coords) => coords.split(',').map(Number);
-
   const [map, moves] = input.split('\n\n');
   map.split('\n').forEach((row, y) => {
     row.split('').forEach((cell, x) => {
@@ -1413,12 +1410,12 @@ const lanternDoubleBoxes = (input) => {
           curY = y;
           break;
         case '#':
-          items[coord(x1, y)] = 'wall';
-          items[coord(x2, y)] = 'wall';
+          items[xyToString(x1, y)] = 'wall';
+          items[xyToString(x2, y)] = 'wall';
           break;
         case 'O':
-          items[coord(x1, y)] = 'left';
-          items[coord(x2, y)] = 'right';
+          items[xyToString(x1, y)] = 'left';
+          items[xyToString(x2, y)] = 'right';
           break;
       }
     });
@@ -1461,7 +1458,7 @@ const lanternDoubleBoxes = (input) => {
           const nextRow = new Set();
           hasBoxes = false;
           for (const x of currentRow) {
-            const nextCoords = coord(x, nextY);
+            const nextCoords = xyToString(x, nextY);
             const nextVal = items[nextCoords];
             if (nextVal === 'wall') {
               hitWall = true;
@@ -1470,13 +1467,13 @@ const lanternDoubleBoxes = (input) => {
               nextRow.add(x);
               nextRow.add(x + 1);
               boxes[nextCoords] = nextVal;
-              boxes[coord(x + 1, nextY)] = 'right';
+              boxes[xyToString(x + 1, nextY)] = 'right';
               hasBoxes = true;
             } else if (nextVal === 'right') {
               nextRow.add(x);
               nextRow.add(x - 1);
               boxes[nextCoords] = nextVal;
-              boxes[coord(x - 1, nextY)] = 'left';
+              boxes[xyToString(x - 1, nextY)] = 'left';
               hasBoxes = true;
             }
           }
@@ -1490,8 +1487,8 @@ const lanternDoubleBoxes = (input) => {
         // Move
         Object.keys(boxes).forEach((coords) => delete items[coords]);
         Object.entries(boxes).forEach(([coords, val]) => {
-          const [x, y] = coordVals(coords);
-          const nextCoord = coord(getNextX(move, x), getNextY(move, y));
+          const [x, y] = getXY(coords);
+          const nextCoord = xyToString(getNextX(move, x), getNextY(move, y));
           items[nextCoord] = val;
         });
         curX = getNextX(move, curX);
@@ -1504,7 +1501,7 @@ const lanternDoubleBoxes = (input) => {
         let isBox = true;
         while (!hitWall && isBox) {
           isBox = false;
-          const nextCoords = coord(nextX, curY);
+          const nextCoords = xyToString(nextX, curY);
           const nextVal = items[nextCoords];
           if (nextVal === 'wall') {
             hitWall = true;
@@ -1522,8 +1519,8 @@ const lanternDoubleBoxes = (input) => {
         // Move
         Object.keys(boxes).forEach((coords) => delete items[coords]);
         Object.entries(boxes).forEach(([coords, val]) => {
-          const [x, y] = coordVals(coords);
-          const nextCoord = coord(getNextX(move, x), getNextY(move, y));
+          const [x, y] = getXY(coords);
+          const nextCoord = xyToString(getNextX(move, x), getNextY(move, y));
           items[nextCoord] = val;
         });
         curX = getNextX(move, curX);
@@ -1531,23 +1528,101 @@ const lanternDoubleBoxes = (input) => {
         break;
       }
     }
-    if (!hitWall) {
-      // Object.keys(boxes).forEach((coords) => delete items[coords]);
-      // Object.entries(boxes).forEach(([coords, val]) => {
-      //   const [x, y] = coordVals(coords);
-      //   const nextCoord = coord(getNextX(move, x), getNextY(move, y));
-      //   items[nextCoord] = val;
-      // });
-      // curX = getNextX(move, curX);
-      // curY = getNextY(move, curY);
-    }
   });
 
   let gps = 0;
   Object.entries(items).forEach(([coords, val]) => {
     if (val !== 'left') return;
-    const [x, y] = coordVals(coords);
+    const [x, y] = getXY(coords);
     gps += x + 100 * y;
   });
   return gps;
+};
+
+/**
+ * Day 16, Puzzle 1
+ */
+const reindeerMaze = (input) => {
+  let start = '';
+  let startX = 0;
+  let startY = 0;
+  let end = '';
+  let open = new Set();
+  let minScore = Number.MAX_VALUE;
+  // let bestPath = new Set();
+  input.split('\n').forEach((row, y) => {
+    row.split('').forEach((val, x) => {
+      if (val === '#') return;
+      const coords = xyToString(x, y);
+      if (val === 'S') {
+        start = coords;
+        startX = x;
+        startY = y;
+      } else if (val === 'E') {
+        end = coords;
+      } else if (val === '.') {
+        open.add(coords);
+      }
+    });
+  });
+
+  let paths = [{ path: [start], curX: startX, curY: startY, dir: '>', score: 0 }];
+  function getMove(x, y, dir, score) {
+    return { x, y, coords: xyToString(x, y), dir, score };
+  }
+
+  while (paths.length) {
+    // console.log(paths[0]);
+    const { path, curX, curY, dir, score } = paths.shift();
+    let moves = [];
+    switch (dir) {
+      case '>':
+        moves.push(getMove(curX + 1, curY, dir, 1));
+        moves.push(getMove(curX, curY + 1, 'v', 1001));
+        moves.push(getMove(curX, curY - 1, '^', 1001));
+        break;
+      case '^':
+        moves.push(getMove(curX, curY - 1, dir, 1));
+        moves.push(getMove(curX + 1, curY, '>', 1001));
+        moves.push(getMove(curX - 1, curY, '<', 1001));
+        break;
+      case '<':
+        moves.push(getMove(curX - 1, curY, dir, 1));
+        moves.push(getMove(curX, curY - 1, '^', 1001));
+        moves.push(getMove(curX, curY + 1, 'v', 1001));
+        break;
+      case 'v':
+        moves.push(getMove(curX, curY + 1, dir, 1));
+        moves.push(getMove(curX - 1, curY, '<', 1001));
+        moves.push(getMove(curX + 1, curY, '>', 1001));
+        break;
+    }
+
+    moves.forEach((move) => {
+      if (end === move.coords) {
+        const finalScore = score + move.score;
+        if (minScore > finalScore) {
+          console.log('new best');
+          console.log(finalScore);
+          minScore = finalScore;
+          // bestPath = path;
+        }
+      } else if (
+        open.has(move.coords) &&
+        !path.includes(move.coords) &&
+        score + move.score < minScore
+      ) {
+        console.log(path.length, move.coords);
+        paths.unshift({
+          path: path.concat(move.coords),
+          curX: move.x,
+          curY: move.y,
+          dir: move.dir,
+          score: score + move.score,
+        });
+      }
+    });
+  }
+  // console.log(bestPath);
+  return minScore;
 };
