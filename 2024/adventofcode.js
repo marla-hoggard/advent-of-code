@@ -1541,6 +1541,7 @@ const lanternDoubleBoxes = (input) => {
 
 /**
  * Day 16, Puzzle 1
+ * NOT EFFICIENT ENOUGH TO FIND A RESULT
  */
 const reindeerMaze = (input) => {
   let start = '';
@@ -1549,7 +1550,7 @@ const reindeerMaze = (input) => {
   let end = '';
   let open = new Set();
   let minScore = Number.MAX_VALUE;
-  // let bestPath = new Set();
+  // let minScore = 151568;
   input.split('\n').forEach((row, y) => {
     row.split('').forEach((val, x) => {
       if (val === '#') return;
@@ -1566,55 +1567,56 @@ const reindeerMaze = (input) => {
     });
   });
 
-  let paths = [{ path: [start], curX: startX, curY: startY, dir: '>', score: 0 }];
-  function getMove(x, y, dir, score) {
-    return { x, y, coords: xyToString(x, y), dir, score };
-  }
-
-  while (paths.length) {
-    // console.log(paths[0]);
+  let i = 0;
+  let paths = [{ path: { [startX]: [startY] }, curX: startX, curY: startY, dir: '>', score: 0 }];
+  while (paths.length > 0) {
+    i++;
+    if (i % 1000000 === 0) console.log(i);
     const { path, curX, curY, dir, score } = paths.shift();
     let moves = [];
     switch (dir) {
       case '>':
-        moves.push(getMove(curX + 1, curY, dir, 1));
-        moves.push(getMove(curX, curY + 1, 'v', 1001));
-        moves.push(getMove(curX, curY - 1, '^', 1001));
+        moves.unshift({ x: curX + 1, y: curY, dir, score: 1 });
+        moves.unshift({ x: curX, y: curY + 1, dir: 'v', score: 1001 });
+        moves.unshift({ x: curX, y: curY - 1, dir: '^', score: 1001 });
         break;
       case '^':
-        moves.push(getMove(curX, curY - 1, dir, 1));
-        moves.push(getMove(curX + 1, curY, '>', 1001));
-        moves.push(getMove(curX - 1, curY, '<', 1001));
+        moves.unshift({ x: curX, y: curY - 1, dir, score: 1 });
+        moves.unshift({ x: curX + 1, y: curY, dir: '>', score: 1001 });
+        moves.unshift({ x: curX - 1, y: curY, dir: '<', score: 1001 });
         break;
       case '<':
-        moves.push(getMove(curX - 1, curY, dir, 1));
-        moves.push(getMove(curX, curY - 1, '^', 1001));
-        moves.push(getMove(curX, curY + 1, 'v', 1001));
+        moves.unshift({ x: curX - 1, y: curY, dir, score: 1 });
+        moves.unshift({ x: curX, y: curY - 1, dir: '^', score: 1001 });
+        moves.unshift({ x: curX, y: curY + 1, dir: 'v', score: 1001 });
         break;
       case 'v':
-        moves.push(getMove(curX, curY + 1, dir, 1));
-        moves.push(getMove(curX - 1, curY, '<', 1001));
-        moves.push(getMove(curX + 1, curY, '>', 1001));
+        moves.unshift({ x: curX, y: curY + 1, dir, score: 1 });
+        moves.unshift({ x: curX - 1, y: curY, dir: '<', score: 1001 });
+        moves.unshift({ x: curX + 1, y: curY, dir: '>', score: 1001 });
         break;
     }
 
     moves.forEach((move) => {
-      if (end === move.coords) {
+      const coords = xyToString(move.x, move.y);
+      if (end === coords) {
         const finalScore = score + move.score;
         if (minScore > finalScore) {
-          console.log('new best');
-          console.log(finalScore);
+          console.log('new best', finalScore);
+          console.log(path);
           minScore = finalScore;
-          // bestPath = path;
         }
       } else if (
-        open.has(move.coords) &&
-        !path.includes(move.coords) &&
-        score + move.score < minScore
+        score + move.score < minScore &&
+        open.has(coords) &&
+        !path[move.x]?.includes(move.y)
       ) {
-        console.log(path.length, move.coords);
+        const newPath = {
+          ...path,
+          [move.x]: (path[move.x] || []).concat(move.y),
+        };
         paths.unshift({
-          path: path.concat(move.coords),
+          path: newPath,
           curX: move.x,
           curY: move.y,
           dir: move.dir,
@@ -1623,6 +1625,270 @@ const reindeerMaze = (input) => {
       }
     });
   }
-  // console.log(bestPath);
+  console.log(i);
+  console.log(paths);
   return minScore;
+};
+
+/**
+ * Day 17, Puzzle 1
+ */
+const chronospatialComputer = (input) => {
+  let [a, b, c, steps] = input.split(/\n+/).map((el, i, arr) => {
+    const [_, val] = el.split(': ');
+    if (i == arr.length - 1) {
+      return val.split(',').map(Number);
+    } else {
+      return +val;
+    }
+  });
+
+  let output = [];
+  let i = 0;
+  while (i < steps.length) {
+    const opcode = steps[i];
+    const literalOperand = steps[i + 1];
+    if (literalOperand === undefined) {
+      throw new Error(`no operand: ${i}`);
+    }
+
+    const getComboOperand = () => {
+      switch (literalOperand) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+          return literalOperand;
+        case 4:
+          return a;
+        case 5:
+          return b;
+        case 6:
+          return c;
+        case 7:
+        default:
+          throw new Error(`invalid operand: ${literalOperand}`);
+      }
+    };
+
+    switch (opcode) {
+      case 0:
+        a = Math.floor(a / 2 ** getComboOperand());
+        break;
+      case 1:
+        b = b ^ literalOperand;
+        break;
+      case 2:
+        b = getComboOperand() % 8;
+        break;
+      case 3:
+        if (a !== 0) {
+          i = literalOperand - 2;
+        }
+        break;
+      case 4:
+        b = b ^ c;
+        break;
+      case 5:
+        output.push(getComboOperand() % 8);
+        break;
+      case 6:
+        b = Math.floor(a / 2 ** getComboOperand());
+        break;
+      case 7:
+        c = Math.floor(a / 2 ** getComboOperand());
+        break;
+      default:
+        throw new Error(`invalid opcode: ${opcode}`);
+    }
+    i += 2;
+  }
+
+  console.log({ a, b, c });
+
+  return output.join(',');
+};
+
+const chronospatialCopy = (input) => {
+  const targetOutput = input.split(/\n\n/)[1].split(': ')[1];
+  const steps = targetOutput.split(',').map(Number);
+
+  // let start = 8 ** 15;
+  let start = 35186400000000;
+  while (start < 8 ** 16) {
+    let a = start;
+    let b = 0;
+    let c = 0;
+    let output = [];
+    let outputIndex = 0;
+    let i = 0;
+    let matching = true;
+
+    while (i < steps.length && matching) {
+      const opcode = steps[i];
+      const literalOperand = steps[i + 1];
+      if (literalOperand === undefined) {
+        throw new Error(`no operand: ${i}`);
+      }
+
+      const getComboOperand = () => {
+        switch (literalOperand) {
+          case 0:
+          case 1:
+          case 2:
+          case 3:
+            return literalOperand;
+          case 4:
+            return a;
+          case 5:
+            return b;
+          case 6:
+            return c;
+          case 7:
+          default:
+            throw new Error(`invalid operand: ${literalOperand}`);
+        }
+      };
+
+      switch (opcode) {
+        case 0:
+          a = Math.floor(a / 2 ** getComboOperand());
+          break;
+        case 1:
+          b = b ^ literalOperand;
+          break;
+        case 2:
+          b = getComboOperand() % 8;
+          break;
+        case 3:
+          if (a !== 0) {
+            i = literalOperand - 2;
+          }
+          break;
+        case 4:
+          b = b ^ c;
+          break;
+        case 5:
+          const val = getComboOperand() % 8;
+          if (steps[outputIndex] === val) {
+            output.push(val);
+            outputIndex++;
+          } else {
+            matching = false;
+          }
+          break;
+        case 6:
+          b = Math.floor(a / 2 ** getComboOperand());
+          break;
+        case 7:
+          c = Math.floor(a / 2 ** getComboOperand());
+          break;
+        default:
+          throw new Error(`invalid opcode: ${opcode}`);
+      }
+      i += 2;
+    }
+
+    if (matching && output.join(',') === targetOutput) {
+      return start;
+    } else {
+      start++;
+      if (start % 10000000 === 0) {
+        console.log(start);
+      }
+    }
+  }
+  return `Didn't find it: ${start}`;
+};
+
+// ------------------------ FILL IN DAY 18 ----------------------------
+
+/**
+ * Day 19, Puzzle 1
+ */
+const towelPatterns = (input) => {
+  let [towels, designs] = input.split('\n\n');
+  towels = towels.split(', ');
+  designs = designs.split('\n');
+
+  let possibleDesigns = 0;
+  for (const design of designs) {
+    if (isPossibleDesign(towels, design)) {
+      possibleDesigns++;
+    }
+  }
+  return possibleDesigns;
+};
+
+const isPossibleDesign = (towels, design) => {
+  if (towels.some((towel) => design === towel)) {
+    return true;
+  }
+  // This is an array of what's left in the design after a valid next towel is found.
+  // i.e. { design: "abc", towel: "ab" } => remainingString = "c"
+  const remainingStrings = [];
+  towels.forEach((towel) => {
+    if (design.startsWith(towel)) {
+      remainingStrings.push(design.slice(towel.length));
+    }
+  });
+  return remainingStrings.some((str) => isPossibleDesign(towels, str));
+};
+
+/**
+ * Day 19, Puzzle 2
+ *
+ * Neither attempt is performant enough.
+ */
+const towelPatternCounts = (input) => {
+  let [towels, designs] = input.split('\n\n');
+  towels = towels.split(', ');
+  designs = designs.split('\n');
+
+  let totalCount = 0;
+
+  for (const design of designs) {
+    const ways = countTheWays(towels, design);
+    console.log(`There are ${ways} ways to make ${design}`);
+    totalCount += ways;
+  }
+
+  return totalCount;
+
+  // for (const design of designs.slice(0, 1)) {
+  //   const eligibleTowels = towels.filter((t) => design.includes(t));
+  //   let heads = eligibleTowels.filter((t) => design.startsWith(t));
+  //   let count = 0;
+  //   while (heads.length) {
+  //     const head = heads.pop();
+  //     if (head === design) {
+  //       count++;
+  //       continue;
+  //     }
+  //     for (const t of eligibleTowels) {
+  //       const newHead = `${head}${t}`;
+  //       if (newHead === design) {
+  //         count++;
+  //       } else if (design.startsWith(newHead)) {
+  //         heads.push(newHead);
+  //       }
+  //     }
+  //   }
+  //   totalCount += count;
+  //   // console.log(`${count} ways to make "${design}"`);
+  // }
+  return totalCount;
+};
+
+const countTheWays = (towels, design) => {
+  let total = 0;
+  towels.forEach((towel) => {
+    if (towel === design) {
+      total++;
+    } else if (design.startsWith(towel)) {
+      const rest = design.slice(towel.length);
+      total += countTheWays(towels, rest);
+    }
+  });
+  return total;
 };
