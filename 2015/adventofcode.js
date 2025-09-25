@@ -862,3 +862,63 @@ const calculateHappiness = (scores, order) => {
   score += scores[order[i]][order[0]];
   return score;
 };
+
+const day14Puzzle1 = (input) => {
+  const regex =
+    /(?<name>\w+) can fly (?<speed>\d+) km\/s for (?<flyTime>\d+) seconds, but then must rest for (?<restTime>\d+) seconds\./;
+  const reindeer = input.split('\n').map((deer) => {
+    const matches = deer.match(regex);
+    const { name, speed, flyTime, restTime } = matches.groups;
+    return { name, speed: +speed, flyTime: +flyTime, restTime: +restTime };
+  });
+  let maxDistance = 0;
+  const distances = {};
+  for (const deer of reindeer) {
+    const distance = getDeerLocation(deer, 2503);
+    if (distance > maxDistance) {
+      maxDistance = distance;
+    }
+    distances[deer.name] = distance;
+  }
+  console.log(distances);
+  return maxDistance;
+};
+
+const getDeerLocation = ({ speed, flyTime, restTime }, seconds) => {
+  const period = flyTime + restTime;
+  const distancePerPeriod = speed * flyTime;
+  const fullPeriods = Math.floor(seconds / period);
+  const finalPeriodLength = seconds % period;
+  const finalPeriodDistance =
+    finalPeriodLength > flyTime ? distancePerPeriod : finalPeriodLength * speed;
+  return distancePerPeriod * fullPeriods + finalPeriodDistance;
+};
+
+const day14Puzzle2 = (input) => {
+  const regex =
+    /(?<name>\w+) can fly (?<speed>\d+) km\/s for (?<flyTime>\d+) seconds, but then must rest for (?<restTime>\d+) seconds\./;
+
+  const points = {};
+  const reindeer = input.split('\n').map((deer) => {
+    const matches = deer.match(regex);
+    const { name, speed, flyTime, restTime } = matches.groups;
+    points[name] = 0;
+    return { name, speed: +speed, flyTime: +flyTime, restTime: +restTime };
+  });
+
+  for (let i = 1; i <= 2503; i++) {
+    const distances = reindeer.map((deer) => ({
+      name: deer.name,
+      distance: getDeerLocation(deer, i),
+    }));
+    const maxDistance = Math.max(...distances.map((d) => d.distance));
+    distances.forEach(({ name, distance }) => {
+      if (maxDistance === distance) {
+        points[name]++;
+      }
+    });
+  }
+
+  console.log(points);
+  return Math.max(...Object.values(points));
+};
