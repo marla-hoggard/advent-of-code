@@ -922,3 +922,77 @@ const day14Puzzle2 = (input) => {
   console.log(points);
   return Math.max(...Object.values(points));
 };
+
+const day15Puzzles = (input, calReq) => {
+  const ingredients = input.split('\n').map((text) => {
+    const regex =
+      /^(?<ingredient>[A-Za-z]+): capacity (?<capacity>[0-9-]+), durability (?<durability>[0-9-]+), flavor (?<flavor>[0-9-]+), texture (?<texture>[0-9-]+), calories (?<calories>[0-9-]+)$/;
+    const matches = text.match(regex);
+    const { ingredient, capacity, durability, flavor, texture, calories } = matches.groups;
+    return {
+      ingredient,
+      capacity: +capacity,
+      durability: +durability,
+      flavor: +flavor,
+      texture: +texture,
+      calories: +calories,
+    };
+  });
+
+  let maxScore = 0;
+  const permutations = getSumPermutations(100, ingredients.length);
+  permutations.forEach((perm) => {
+    const score = recipeScore(
+      ingredients.map((ing, i) => ({
+        ...ing,
+        count: perm[i],
+      })),
+      calReq,
+    );
+    if (score > maxScore) {
+      maxScore = score;
+    }
+  });
+  return maxScore;
+};
+
+const recipeScore = (ingredients, calReq) => {
+  const propScore = (prop, ingredients) => {
+    let sum = 0;
+    for (const ing of ingredients) {
+      sum += ing[prop] * ing.count;
+    }
+    return sum;
+  };
+
+  if (calReq !== undefined) {
+    const calories = propScore('calories', ingredients);
+    if (calories !== calReq) {
+      return 0;
+    }
+  }
+
+  let score = 1;
+
+  for (const prop of ['capacity', 'durability', 'flavor', 'texture']) {
+    const sum = propScore(prop, ingredients);
+    if (sum <= 0) {
+      return 0;
+    }
+    score *= sum;
+  }
+  return score;
+};
+
+const getSumPermutations = (sum, numValues) => {
+  if (numValues === 1) {
+    return [[sum]];
+  }
+
+  const permutations = [];
+  for (let i = 0; i <= sum; i++) {
+    const tails = getSumPermutations(sum - i, numValues - 1);
+    permutations.push(...tails.map((tail) => [i, ...tail]));
+  }
+  return permutations;
+};
