@@ -996,3 +996,83 @@ const getSumPermutations = (sum, numValues) => {
   }
   return permutations;
 };
+
+const day16Puzzle1 = (input) => {
+  const targetSue = {
+    children: 3,
+    cats: 7,
+    samoyeds: 2,
+    pomeranians: 3,
+    akitas: 0,
+    vizslas: 0,
+    goldfish: 5,
+    trees: 3,
+    cars: 2,
+    perfumes: 1,
+  };
+
+  for (const str of input.split('\n')) {
+    const [_, id, ...properties] = str.split(/\:?,?\s/g);
+    let match = true;
+    for (let i = 0; i < properties.length - 1; i += 2) {
+      const key = properties[i];
+      const count = parseInt(properties[i + 1]);
+      if (targetSue[key] !== count) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return id;
+    }
+  }
+
+  return 'none found';
+};
+
+const day16Puzzle2 = (input) => {
+  const isMatch = (key, count) => {
+    switch (key) {
+      case 'children':
+        return count === 3;
+      case 'cats':
+        return count > 7;
+      case 'samoyeds':
+        return count === 2;
+      case 'pomeranians':
+        return count < 3;
+      case 'akitas':
+        return count === 0;
+      case 'vizslas':
+        return count === 0;
+      case 'goldfish':
+        return count < 5;
+      case 'trees':
+        return count > 3;
+      case 'cars':
+        return count === 2;
+      case 'perfumes':
+        return count === 1;
+    }
+  };
+
+  for (const str of input.split('\n')) {
+    const [_, id, ...properties] = str.split(/\:?,?\s/g);
+    let match = true;
+    for (let i = 0; i < properties.length - 1; i += 2) {
+      const key = properties[i];
+      const count = parseInt(properties[i + 1]);
+      if (!isMatch(key, count)) {
+        match = false;
+        continue;
+      }
+    }
+
+    if (match) {
+      return id;
+    }
+  }
+
+  return 'none found';
+};
