@@ -5999,7 +5999,26 @@ Sue 497: akitas: 8, trees: 2, perfumes: 6
 Sue 498: akitas: 1, trees: 1, samoyeds: 4
 Sue 499: cars: 0, akitas: 5, vizslas: 3
 Sue 500: cats: 2, goldfish: 9, children: 8`;
-const DAY17 = ``;
+const DAY17 = `11
+30
+47
+31
+32
+36
+3
+1
+5
+3
+32
+36
+15
+11
+46
+26
+28
+1
+19
+3`;
 const DAY18 = ``;
 const DAY19 = ``;
 const DAY20 = ``;

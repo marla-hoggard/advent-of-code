@@ -1076,3 +1076,121 @@ const day16Puzzle2 = (input) => {
 
   return 'none found';
 };
+
+/**
+ * How many subsets of jugs (input) sum to liters
+ */
+const day17Puzzle1 = (input, liters = 150) => {
+  const jugs = input
+    .split('\n')
+    .map((el) => +el)
+    .sort((a, b) => b - a);
+  return eggnogJugPermCount(jugs, liters);
+};
+
+/**
+ * Given an array of numbers and a target total,
+ * returns the total number of subsets of jugs that exactly add up to the target liters
+ * @param {*} jugs An array of numbers (jug capacities)
+ * @param {*} liters The target total number
+ * @returns The number of permutations of jugs that exactly sum to liters
+ */
+const eggnogJugPermCount = (jugs, liters) => {
+  let matchingJugCount = 0;
+  const lesserJugs = [];
+
+  jugs.forEach((jug) => {
+    // Pull out each jug that exactly matches - these are valid permutations on their own
+    if (jug === liters) {
+      matchingJugCount++;
+    }
+    // Find all the remaining jugs that are less than the target - these may combine to work
+    else if (jug < liters) {
+      lesserJugs.push(jug);
+    }
+  });
+
+  // If there's less than two jugs that are less than the target, there's no more to find
+  if (lesserJugs.length <= 1) {
+    return matchingJugCount;
+  }
+
+  // If there's exactly two, see if they can combine to make the target
+  if (lesserJugs.length === 2) {
+    if (lesserJugs[0] + lesserJugs[1] === liters) {
+      return matchingJugCount + 1;
+    }
+
+    return matchingJugCount;
+  }
+
+  // If there's more than two, then pop off the first jug, and recursively calculate:
+  // - All permutations of the rest that include the first jug (remove first from target)
+  // - All permutations of the rest that don't include the first jug (keep same target)
+  const withoutFirst = lesserJugs.slice(1);
+  return (
+    matchingJugCount +
+    eggnogJugPermCount(withoutFirst, liters - lesserJugs[0]) +
+    eggnogJugPermCount(withoutFirst, liters)
+  );
+};
+
+/**
+ * How many subsets of jugs (parsed input) sum to liters and use the fewest possible jugs?
+ */
+const day17Puzzle2 = (input, liters = 150) => {
+  const jugs = input
+    .split('\n')
+    .map((el) => +el)
+    .sort((a, b) => b - a);
+  const bestSubsets = eggnogJugPerms(jugs, liters) // Find all subsets
+    .sort((a, b) => a.length - b.length) // Sort by length
+    .filter((p, _, arr) => p.length === arr[0].length); // Filter to those matching shortest length
+
+  // Return the count of the filtered list
+  return bestSubsets.length;
+};
+
+/**
+ * Given an array of numbers and a target total,
+ * returns the all subsets of jugs that exactly add up to the target liters
+ * @param {*} jugs An array of numbers (jug capacities)
+ * @param {*} liters The target total number
+ * @returns All subsets of `jugs` that sum to `liters`
+ */
+const eggnogJugPerms = (jugs, liters) => {
+  const matchingJugs = [];
+  const lesserJugs = [];
+
+  jugs.forEach((jug) => {
+    if (jug === liters) {
+      // Any jugs that match liters are a subset on their own
+      matchingJugs.push([jug]);
+    } else if (jug < liters) {
+      // Find any jugs that are less than liters, they could combine to liters
+      lesserJugs.push(jug);
+    }
+  });
+
+  // Not possible to combine the remaining to make more subsets
+  if (lesserJugs.length <= 1) {
+    return matchingJugs;
+  }
+
+  // If exactly two, see if they sum to liters, that's the only possible subset
+  if (lesserJugs.length === 2) {
+    if (lesserJugs[0] + lesserJugs[1] === liters) {
+      matchingJugs.push(lesserJugs);
+    }
+    return matchingJugs;
+  }
+
+  // More than two, so pop off the first one then recursively check the remaining jugs two ways:
+  // - Subsets that include the first jug (subtract the first jug from the target total)
+  // - Subsets that do not include the first jug (keep the same target total)
+  const [first, ...withoutFirst] = lesserJugs;
+  return matchingJugs.concat(
+    eggnogJugPerms(withoutFirst, liters - lesserJugs[0]).map((perm) => [first, ...perm]),
+    eggnogJugPerms(withoutFirst, liters),
+  );
+};
