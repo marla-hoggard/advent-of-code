@@ -1194,3 +1194,94 @@ const eggnogJugPerms = (jugs, liters) => {
     eggnogJugPerms(withoutFirst, liters),
   );
 };
+
+const day18Puzzle1 = (input, iterations = 100) => {
+  let grid = input.split('\n').map((row) => row.split(''));
+  for (let i = 0; i < iterations; i++) {
+    grid = animateGrid(grid);
+  }
+
+  return numOccurrences(grid, '#');
+};
+
+const animateGrid = (grid) => {
+  const newGrid = [];
+  grid.forEach((row, r) => {
+    let newRow = [];
+    row.forEach((cell, c) => {
+      let count = 0;
+      if (grid[r - 1]?.[c - 1] === '#') count++;
+      if (grid[r - 1]?.[c] === '#') count++;
+      if (grid[r - 1]?.[c + 1] === '#') count++;
+      if (grid[r][c - 1] === '#') count++;
+      if (grid[r][c + 1] === '#') count++;
+      if (grid[r + 1]?.[c - 1] === '#') count++;
+      if (grid[r + 1]?.[c] === '#') count++;
+      if (grid[r + 1]?.[c + 1] === '#') count++;
+
+      if (count === 3) {
+        newRow.push('#');
+      } else if (cell === '#' && count === 2) {
+        newRow.push('#');
+      } else {
+        newRow.push('.');
+      }
+    });
+
+    newGrid.push(newRow);
+  });
+  return newGrid;
+};
+
+const day18Puzzle2 = (input, iterations = 100) => {
+  let grid = input.split('\n').map((row) => row.split(''));
+
+  // Turn on the four corners
+  const bottomRow = grid.length - 1;
+  const rightEdge = grid[0].length - 1;
+  grid[0][0] = '#';
+  grid[0][bottomRow] = '#';
+  grid[rightEdge][0] = '#';
+  grid[rightEdge][bottomRow] = '#';
+
+  for (let i = 0; i < iterations; i++) {
+    grid = animateGridCornersOn(grid);
+  }
+
+  return numOccurrences(grid, '#');
+};
+
+const animateGridCornersOn = (grid) => {
+  const newGrid = [];
+  grid.forEach((row, r) => {
+    let newRow = [];
+    row.forEach((cell, c) => {
+      // Corners are always on
+      if ((r === 0 || r === grid.length - 1) && (c === 0 || c === row.length - 1)) {
+        newRow.push('#');
+        return;
+      }
+
+      let count = 0;
+      if (grid[r - 1]?.[c - 1] === '#') count++;
+      if (grid[r - 1]?.[c] === '#') count++;
+      if (grid[r - 1]?.[c + 1] === '#') count++;
+      if (grid[r][c - 1] === '#') count++;
+      if (grid[r][c + 1] === '#') count++;
+      if (grid[r + 1]?.[c - 1] === '#') count++;
+      if (grid[r + 1]?.[c] === '#') count++;
+      if (grid[r + 1]?.[c + 1] === '#') count++;
+
+      if (count === 3) {
+        newRow.push('#');
+      } else if (cell === '#' && count === 2) {
+        newRow.push('#');
+      } else {
+        newRow.push('.');
+      }
+    });
+
+    newGrid.push(newRow);
+  });
+  return newGrid;
+};
