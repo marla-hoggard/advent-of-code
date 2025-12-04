@@ -8,8 +8,8 @@ const placeholder = () => 'incomplete';
 // If the answer function requires other parameters, write an anonymous function that takes input
 // i.e. (input) => fn(input, extraParam)
 const ANSWERS = {
-  '1-1': placeholder,
-  '1-2': placeholder,
+  '1-1': day1puzzle1,
+  '1-2': day1puzzle2,
   '2-1': placeholder,
   '2-2': placeholder,
   '3-1': placeholder,
