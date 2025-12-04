@@ -1892,3 +1892,51 @@ const countTheWays = (towels, design) => {
   });
   return total;
 };
+
+// --------------------- TODO: DAY 20 ----------------------
+
+// --------------------- TODO: DAY 21 ----------------------
+
+/**
+ * Day 22, Puzzle 1
+ */
+const secretNumbers = (input, iterations = 2000) => {
+  let sum = 0;
+  input.split('\n').forEach((startValue) => {
+    const secret = Number(startValue);
+    const newSecret = manyEvolutionsSecretNumber(secret, iterations);
+    console.log(startValue, newSecret);
+    sum += newSecret;
+  });
+  return sum;
+};
+
+/**
+ * @param {number} secret
+ * @param {number} mixin
+ * @returns { number } The bitwise xor of the secret and mixin values
+ */
+const mixSecretNumber = (secret, mixin) => {
+  return secret ^ mixin;
+};
+
+const pruneSecretNumber = (secret) => {
+  return secret % 16777216;
+};
+
+const evolveSecretNumber = (secret) => {
+  let newSecret = secret;
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, newSecret * 64));
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, Math.floor(newSecret / 32)));
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, newSecret * 2048));
+  return newSecret;
+};
+
+const manyEvolutionsSecretNumber = (secret, count) => {
+  let newSecret = secret;
+  for (let i = 0; i < count; i++) {
+    newSecret = evolveSecretNumber(newSecret);
+    console.log(newSecret);
+  }
+  return newSecret;
+};

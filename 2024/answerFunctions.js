@@ -77,7 +77,7 @@ const ANSWERS = {
   '20-2': placeholder,
   '21-1': placeholder,
   '21-2': placeholder,
-  '22-1': placeholder,
+  '22-1': secretNumbers,
   '22-2': placeholder,
   '23-1': placeholder,
   '23-2': placeholder,
