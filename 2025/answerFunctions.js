@@ -10,8 +10,8 @@ const placeholder = () => 'incomplete';
 const ANSWERS = {
   '1-1': day1puzzle1,
   '1-2': day1puzzle2,
-  '2-1': placeholder,
-  '2-2': placeholder,
+  '2-1': day2puzzle1,
+  '2-2': day2puzzle2,
   '3-1': placeholder,
   '3-2': placeholder,
   '4-1': placeholder,
