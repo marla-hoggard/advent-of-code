@@ -104,7 +104,6 @@ const day2puzzle2 = (input) => {
 
 const isInvalid2 = (str) => {
   const len = str.length;
-  // debugger;
 
   for (let i = 1; i <= len / 2; i++) {
     if (len % i !== 0) {
@@ -121,7 +120,6 @@ const isInvalid2 = (str) => {
       }
     }
     if (valid) {
-      // console.log(str);
       return true;
     }
   }
@@ -130,7 +128,6 @@ const isInvalid2 = (str) => {
 
 const isInvalid2a = (str) => {
   const len = str.length;
-  // debugger;
 
   for (let i = 1; i <= len / 2; i++) {
     if (len % i !== 0) {
@@ -140,9 +137,56 @@ const isInvalid2a = (str) => {
     const matcher = str.slice(0, i);
     const times = len / i;
     if (str === matcher.repeat(times)) {
-      // console.log(str, matcher);
       return true;
     }
   }
   return false;
+};
+
+const day3 = (input, len) => {
+  let joltage = 0;
+  input.split('\n').forEach((bank) => {
+    let i = len;
+    let str = bank;
+    let jolt = '';
+    while (i > 0) {
+      const substring = i > 1 ? str.slice(0, 1 - i) : str;
+      const { max, index } = findMaxDigit(substring);
+      jolt += max;
+      str = str.slice(index + 1);
+      i--;
+    }
+
+    joltage += +jolt;
+  });
+  return joltage;
+};
+
+// Initial puzzle 1 solution, before being generalized for both parts - unused now
+const day3puzzle1 = (input) => {
+  let joltage = 0;
+  input.split('\n').forEach((bank) => {
+    const firstDigit = findMaxDigit(bank.slice(0, -1));
+    const secondDigit = findMaxDigit(bank.slice(firstDigit.index + 1));
+    const jolt = Number(`${firstDigit.max}${secondDigit.max}`);
+    joltage += jolt;
+  });
+  return joltage;
+};
+
+const findMaxDigit = (str) => {
+  let max = 0;
+  let index = 0;
+  const digits = str.split('');
+  for (let i = 0; i < digits.length; i++) {
+    const char = +digits[i];
+
+    if (char === 9) {
+      return { max: 9, index: i };
+    } else if (char > max) {
+      max = char;
+      index = i;
+    }
+  }
+  return { max, index };
 };
