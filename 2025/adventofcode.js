@@ -270,3 +270,109 @@ const forkliftRound = (grid) => {
     grid: updatedGrid,
   };
 };
+
+const day5puzzle1 = (input) => {
+  const [rawRanges, ings] = input.split('\n\n');
+  const ranges = rawRanges.split('\n').map((str) => {
+    return str.split('-').map((el) => +el);
+  });
+
+  let fresh = 0;
+
+  ings.split('\n').forEach((ing) => {
+    if (ranges.some((range) => isInRange(ing, range))) {
+      fresh++;
+    }
+  });
+
+  return fresh;
+};
+
+const isInRange = (val, range) => {
+  const [start, end] = range;
+  const value = Number(val);
+  return value >= start && value <= end;
+};
+
+const day5puzzle2 = (input) => {
+  let ranges = input
+    .split('\n\n')[0]
+    .split('\n')
+    .map((str) => {
+      return str.split('-').map((el) => +el);
+    })
+    .sort(sortRanges);
+
+  // Keep going through the loop if at least one range was flattened in this while iteration
+  let keepGoing = true;
+  while (keepGoing) {
+    keepGoing = false;
+    let nextRanges = [];
+    let targetRange = ranges[0];
+
+    // Iterate through each range in ranges, starting with the second range,
+    // comparing with the target range, where the target range is the range right before it
+    // in the latest sorted list - which may me a combination of ranges that originally came before it
+    for (let i = 1; i < ranges.length; i++) {
+      const combined = combineRanges(targetRange, ranges[i]);
+      if (combined.length === 2) {
+        nextRanges.push(combined[0]);
+        targetRange = combined[1];
+      } else {
+        targetRange = combined[0];
+        keepGoing = true;
+      }
+    }
+    nextRanges.push(targetRange);
+    ranges = nextRanges;
+  }
+
+  console.log(ranges);
+
+  let fresh = 0;
+  for (const range of ranges) {
+    fresh += range[1] - range[0] + 1;
+  }
+  return fresh;
+};
+
+/**
+ * Sort method for sorting an array of ranges
+ * @param {[number, number]} range1
+ * @param {[number, number]} range2
+ * @returns { number }
+ */
+const sortRanges = (range1, range2) => {
+  if (range1[0] < range2[0]) {
+    return -1;
+  } else if (range1[0] > range2[0]) {
+    return 1;
+  } else if (range1[1] < range2[1]) {
+    return -1;
+  } else if (range1[1] > range2[1]) {
+    return 1;
+  }
+  return 0;
+};
+
+/**
+ * Sort method for sorting an array of ranges
+ * @param {[number, number]} range1
+ * @param {[number, number]} range2
+ * @returns { [number, number][] }
+ */
+const combineRanges = (range1, range2) => {
+  const [first, second] = [range1, range2].sort(sortRanges);
+
+  const [start1, end1] = first;
+  const [start2, end2] = second;
+
+  if (end1 < start2) {
+    return [first, second];
+  }
+  if (end1 < end2) {
+    return [[start1, end2]];
+  }
+
+  return [[start1, end1]];
+};
