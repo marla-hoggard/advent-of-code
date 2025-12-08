@@ -190,3 +190,83 @@ const findMaxDigit = (str) => {
   }
   return { max, index };
 };
+
+const day4puzzle1 = (input) => {
+  let spaces = 0;
+  input.split('\n').forEach((row, y, grid) => {
+    row.split('').forEach((cell, x, row) => {
+      if (cell !== '@') {
+        return;
+      }
+
+      let adj = 0;
+      for (let c = x - 1; c <= x + 1; c++) {
+        for (let r = y - 1; r <= y + 1; r++) {
+          if (grid[r]?.[c] === '@') {
+            adj++;
+            if (adj > 4) {
+              return;
+            }
+          }
+        }
+      }
+
+      // Checking for 5 not 4 because the loop
+      // includes (x,y) itself which is always @
+      // but should not count towards the < 4
+      if (adj < 5) {
+        spaces++;
+      }
+    });
+  });
+  return spaces;
+};
+
+const day4puzzle2 = (input) => {
+  let removed = 0;
+  let grid = input.split('\n').map((row) => row.split(''));
+  while (true) {
+    const result = forkliftRound(grid);
+    if (result.count > 0) {
+      grid = result.grid;
+      removed += result.count;
+    } else {
+      return removed;
+    }
+  }
+};
+
+const forkliftRound = (grid) => {
+  let count = 0;
+  const updatedGrid = grid.map((row, y, grid) => {
+    return row.map((cell, x, row) => {
+      if (cell !== '@') {
+        return cell;
+      }
+
+      let adj = 0;
+      for (let c = x - 1; c <= x + 1; c++) {
+        for (let r = y - 1; r <= y + 1; r++) {
+          if (grid[r]?.[c] === '@') {
+            adj++;
+            if (adj > 4) {
+              return cell;
+            }
+          }
+        }
+      }
+
+      // Checking for 5 not 4 because the loop
+      // includes (x,y) itself which is always @
+      // but should not count towards the < 4
+      if (adj < 5) {
+        count++;
+        return 'x';
+      }
+    });
+  });
+  return {
+    count,
+    grid: updatedGrid,
+  };
+};
