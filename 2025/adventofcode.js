@@ -376,3 +376,44 @@ const combineRanges = (range1, range2) => {
 
   return [[start1, end1]];
 };
+
+const day6puzzle1 = (input) => {
+  const rows = input.split('\n').map((row) => row.trim().split(/\s+/));
+  const ops = rows.at(-1);
+  return ops.reduce((total, op, i) => {
+    switch (op) {
+      case '+':
+        return (total += rows.slice(0, -1).reduce((sum, row) => sum + Number(row[i]), 0));
+      case '*':
+        return (total += rows.slice(0, -1).reduce((prod, row) => prod * Number(row[i]), 1));
+      default:
+        return 'Invalid operand';
+    }
+  }, 0);
+};
+
+const day6puzzle2 = (input) => {
+  const rows = input.split('\n');
+  const numericRows = rows.slice(0, -1);
+  const opsRow = rows.at(-1);
+  let total = 0;
+  let values = [];
+
+  for (let i = rows[0].length - 1; i >= 0; i--) {
+    // Construct the value by concatenating a string of each digit
+    const val = numericRows.reduce((str, row) => str + row[i].trim(), '');
+
+    if (!val) continue;
+
+    values.push(+val);
+
+    if (opsRow[i] === '+') {
+      total += values.reduce((sum, cur) => sum + cur, 0);
+      values = [];
+    } else if (opsRow[i] === '*') {
+      total += values.reduce((sum, cur) => sum * cur, 1);
+      values = [];
+    }
+  }
+  return total;
+};
