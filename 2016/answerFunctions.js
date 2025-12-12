@@ -69,8 +69,8 @@ const ANSWERS = {
   '16-2': (input) => dragonCheck(input, 35651584), // 11 sec
   '17-1': (input) => vaultPath(input, 'shortest'),
   '17-2': (input) => vaultPath(input, 'longest'),
-  '18-1': placeholder,
-  '18-2': placeholder,
+  '18-1': (input) => likeARogue(input, 40),
+  '18-2': (input) => likeARogue(input, 400000),
   '19-1': whiteElfant,
   '19-2': placeholder,
   '20-1': placeholder,

@@ -5908,7 +5908,8 @@ Disc #5 has 5 positions; at time=0, it is at position 0.
 Disc #6 has 3 positions; at time=0, it is at position 1.`;
 const DAY16 = `11011110011011101`;
 const DAY17 = `lpvhkcbi`;
-const DAY18 = ``;
+const DAY18 =
+  '.^^^^^.^^^..^^^^^...^.^..^^^.^^....^.^...^^^...^^^^..^...^...^^.^.^.......^..^^...^.^.^^..^^^^^...^.';
 const DAY19 = 3004953;
 const DAY20 = ``;
 const DAY21 = ``;

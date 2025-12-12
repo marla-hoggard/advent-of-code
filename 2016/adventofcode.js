@@ -1033,6 +1033,29 @@ const getOpenDoors = (input, path, x, y) => {
     });
 };
 
+/* Day 18, Puzzles 1 & 2
+ * @param steps 40 for Puzzle 1, 400000 for Puzzle 2
+ */
+const likeARogue = (input, steps) => {
+  let row = input;
+  let safeCount = numOccurrences(row, '.');
+
+  for (let step = 1; step < steps; step++) {
+    let nextRow = [];
+    for (let i = 0; i < row.length; i++) {
+      if ((row[i - 1] === '^') !== (row[i + 1] === '^')) {
+        nextRow.push('^');
+      } else {
+        nextRow.push('.');
+        safeCount++;
+      }
+    }
+    row = nextRow.join('');
+  }
+
+  return safeCount;
+};
+
 /**
  * Day 18, Puzzles 1 & 2 go here
  */
@@ -1062,3 +1085,60 @@ function findMaxPowerOfTwo(val) {
   }
   return p;
 }
+
+const whiteElfant2 = (numElves) => {
+  let elves = splitArrayInChunks(
+    Array(numElves)
+      .fill(null)
+      .map((_, i) => ({ pos: i + 1, count: 1 })),
+    2000,
+  );
+  const getElfPos = (pos) => {
+    let row = 0;
+    let col = 0;
+    let count = 0;
+    let found = false;
+
+    while (row < elves.length && !found) {
+      let next = count + elves[row].length;
+      if (next <= pos) {
+        row++;
+        count = next;
+      } else {
+        col = pos - count;
+        found = true;
+      }
+    }
+
+    if (!found) {
+      row = 0;
+      col = 0;
+    }
+    return { row, col };
+  };
+  let curPos = 0;
+  let elfCount = numElves;
+  while (elfCount > 1) {
+    if (elfCount % 10000 === 0) {
+      console.log(elfCount);
+    }
+    const nextPos = (curPos + 1) % elfCount;
+    const curCoords = getElfPos(curPos);
+    const nextCoords = getElfPos(nextPos);
+
+    elves[curCoords.row][curCoords.col].count += elves[nextCoords.row][nextCoords.col].count;
+    elves[nextCoords.row].splice(nextCoords.col, 1);
+    if (elves[nextCoords.row].length === 0) {
+      elves.splice(nextCoords.row, 1);
+    }
+    curPos++;
+    elfCount--;
+    if (curPos > elfCount) {
+      curPos = 0;
+    }
+  }
+
+  console.log(elves);
+
+  return elves[0][0].pos;
+};
