@@ -1032,3 +1032,33 @@ const getOpenDoors = (input, path, x, y) => {
       return [dir];
     });
 };
+
+/**
+ * Day 18, Puzzles 1 & 2 go here
+ */
+
+/**
+ * Day 19, Puzzle 1
+ * I found the following pattern:
+ * - If the elfCount is a power of two, 1 always wins
+ * - Starting at each power two, the winner increased by 2 for each new elf
+ *  until we reach the next power of two: 1,3,5,7,...2^n-1,2^n
+ * - This can be calculated by:
+ *   ((elfcount - closestPowerOf2) * 2) + 1
+ *
+ */
+const whiteElfant = (elfCount) => {
+  const power = findMaxPowerOfTwo(elfCount);
+  return (elfCount - power) * 2 + 1;
+};
+
+/**
+ * Finds the highest power of two that's lower the val
+ */
+function findMaxPowerOfTwo(val) {
+  let p = 1;
+  while (p * 2 <= val) {
+    p *= 2;
+  }
+  return p;
+}

@@ -71,7 +71,7 @@ const ANSWERS = {
   '17-2': (input) => vaultPath(input, 'longest'),
   '18-1': placeholder,
   '18-2': placeholder,
-  '19-1': placeholder,
+  '19-1': whiteElfant,
   '19-2': placeholder,
   '20-1': placeholder,
   '20-2': placeholder,
