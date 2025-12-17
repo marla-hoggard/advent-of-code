@@ -417,3 +417,79 @@ const day6puzzle2 = (input) => {
   }
   return total;
 };
+
+/**
+ * Count the number of times a beam is split
+ * In this puzzle, when two beams end up in the same spot, they merge,
+ * so we use Set to dedupe, only counting each once.
+ */
+const day7puzzle1 = (input) => {
+  const grid = input.split('\n');
+  const maxX = grid[0].length - 1;
+  const maxY = grid.length - 1;
+  const startY = grid.findIndex((r) => r.includes('S'));
+  const startX = grid[startY].indexOf('S');
+  let splitCount = 0;
+  let beams = new Set([xyToString(startX, startY)]);
+  for (let i = startY; i < maxY; i++) {
+    let newBeams = new Set();
+    beams.forEach((beam) => {
+      let [x, y] = getXY(beam);
+      y++;
+
+      if (grid[y][x] === '^') {
+        splitCount++;
+        if (x > 0) {
+          newBeams.add(xyToString(x - 1, y));
+        }
+        if (x < maxX) {
+          newBeams.add(xyToString(x + 1, y));
+        }
+      } else {
+        newBeams.add(xyToString(x, y));
+      }
+    });
+    beams = newBeams;
+  }
+  return splitCount;
+};
+
+/**
+ * Find the total number of paths the beams take
+ * Unlike the first puzzle, in this one we don't want to merge beams in the same spot.
+ * Instead, we keep a count of the number of beams in each spot
+ * When we get to the bottom, we count up the total number of tracked beams
+ */
+const day7puzzle2 = (input) => {
+  const grid = input.split('\n');
+  const maxX = grid[0].length - 1;
+  const maxY = grid.length - 1;
+  const startY = grid.findIndex((r) => r.includes('S'));
+  const startX = grid[startY].indexOf('S');
+  let beams = { [xyToString(startX, startY)]: 1 };
+  for (let i = startY; i < maxY; i++) {
+    let newBeams = {};
+
+    Object.entries(beams).forEach(([beam, count]) => {
+      let [x, y] = getXY(beam);
+      y++;
+
+      if (grid[y][x] === '^') {
+        if (x > 0) {
+          newBeams[xyToString(x - 1, y)] ??= 0;
+          newBeams[xyToString(x - 1, y)] += count;
+        }
+        if (x < maxX) {
+          newBeams[xyToString(x + 1, y)] ??= 0;
+          newBeams[xyToString(x + 1, y)] += count;
+        }
+      } else {
+        newBeams[xyToString(x, y)] ??= 0;
+        newBeams[xyToString(x, y)] += count;
+      }
+    });
+    beams = newBeams;
+  }
+  console.log(beams);
+  return sum(Object.values(beams));
+};
