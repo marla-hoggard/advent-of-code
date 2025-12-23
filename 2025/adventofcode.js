@@ -476,20 +476,115 @@ const day7puzzle2 = (input) => {
 
       if (grid[y][x] === '^') {
         if (x > 0) {
-          newBeams[xyToString(x - 1, y)] ??= 0;
-          newBeams[xyToString(x - 1, y)] += count;
+          incrementObjVal(newBeams, xyToString(x - 1, y), count);
         }
         if (x < maxX) {
-          newBeams[xyToString(x + 1, y)] ??= 0;
-          newBeams[xyToString(x + 1, y)] += count;
+          incrementObjVal(newBeams, xyToString(x + 1, y), count);
         }
       } else {
-        newBeams[xyToString(x, y)] ??= 0;
-        newBeams[xyToString(x, y)] += count;
+        incrementObjVal(newBeams, xyToString(x, y), count);
       }
     });
     beams = newBeams;
   }
   console.log(beams);
   return sum(Object.values(beams));
+};
+
+const day8puzzle1 = (input, count) => {
+  const coords = input.split('\n');
+  const distances = [];
+  for (let i = 0; i < coords.length - 1; i++) {
+    for (let j = i + 1; j < coords.length; j++) {
+      const first = coords[i];
+      const second = coords[j];
+      const distance = directDistance(getXYZ(first), getXYZ(second));
+      distances.push({ distance, coords: [first, second] });
+    }
+  }
+  distances.sort((a, b) => a.distance - b.distance);
+  const connections = distances.slice(0, count);
+
+  let circuits = [];
+  const connected = new Set();
+
+  for (const conn of connections) {
+    const [first, second] = conn.coords;
+
+    if (connected.has(first) && connected.has(second)) {
+      const index1 = circuits.findIndex((el) => el.has(first));
+      const index2 = circuits.findIndex((el) => el.has(second));
+
+      if (index1 === index2) {
+        continue;
+      }
+
+      const combo = new Set(circuits[index1].union(circuits[index2]));
+      circuits = circuits.filter((_, i) => i !== index1 && i !== index2).concat(combo);
+    } else if (connected.has(first)) {
+      const index = circuits.findIndex((el) => el.has(first));
+      circuits[index].add(second);
+    } else if (connected.has(second)) {
+      const index = circuits.findIndex((el) => el.has(second));
+      circuits[index].add(first);
+    } else {
+      circuits.push(new Set([first, second]));
+    }
+    connected.add(first);
+    connected.add(second);
+  }
+
+  circuits.sort((a, b) => b.size - a.size);
+  console.log(circuits);
+
+  return circuits[0].size * circuits[1].size * circuits[2].size;
+};
+
+const day8puzzle2 = (input) => {
+  const coords = input.split('\n');
+  const distances = [];
+  for (let i = 0; i < coords.length - 1; i++) {
+    for (let j = i + 1; j < coords.length; j++) {
+      const first = coords[i];
+      const second = coords[j];
+      const distance = directDistance(getXYZ(first), getXYZ(second));
+      distances.push({ distance, coords: [first, second] });
+    }
+  }
+  distances.sort((a, b) => a.distance - b.distance);
+
+  let circuits = [];
+  const connected = new Set();
+  let i = 0;
+
+  for (const conn of distances) {
+    const [first, second] = conn.coords;
+
+    if (connected.has(first) && connected.has(second)) {
+      const index1 = circuits.findIndex((el) => el.has(first));
+      const index2 = circuits.findIndex((el) => el.has(second));
+
+      if (index1 === index2) {
+        continue;
+      }
+
+      const combo = new Set(circuits[index1].union(circuits[index2]));
+      circuits = circuits.filter((_, i) => i !== index1 && i !== index2).concat(combo);
+    } else if (connected.has(first)) {
+      const index = circuits.findIndex((el) => el.has(first));
+      circuits[index].add(second);
+    } else if (connected.has(second)) {
+      const index = circuits.findIndex((el) => el.has(second));
+      circuits[index].add(first);
+    } else {
+      circuits.push(new Set([first, second]));
+    }
+    connected.add(first);
+    connected.add(second);
+
+    if (connected.size === coords.length && circuits.length === 1) {
+      console.log(conn.coords);
+      return getXYZ(first)[0] * getXYZ(second)[0];
+    }
+  }
 };
