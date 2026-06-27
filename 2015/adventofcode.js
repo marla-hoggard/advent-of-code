@@ -1285,3 +1285,72 @@ const animateGridCornersOn = (grid) => {
   });
   return newGrid;
 };
+
+const day19Puzzle1 = (input) => {
+  const [transformsRaw, start] = input.split('\n\n');
+  const transforms = {};
+  transformsRaw.split('\n').forEach((transform) => {
+    const [before, after] = transform.split(' => ');
+    transforms[before] ??= [];
+    transforms[before].push(after);
+  });
+
+  const molecules = new Set();
+  const elements = [...start.matchAll(/[A-Z][a-z]?/g)];
+  elements.forEach((el) => {
+    const swaps = transforms[el] ?? [];
+    swaps.forEach((after) => {
+      const newMol = start.slice(0, el.index) + after + start.slice(el.index + el[0].length);
+      molecules.add(newMol);
+    });
+  });
+
+  console.log(molecules);
+  return molecules.size;
+};
+
+const day19Puzzle2 = (input) => {
+  const [transformsRaw, target] = input.split('\n\n');
+  const transforms = {};
+  transformsRaw.split('\n').forEach((transform) => {
+    const [before, after] = transform.split(' => ');
+    transforms[before] ??= [];
+    transforms[before].push(after);
+  });
+
+  let count = 1;
+  const seen = new Set();
+  let queue = ['e'];
+  let nextQueue = new Set();
+  while (queue.length) {
+    const start = queue.shift();
+
+    const elements = [...start.matchAll(/[A-Z][a-z]?|e/g)];
+    for (const el of elements) {
+      const swaps = transforms[el] ?? [];
+      for (const after of swaps) {
+        const newMol = start.slice(0, el.index) + after + start.slice(el.index + el[0].length);
+        if (newMol === target) {
+          return count;
+        }
+
+        if (newMol.length <= target.length && !seen.has(newMol)) {
+          seen.add(newMol);
+          nextQueue.add(newMol);
+        }
+      }
+    }
+
+    if (!queue.length) {
+      queue = Array.from(nextQueue);
+      nextQueue = new Set();
+      count++;
+
+      // if (count % 10 === 0) {
+      console.log(count, queue.length);
+      // }
+    }
+  }
+
+  return 'not found';
+};
