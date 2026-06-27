@@ -862,3 +862,426 @@ const calculateHappiness = (scores, order) => {
   score += scores[order[i]][order[0]];
   return score;
 };
+
+const day14Puzzle1 = (input) => {
+  const regex =
+    /(?<name>\w+) can fly (?<speed>\d+) km\/s for (?<flyTime>\d+) seconds, but then must rest for (?<restTime>\d+) seconds\./;
+  const reindeer = input.split('\n').map((deer) => {
+    const matches = deer.match(regex);
+    const { name, speed, flyTime, restTime } = matches.groups;
+    return { name, speed: +speed, flyTime: +flyTime, restTime: +restTime };
+  });
+  let maxDistance = 0;
+  const distances = {};
+  for (const deer of reindeer) {
+    const distance = getDeerLocation(deer, 2503);
+    if (distance > maxDistance) {
+      maxDistance = distance;
+    }
+    distances[deer.name] = distance;
+  }
+  console.log(distances);
+  return maxDistance;
+};
+
+const getDeerLocation = ({ speed, flyTime, restTime }, seconds) => {
+  const period = flyTime + restTime;
+  const distancePerPeriod = speed * flyTime;
+  const fullPeriods = Math.floor(seconds / period);
+  const finalPeriodLength = seconds % period;
+  const finalPeriodDistance =
+    finalPeriodLength > flyTime ? distancePerPeriod : finalPeriodLength * speed;
+  return distancePerPeriod * fullPeriods + finalPeriodDistance;
+};
+
+const day14Puzzle2 = (input) => {
+  const regex =
+    /(?<name>\w+) can fly (?<speed>\d+) km\/s for (?<flyTime>\d+) seconds, but then must rest for (?<restTime>\d+) seconds\./;
+
+  const points = {};
+  const reindeer = input.split('\n').map((deer) => {
+    const matches = deer.match(regex);
+    const { name, speed, flyTime, restTime } = matches.groups;
+    points[name] = 0;
+    return { name, speed: +speed, flyTime: +flyTime, restTime: +restTime };
+  });
+
+  for (let i = 1; i <= 2503; i++) {
+    const distances = reindeer.map((deer) => ({
+      name: deer.name,
+      distance: getDeerLocation(deer, i),
+    }));
+    const maxDistance = Math.max(...distances.map((d) => d.distance));
+    distances.forEach(({ name, distance }) => {
+      if (maxDistance === distance) {
+        points[name]++;
+      }
+    });
+  }
+
+  console.log(points);
+  return Math.max(...Object.values(points));
+};
+
+const day15Puzzles = (input, calReq) => {
+  const ingredients = input.split('\n').map((text) => {
+    const regex =
+      /^(?<ingredient>[A-Za-z]+): capacity (?<capacity>[0-9-]+), durability (?<durability>[0-9-]+), flavor (?<flavor>[0-9-]+), texture (?<texture>[0-9-]+), calories (?<calories>[0-9-]+)$/;
+    const matches = text.match(regex);
+    const { ingredient, capacity, durability, flavor, texture, calories } = matches.groups;
+    return {
+      ingredient,
+      capacity: +capacity,
+      durability: +durability,
+      flavor: +flavor,
+      texture: +texture,
+      calories: +calories,
+    };
+  });
+
+  let maxScore = 0;
+  const permutations = getSumPermutations(100, ingredients.length);
+  permutations.forEach((perm) => {
+    const score = recipeScore(
+      ingredients.map((ing, i) => ({
+        ...ing,
+        count: perm[i],
+      })),
+      calReq,
+    );
+    if (score > maxScore) {
+      maxScore = score;
+    }
+  });
+  return maxScore;
+};
+
+const recipeScore = (ingredients, calReq) => {
+  const propScore = (prop, ingredients) => {
+    let sum = 0;
+    for (const ing of ingredients) {
+      sum += ing[prop] * ing.count;
+    }
+    return sum;
+  };
+
+  if (calReq !== undefined) {
+    const calories = propScore('calories', ingredients);
+    if (calories !== calReq) {
+      return 0;
+    }
+  }
+
+  let score = 1;
+
+  for (const prop of ['capacity', 'durability', 'flavor', 'texture']) {
+    const sum = propScore(prop, ingredients);
+    if (sum <= 0) {
+      return 0;
+    }
+    score *= sum;
+  }
+  return score;
+};
+
+const getSumPermutations = (sum, numValues) => {
+  if (numValues === 1) {
+    return [[sum]];
+  }
+
+  const permutations = [];
+  for (let i = 0; i <= sum; i++) {
+    const tails = getSumPermutations(sum - i, numValues - 1);
+    permutations.push(...tails.map((tail) => [i, ...tail]));
+  }
+  return permutations;
+};
+
+const day16Puzzle1 = (input) => {
+  const targetSue = {
+    children: 3,
+    cats: 7,
+    samoyeds: 2,
+    pomeranians: 3,
+    akitas: 0,
+    vizslas: 0,
+    goldfish: 5,
+    trees: 3,
+    cars: 2,
+    perfumes: 1,
+  };
+
+  for (const str of input.split('\n')) {
+    const [_, id, ...properties] = str.split(/\:?,?\s/g);
+    let match = true;
+    for (let i = 0; i < properties.length - 1; i += 2) {
+      const key = properties[i];
+      const count = parseInt(properties[i + 1]);
+      if (targetSue[key] !== count) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return id;
+    }
+  }
+
+  return 'none found';
+};
+
+const day16Puzzle2 = (input) => {
+  const isMatch = (key, count) => {
+    switch (key) {
+      case 'children':
+        return count === 3;
+      case 'cats':
+        return count > 7;
+      case 'samoyeds':
+        return count === 2;
+      case 'pomeranians':
+        return count < 3;
+      case 'akitas':
+        return count === 0;
+      case 'vizslas':
+        return count === 0;
+      case 'goldfish':
+        return count < 5;
+      case 'trees':
+        return count > 3;
+      case 'cars':
+        return count === 2;
+      case 'perfumes':
+        return count === 1;
+    }
+  };
+
+  for (const str of input.split('\n')) {
+    const [_, id, ...properties] = str.split(/\:?,?\s/g);
+    let match = true;
+    for (let i = 0; i < properties.length - 1; i += 2) {
+      const key = properties[i];
+      const count = parseInt(properties[i + 1]);
+      if (!isMatch(key, count)) {
+        match = false;
+        continue;
+      }
+    }
+
+    if (match) {
+      return id;
+    }
+  }
+
+  return 'none found';
+};
+
+/**
+ * How many subsets of jugs (input) sum to liters
+ */
+const day17Puzzle1 = (input, liters = 150) => {
+  const jugs = input
+    .split('\n')
+    .map((el) => +el)
+    .sort((a, b) => b - a);
+  return eggnogJugPermCount(jugs, liters);
+};
+
+/**
+ * Given an array of numbers and a target total,
+ * returns the total number of subsets of jugs that exactly add up to the target liters
+ * @param {*} jugs An array of numbers (jug capacities)
+ * @param {*} liters The target total number
+ * @returns The number of permutations of jugs that exactly sum to liters
+ */
+const eggnogJugPermCount = (jugs, liters) => {
+  let matchingJugCount = 0;
+  const lesserJugs = [];
+
+  jugs.forEach((jug) => {
+    // Pull out each jug that exactly matches - these are valid permutations on their own
+    if (jug === liters) {
+      matchingJugCount++;
+    }
+    // Find all the remaining jugs that are less than the target - these may combine to work
+    else if (jug < liters) {
+      lesserJugs.push(jug);
+    }
+  });
+
+  // If there's less than two jugs that are less than the target, there's no more to find
+  if (lesserJugs.length <= 1) {
+    return matchingJugCount;
+  }
+
+  // If there's exactly two, see if they can combine to make the target
+  if (lesserJugs.length === 2) {
+    if (lesserJugs[0] + lesserJugs[1] === liters) {
+      return matchingJugCount + 1;
+    }
+
+    return matchingJugCount;
+  }
+
+  // If there's more than two, then pop off the first jug, and recursively calculate:
+  // - All permutations of the rest that include the first jug (remove first from target)
+  // - All permutations of the rest that don't include the first jug (keep same target)
+  const withoutFirst = lesserJugs.slice(1);
+  return (
+    matchingJugCount +
+    eggnogJugPermCount(withoutFirst, liters - lesserJugs[0]) +
+    eggnogJugPermCount(withoutFirst, liters)
+  );
+};
+
+/**
+ * How many subsets of jugs (parsed input) sum to liters and use the fewest possible jugs?
+ */
+const day17Puzzle2 = (input, liters = 150) => {
+  const jugs = input
+    .split('\n')
+    .map((el) => +el)
+    .sort((a, b) => b - a);
+  const bestSubsets = eggnogJugPerms(jugs, liters) // Find all subsets
+    .sort((a, b) => a.length - b.length) // Sort by length
+    .filter((p, _, arr) => p.length === arr[0].length); // Filter to those matching shortest length
+
+  // Return the count of the filtered list
+  return bestSubsets.length;
+};
+
+/**
+ * Given an array of numbers and a target total,
+ * returns the all subsets of jugs that exactly add up to the target liters
+ * @param {*} jugs An array of numbers (jug capacities)
+ * @param {*} liters The target total number
+ * @returns All subsets of `jugs` that sum to `liters`
+ */
+const eggnogJugPerms = (jugs, liters) => {
+  const matchingJugs = [];
+  const lesserJugs = [];
+
+  jugs.forEach((jug) => {
+    if (jug === liters) {
+      // Any jugs that match liters are a subset on their own
+      matchingJugs.push([jug]);
+    } else if (jug < liters) {
+      // Find any jugs that are less than liters, they could combine to liters
+      lesserJugs.push(jug);
+    }
+  });
+
+  // Not possible to combine the remaining to make more subsets
+  if (lesserJugs.length <= 1) {
+    return matchingJugs;
+  }
+
+  // If exactly two, see if they sum to liters, that's the only possible subset
+  if (lesserJugs.length === 2) {
+    if (lesserJugs[0] + lesserJugs[1] === liters) {
+      matchingJugs.push(lesserJugs);
+    }
+    return matchingJugs;
+  }
+
+  // More than two, so pop off the first one then recursively check the remaining jugs two ways:
+  // - Subsets that include the first jug (subtract the first jug from the target total)
+  // - Subsets that do not include the first jug (keep the same target total)
+  const [first, ...withoutFirst] = lesserJugs;
+  return matchingJugs.concat(
+    eggnogJugPerms(withoutFirst, liters - lesserJugs[0]).map((perm) => [first, ...perm]),
+    eggnogJugPerms(withoutFirst, liters),
+  );
+};
+
+const day18Puzzle1 = (input, iterations = 100) => {
+  let grid = input.split('\n').map((row) => row.split(''));
+  for (let i = 0; i < iterations; i++) {
+    grid = animateGrid(grid);
+  }
+
+  return numOccurrences(grid, '#');
+};
+
+const animateGrid = (grid) => {
+  const newGrid = [];
+  grid.forEach((row, r) => {
+    let newRow = [];
+    row.forEach((cell, c) => {
+      let count = 0;
+      if (grid[r - 1]?.[c - 1] === '#') count++;
+      if (grid[r - 1]?.[c] === '#') count++;
+      if (grid[r - 1]?.[c + 1] === '#') count++;
+      if (grid[r][c - 1] === '#') count++;
+      if (grid[r][c + 1] === '#') count++;
+      if (grid[r + 1]?.[c - 1] === '#') count++;
+      if (grid[r + 1]?.[c] === '#') count++;
+      if (grid[r + 1]?.[c + 1] === '#') count++;
+
+      if (count === 3) {
+        newRow.push('#');
+      } else if (cell === '#' && count === 2) {
+        newRow.push('#');
+      } else {
+        newRow.push('.');
+      }
+    });
+
+    newGrid.push(newRow);
+  });
+  return newGrid;
+};
+
+const day18Puzzle2 = (input, iterations = 100) => {
+  let grid = input.split('\n').map((row) => row.split(''));
+
+  // Turn on the four corners
+  const bottomRow = grid.length - 1;
+  const rightEdge = grid[0].length - 1;
+  grid[0][0] = '#';
+  grid[0][bottomRow] = '#';
+  grid[rightEdge][0] = '#';
+  grid[rightEdge][bottomRow] = '#';
+
+  for (let i = 0; i < iterations; i++) {
+    grid = animateGridCornersOn(grid);
+  }
+
+  return numOccurrences(grid, '#');
+};
+
+const animateGridCornersOn = (grid) => {
+  const newGrid = [];
+  grid.forEach((row, r) => {
+    let newRow = [];
+    row.forEach((cell, c) => {
+      // Corners are always on
+      if ((r === 0 || r === grid.length - 1) && (c === 0 || c === row.length - 1)) {
+        newRow.push('#');
+        return;
+      }
+
+      let count = 0;
+      if (grid[r - 1]?.[c - 1] === '#') count++;
+      if (grid[r - 1]?.[c] === '#') count++;
+      if (grid[r - 1]?.[c + 1] === '#') count++;
+      if (grid[r][c - 1] === '#') count++;
+      if (grid[r][c + 1] === '#') count++;
+      if (grid[r + 1]?.[c - 1] === '#') count++;
+      if (grid[r + 1]?.[c] === '#') count++;
+      if (grid[r + 1]?.[c + 1] === '#') count++;
+
+      if (count === 3) {
+        newRow.push('#');
+      } else if (cell === '#' && count === 2) {
+        newRow.push('#');
+      } else {
+        newRow.push('.');
+      }
+    });
+
+    newGrid.push(newRow);
+  });
+  return newGrid;
+};

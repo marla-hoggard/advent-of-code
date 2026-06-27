@@ -6,6 +6,19 @@ const manhattanDistance = ([x1, y1], [x2, y2]) => {
 };
 
 /**
+ * Returns the direct/shortest/diagonal difference between points.
+ * @param pt1 array of coordinates, for 2D: [x,y], for 3D: [x,y,z]
+ * @param pt2 array of coordinates, must be same length as pt1
+ */
+const directDistance = (pt1, pt2) => {
+  let sum = 0;
+  for (let i = 0; i < pt1.length; i++) {
+    sum += (pt1[i] - pt2[i]) ** 2;
+  }
+  return Math.sqrt(sum);
+};
+
+/**
  * Takes two parameters that represent the numerator and denomenator
  * of a fraction to be reduced.
  * Returns a tuple that represents that reduced fraction.
@@ -345,3 +358,4 @@ const solveLinearSystem = (eq1, eq2) => {
 
 const xyToString = (x, y) => `${x},${y}`;
 const getXY = (coords) => coords.split(',').map(Number);
+const getXYZ = getXY;

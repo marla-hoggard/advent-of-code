@@ -1541,6 +1541,7 @@ const lanternDoubleBoxes = (input) => {
 
 /**
  * Day 16, Puzzle 1
+ * Not the right answer!
  */
 const reindeerMaze = (input) => {
   let blocked = new Set();
@@ -1616,6 +1617,7 @@ const reindeerMaze = (input) => {
   return Math.min(...end.map((n) => n.dist));
 };
 
+// NOT EFFICIENT ENOUGH TO FIND A RESULT
 const reindeerMazeSlow = (input) => {
   let start = '';
   let startX = 0;
@@ -1623,7 +1625,7 @@ const reindeerMazeSlow = (input) => {
   let end = '';
   let open = new Set();
   let minScore = Number.MAX_VALUE;
-  // let bestPath = new Set();
+  // let minScore = 151568;
   input.split('\n').forEach((row, y) => {
     row.split('').forEach((val, x) => {
       if (val === '#') return;
@@ -1640,55 +1642,56 @@ const reindeerMazeSlow = (input) => {
     });
   });
 
-  let paths = [{ path: [start], curX: startX, curY: startY, dir: '>', score: 0 }];
-  function getMove(x, y, dir, score) {
-    return { x, y, coords: xyToString(x, y), dir, score };
-  }
-
-  while (paths.length) {
-    // console.log(paths[0]);
+  let i = 0;
+  let paths = [{ path: { [startX]: [startY] }, curX: startX, curY: startY, dir: '>', score: 0 }];
+  while (paths.length > 0) {
+    i++;
+    if (i % 1000000 === 0) console.log(i);
     const { path, curX, curY, dir, score } = paths.shift();
     let moves = [];
     switch (dir) {
       case '>':
-        moves.push(getMove(curX + 1, curY, dir, 1));
-        moves.push(getMove(curX, curY + 1, 'v', 1001));
-        moves.push(getMove(curX, curY - 1, '^', 1001));
+        moves.unshift({ x: curX + 1, y: curY, dir, score: 1 });
+        moves.unshift({ x: curX, y: curY + 1, dir: 'v', score: 1001 });
+        moves.unshift({ x: curX, y: curY - 1, dir: '^', score: 1001 });
         break;
       case '^':
-        moves.push(getMove(curX, curY - 1, dir, 1));
-        moves.push(getMove(curX + 1, curY, '>', 1001));
-        moves.push(getMove(curX - 1, curY, '<', 1001));
+        moves.unshift({ x: curX, y: curY - 1, dir, score: 1 });
+        moves.unshift({ x: curX + 1, y: curY, dir: '>', score: 1001 });
+        moves.unshift({ x: curX - 1, y: curY, dir: '<', score: 1001 });
         break;
       case '<':
-        moves.push(getMove(curX - 1, curY, dir, 1));
-        moves.push(getMove(curX, curY - 1, '^', 1001));
-        moves.push(getMove(curX, curY + 1, 'v', 1001));
+        moves.unshift({ x: curX - 1, y: curY, dir, score: 1 });
+        moves.unshift({ x: curX, y: curY - 1, dir: '^', score: 1001 });
+        moves.unshift({ x: curX, y: curY + 1, dir: 'v', score: 1001 });
         break;
       case 'v':
-        moves.push(getMove(curX, curY + 1, dir, 1));
-        moves.push(getMove(curX - 1, curY, '<', 1001));
-        moves.push(getMove(curX + 1, curY, '>', 1001));
+        moves.unshift({ x: curX, y: curY + 1, dir, score: 1 });
+        moves.unshift({ x: curX - 1, y: curY, dir: '<', score: 1001 });
+        moves.unshift({ x: curX + 1, y: curY, dir: '>', score: 1001 });
         break;
     }
 
     moves.forEach((move) => {
-      if (end === move.coords) {
+      const coords = xyToString(move.x, move.y);
+      if (end === coords) {
         const finalScore = score + move.score;
         if (minScore > finalScore) {
-          console.log('new best');
-          console.log(finalScore);
+          console.log('new best', finalScore);
+          console.log(path);
           minScore = finalScore;
-          // bestPath = path;
         }
       } else if (
-        open.has(move.coords) &&
-        !path.includes(move.coords) &&
-        score + move.score < minScore
+        score + move.score < minScore &&
+        open.has(coords) &&
+        !path[move.x]?.includes(move.y)
       ) {
-        console.log(path.length, move.coords);
+        const newPath = {
+          ...path,
+          [move.x]: (path[move.x] || []).concat(move.y),
+        };
         paths.unshift({
-          path: path.concat(move.coords),
+          path: newPath,
           curX: move.x,
           curY: move.y,
           dir: move.dir,
@@ -1697,15 +1700,184 @@ const reindeerMazeSlow = (input) => {
       }
     });
   }
-  // console.log(bestPath);
+  console.log(i);
+  console.log(paths);
   return minScore;
 };
 
 /**
+ * Day 17, Puzzle 1
+ */
+const chronospatialComputer = (input) => {
+  let [a, b, c, steps] = input.split(/\n+/).map((el, i, arr) => {
+    const [_, val] = el.split(': ');
+    if (i == arr.length - 1) {
+      return val.split(',').map(Number);
+    } else {
+      return +val;
+    }
+  });
+
+  let output = [];
+  let i = 0;
+  while (i < steps.length) {
+    const opcode = steps[i];
+    const literalOperand = steps[i + 1];
+    if (literalOperand === undefined) {
+      throw new Error(`no operand: ${i}`);
+    }
+
+    const getComboOperand = () => {
+      switch (literalOperand) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+          return literalOperand;
+        case 4:
+          return a;
+        case 5:
+          return b;
+        case 6:
+          return c;
+        case 7:
+        default:
+          throw new Error(`invalid operand: ${literalOperand}`);
+      }
+    };
+
+    switch (opcode) {
+      case 0:
+        a = Math.floor(a / 2 ** getComboOperand());
+        break;
+      case 1:
+        b = b ^ literalOperand;
+        break;
+      case 2:
+        b = getComboOperand() % 8;
+        break;
+      case 3:
+        if (a !== 0) {
+          i = literalOperand - 2;
+        }
+        break;
+      case 4:
+        b = b ^ c;
+        break;
+      case 5:
+        output.push(getComboOperand() % 8);
+        break;
+      case 6:
+        b = Math.floor(a / 2 ** getComboOperand());
+        break;
+      case 7:
+        c = Math.floor(a / 2 ** getComboOperand());
+        break;
+      default:
+        throw new Error(`invalid opcode: ${opcode}`);
+    }
+    i += 2;
+  }
+
+  console.log({ a, b, c });
+
+  return output.join(',');
+};
+
+const chronospatialCopy = (input) => {
+  const targetOutput = input.split(/\n\n/)[1].split(': ')[1];
+  const steps = targetOutput.split(',').map(Number);
+
+  // let start = 8 ** 15;
+  let start = 35186400000000;
+  while (start < 8 ** 16) {
+    let a = start;
+    let b = 0;
+    let c = 0;
+    let output = [];
+    let outputIndex = 0;
+    let i = 0;
+    let matching = true;
+
+    while (i < steps.length && matching) {
+      const opcode = steps[i];
+      const literalOperand = steps[i + 1];
+      if (literalOperand === undefined) {
+        throw new Error(`no operand: ${i}`);
+      }
+
+      const getComboOperand = () => {
+        switch (literalOperand) {
+          case 0:
+          case 1:
+          case 2:
+          case 3:
+            return literalOperand;
+          case 4:
+            return a;
+          case 5:
+            return b;
+          case 6:
+            return c;
+          case 7:
+          default:
+            throw new Error(`invalid operand: ${literalOperand}`);
+        }
+      };
+
+      switch (opcode) {
+        case 0:
+          a = Math.floor(a / 2 ** getComboOperand());
+          break;
+        case 1:
+          b = b ^ literalOperand;
+          break;
+        case 2:
+          b = getComboOperand() % 8;
+          break;
+        case 3:
+          if (a !== 0) {
+            i = literalOperand - 2;
+          }
+          break;
+        case 4:
+          b = b ^ c;
+          break;
+        case 5:
+          const val = getComboOperand() % 8;
+          if (steps[outputIndex] === val) {
+            output.push(val);
+            outputIndex++;
+          } else {
+            matching = false;
+          }
+          break;
+        case 6:
+          b = Math.floor(a / 2 ** getComboOperand());
+          break;
+        case 7:
+          c = Math.floor(a / 2 ** getComboOperand());
+          break;
+        default:
+          throw new Error(`invalid opcode: ${opcode}`);
+      }
+      i += 2;
+    }
+
+    if (matching && output.join(',') === targetOutput) {
+      return start;
+    } else {
+      start++;
+      if (start % 10000000 === 0) {
+        console.log(start);
+      }
+    }
+  }
+  return `Didn't find it: ${start}`;
+};
+
+/**
  * Day 18, Puzzle 1
- * Find the shortest path from (0,0) to (size, size)
- * after limit bytes have "dropped" to block the path.
- * Uses Dijkstra's algorithm.
  */
 const bytePath = (input, size = 70, limit = 1024) => {
   const blocked = new Set();
@@ -1713,45 +1885,184 @@ const bytePath = (input, size = 70, limit = 1024) => {
     .split('\n')
     .slice(0, limit)
     .forEach((loc) => blocked.add(loc));
-  let end = null;
-  const graph = {};
-  const queue = [];
-  for (let x = 0; x <= size; x++) {
-    for (let y = 0; y <= size; y++) {
-      const label = xyToString(x, y);
-      if (blocked.has(label)) continue;
-      const node = new SimpleGridNode(x, y);
-      if (x === 0 && y === 0) {
-        node.setIsStart();
-      }
-      if (x === size && y === size) {
-        node.setIsEnd();
-        end = node;
-      }
-      node.setNeighbors(blocked, size, size);
-      graph[node.label] = node;
-      queue.push(node);
+  const endX = size;
+  const endY = size;
+  let minPath = Math.MAX_VALUE;
+  let paths = [{ visited: [], curX: 0, curY: 0 }];
+  let i = 0;
+  while (paths.length && i < 1000000) {
+    const { visited, curX, curY } = paths.pop();
+    const newLength = visited.length + 1;
+    if (newLength >= minPath) {
+      continue;
     }
+    const moves = [
+      [curX - 1, curY],
+      [curX + 1, curY],
+      [curX, curY - 1],
+      [curX, curY + 1],
+    ];
+    for (const [x, y] of moves) {
+      if (x === endX && y === endY) {
+        console.log(`New best: ${newLength}`);
+        minPath = newLength;
+        continue;
+      }
+
+      const coord = xyToString(x, y);
+      if (
+        x >= 0 &&
+        y >= 0 &&
+        x <= size &&
+        y <= size &&
+        !blocked.has(coord) &&
+        !visited.includes(coord)
+      ) {
+        paths.push({ visited: [...visited, xyToString(curX, curY)], curX: x, curY: y });
+      }
+    }
+    i++;
+  }
+  console.log(i);
+  return minPath;
+};
+
+// ------------------------ FILL IN DAY 18, Part 2 ----------------------------
+
+/**
+ * Day 19, Puzzle 1
+ */
+const towelPatterns = (input) => {
+  let [towels, designs] = input.split('\n\n');
+  towels = towels.split(', ');
+  designs = designs.split('\n');
+
+  let possibleDesigns = 0;
+  for (const design of designs) {
+    if (isPossibleDesign(towels, design)) {
+      possibleDesigns++;
+    }
+  }
+  return possibleDesigns;
+};
+
+const isPossibleDesign = (towels, design) => {
+  if (towels.some((towel) => design === towel)) {
+    return true;
+  }
+  // This is an array of what's left in the design after a valid next towel is found.
+  // i.e. { design: "abc", towel: "ab" } => remainingString = "c"
+  const remainingStrings = [];
+  towels.forEach((towel) => {
+    if (design.startsWith(towel)) {
+      remainingStrings.push(design.slice(towel.length));
+    }
+  });
+  return remainingStrings.some((str) => isPossibleDesign(towels, str));
+};
+
+/**
+ * Day 19, Puzzle 2
+ *
+ * Neither attempt is performant enough.
+ */
+const towelPatternCounts = (input) => {
+  let [towels, designs] = input.split('\n\n');
+  towels = towels.split(', ');
+  designs = designs.split('\n');
+
+  let totalCount = 0;
+
+  for (const design of designs) {
+    const ways = countTheWays(towels, design);
+    console.log(`There are ${ways} ways to make ${design}`);
+    totalCount += ways;
   }
 
-  while (queue.length) {
-    queue.sort((a, b) => {
-      if (a.visited && !b.visited) {
-        return -1;
-      } else if (b.visited && !a.visited) {
-        return 1;
-      }
-      return 0;
-    });
-    const node = queue.shift();
-    if (!node.visited) {
-      break;
+  return totalCount;
+
+  // for (const design of designs.slice(0, 1)) {
+  //   const eligibleTowels = towels.filter((t) => design.includes(t));
+  //   let heads = eligibleTowels.filter((t) => design.startsWith(t));
+  //   let count = 0;
+  //   while (heads.length) {
+  //     const head = heads.pop();
+  //     if (head === design) {
+  //       count++;
+  //       continue;
+  //     }
+  //     for (const t of eligibleTowels) {
+  //       const newHead = `${head}${t}`;
+  //       if (newHead === design) {
+  //         count++;
+  //       } else if (design.startsWith(newHead)) {
+  //         heads.push(newHead);
+  //       }
+  //     }
+  //   }
+  //   totalCount += count;
+  //   // console.log(`${count} ways to make "${design}"`);
+  // }
+  return totalCount;
+};
+
+const countTheWays = (towels, design) => {
+  let total = 0;
+  towels.forEach((towel) => {
+    if (towel === design) {
+      total++;
+    } else if (design.startsWith(towel)) {
+      const rest = design.slice(towel.length);
+      total += countTheWays(towels, rest);
     }
-    node.neighbors.forEach((n) => {
-      const neighbor = graph[n];
-      neighbor.setDist(node.dist + 1);
-      neighbor.visit();
-    });
+  });
+  return total;
+};
+
+// --------------------- TODO: DAY 20 ----------------------
+
+// --------------------- TODO: DAY 21 ----------------------
+
+/**
+ * Day 22, Puzzle 1
+ */
+const secretNumbers = (input, iterations = 2000) => {
+  let sum = 0;
+  input.split('\n').forEach((startValue) => {
+    const secret = Number(startValue);
+    const newSecret = manyEvolutionsSecretNumber(secret, iterations);
+    console.log(startValue, newSecret);
+    sum += newSecret;
+  });
+  return sum;
+};
+
+/**
+ * @param {number} secret
+ * @param {number} mixin
+ * @returns { number } The bitwise xor of the secret and mixin values
+ */
+const mixSecretNumber = (secret, mixin) => {
+  return secret ^ mixin;
+};
+
+const pruneSecretNumber = (secret) => {
+  return secret % 16777216;
+};
+
+const evolveSecretNumber = (secret) => {
+  let newSecret = secret;
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, newSecret * 64));
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, Math.floor(newSecret / 32)));
+  newSecret = pruneSecretNumber(mixSecretNumber(newSecret, newSecret * 2048));
+  return newSecret;
+};
+
+const manyEvolutionsSecretNumber = (secret, count) => {
+  let newSecret = secret;
+  for (let i = 0; i < count; i++) {
+    newSecret = evolveSecretNumber(newSecret);
+    console.log(newSecret);
   }
-  return end.dist;
+  return newSecret;
 };
