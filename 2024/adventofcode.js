@@ -1543,6 +1543,80 @@ const lanternDoubleBoxes = (input) => {
  * Day 16, Puzzle 1
  */
 const reindeerMaze = (input) => {
+  let blocked = new Set();
+  let end = null;
+  const graph = {};
+  const queue = [];
+
+  input.split('\n').forEach((row, y, arr) => {
+    row.split('').forEach((val, x) => {
+      const label = xyToString(x, y);
+      if (val === '#') {
+        blocked.add(label);
+      }
+    });
+  });
+
+  input.split('\n').forEach((row, y, arr) => {
+    row.split('').forEach((val, x) => {
+      const label = xyToString(x, y);
+      if (val === '#') {
+        return;
+      }
+      const up = new ReindeerNode(x, y, 'up');
+      const down = new ReindeerNode(x, y, 'down');
+      const left = new ReindeerNode(x, y, 'left');
+      const right = new ReindeerNode(x, y, 'right');
+
+      const nodes = [up, down, left, right];
+
+      if (val === 'S') {
+        right.setIsStart();
+      } else if (val === 'E') {
+        nodes.forEach((n) => n.setIsEnd());
+        end = nodes;
+      }
+      nodes.forEach((n) => n.setEdges(blocked));
+      graph[label] = { up, down, right, left };
+      queue.push(...nodes);
+    });
+  });
+
+  while (queue.length) {
+    queue.sort((a, b) => {
+      if (a.visited && !b.visited) {
+        return -1;
+      } else if (b.visited && !a.visited) {
+        return 1;
+      }
+      return 0;
+    });
+    const node = queue.shift();
+    if (!node.visited) {
+      console.log(queue.length);
+      break;
+    }
+    node.edges.forEach(({ label, dir, dist }) => {
+      const neighbor = graph[label]?.[dir];
+      neighbor.setDist(node.dist + dist);
+    });
+  }
+  // console.log(
+  //   Object.entries(graph).reduce((acc, [label, nodes]) => {
+  //     acc[label] = Object.entries(nodes).reduce((total, [dir, node]) => {
+  //       if (node.visited) {
+  //         total[dir] = node;
+  //       }
+  //       return total;
+  //     }, {});
+  //     return acc;
+  //   }, {}),
+  // );
+  console.log(end);
+  return Math.min(...end.map((n) => n.dist));
+};
+
+const reindeerMazeSlow = (input) => {
   let start = '';
   let startX = 0;
   let startY = 0;
@@ -1629,6 +1703,9 @@ const reindeerMaze = (input) => {
 
 /**
  * Day 18, Puzzle 1
+ * Find the shortest path from (0,0) to (size, size)
+ * after limit bytes have "dropped" to block the path.
+ * Uses Dijkstra's algorithm.
  */
 const bytePath = (input, size = 70, limit = 1024) => {
   const blocked = new Set();
@@ -1636,44 +1713,45 @@ const bytePath = (input, size = 70, limit = 1024) => {
     .split('\n')
     .slice(0, limit)
     .forEach((loc) => blocked.add(loc));
-  const endX = size;
-  const endY = size;
-  let minPath = Math.MAX_VALUE;
-  let paths = [{ visited: [], curX: 0, curY: 0 }];
-  let i = 0;
-  while (paths.length && i < 1000000) {
-    const { visited, curX, curY } = paths.pop();
-    const newLength = visited.length + 1;
-    if (newLength >= minPath) {
-      continue;
-    }
-    const moves = [
-      [curX - 1, curY],
-      [curX + 1, curY],
-      [curX, curY - 1],
-      [curX, curY + 1],
-    ];
-    for (const [x, y] of moves) {
-      if (x === endX && y === endY) {
-        console.log(`New best: ${newLength}`);
-        minPath = newLength;
-        continue;
+  let end = null;
+  const graph = {};
+  const queue = [];
+  for (let x = 0; x <= size; x++) {
+    for (let y = 0; y <= size; y++) {
+      const label = xyToString(x, y);
+      if (blocked.has(label)) continue;
+      const node = new SimpleGridNode(x, y);
+      if (x === 0 && y === 0) {
+        node.setIsStart();
       }
-
-      const coord = xyToString(x, y);
-      if (
-        x >= 0 &&
-        y >= 0 &&
-        x <= size &&
-        y <= size &&
-        !blocked.has(coord) &&
-        !visited.includes(coord)
-      ) {
-        paths.push({ visited: [...visited, xyToString(curX, curY)], curX: x, curY: y });
+      if (x === size && y === size) {
+        node.setIsEnd();
+        end = node;
       }
+      node.setNeighbors(blocked, size, size);
+      graph[node.label] = node;
+      queue.push(node);
     }
-    i++;
   }
-  console.log(i);
-  return minPath;
+
+  while (queue.length) {
+    queue.sort((a, b) => {
+      if (a.visited && !b.visited) {
+        return -1;
+      } else if (b.visited && !a.visited) {
+        return 1;
+      }
+      return 0;
+    });
+    const node = queue.shift();
+    if (!node.visited) {
+      break;
+    }
+    node.neighbors.forEach((n) => {
+      const neighbor = graph[n];
+      neighbor.setDist(node.dist + 1);
+      neighbor.visit();
+    });
+  }
+  return end.dist;
 };
