@@ -69,7 +69,7 @@ const ANSWERS = {
   '16-2': placeholder,
   '17-1': placeholder,
   '17-2': placeholder,
-  '18-1': placeholder,
+  '18-1': bytePath,
   '18-2': placeholder,
   '19-1': placeholder,
   '19-2': placeholder,

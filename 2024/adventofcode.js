@@ -1626,3 +1626,54 @@ const reindeerMaze = (input) => {
   // console.log(bestPath);
   return minScore;
 };
+
+/**
+ * Day 18, Puzzle 1
+ */
+const bytePath = (input, size = 70, limit = 1024) => {
+  const blocked = new Set();
+  input
+    .split('\n')
+    .slice(0, limit)
+    .forEach((loc) => blocked.add(loc));
+  const endX = size;
+  const endY = size;
+  let minPath = Math.MAX_VALUE;
+  let paths = [{ visited: [], curX: 0, curY: 0 }];
+  let i = 0;
+  while (paths.length && i < 1000000) {
+    const { visited, curX, curY } = paths.pop();
+    const newLength = visited.length + 1;
+    if (newLength >= minPath) {
+      continue;
+    }
+    const moves = [
+      [curX - 1, curY],
+      [curX + 1, curY],
+      [curX, curY - 1],
+      [curX, curY + 1],
+    ];
+    for (const [x, y] of moves) {
+      if (x === endX && y === endY) {
+        console.log(`New best: ${newLength}`);
+        minPath = newLength;
+        continue;
+      }
+
+      const coord = xyToString(x, y);
+      if (
+        x >= 0 &&
+        y >= 0 &&
+        x <= size &&
+        y <= size &&
+        !blocked.has(coord) &&
+        !visited.includes(coord)
+      ) {
+        paths.push({ visited: [...visited, xyToString(curX, curY)], curX: x, curY: y });
+      }
+    }
+    i++;
+  }
+  console.log(i);
+  return minPath;
+};
