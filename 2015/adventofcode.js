@@ -1309,6 +1309,7 @@ const day19Puzzle1 = (input) => {
   return molecules.size;
 };
 
+/** TOO SLOW DOESN'T FINISH -- Try making a tree */
 const day19Puzzle2 = (input) => {
   const [transformsRaw, target] = input.split('\n\n');
   const transforms = {};
@@ -1353,4 +1354,157 @@ const day19Puzzle2 = (input) => {
   }
 
   return 'not found';
+};
+
+/* NOPE TOO SLOW */
+const day20Puzzle1 = (target) => {
+  // Start at the lowest possible solution -> the value at which (1+2+...x)*10 >= target
+  // This can be calculated by finding the closest integer to x in (x)(x+1)/2 = target/10,
+  // which is equivalent to 5x^2 + x - target = 0 so we plug that into the quadratic equation
+  let house = Math.ceil(Math.min(quadratic(5, 1, -target).filter((x) => x > 1)));
+  let it = 0;
+  while (it < 200000) {
+    let presents = 10;
+    if (house > 1) {
+      presents += house * 10;
+    }
+
+    for (let i = 2; i <= house / 2 && presents < target; i++) {
+      if (house % i === 0) {
+        presents += i * 10;
+      }
+    }
+
+    if (presents >= target) {
+      return house;
+    }
+    house++;
+    it++;
+  }
+  console.log(`Stopped at ${house}`);
+};
+
+const day21store = `Weapons:    Cost  Damage  Armor
+Dagger        8     4       0
+Shortsword   10     5       0
+Warhammer    25     6       0
+Longsword    40     7       0
+Greataxe     74     8       0
+
+Armor:      Cost  Damage  Armor
+Leather      13     0       1
+Chainmail    31     0       2
+Splintmail   53     0       3
+Bandedmail   75     0       4
+Platemail   102     0       5
+
+Rings:      Cost  Damage  Armor
+Damage +1    25     1       0
+Damage +2    50     2       0
+Damage +3   100     3       0
+Defense +1   20     0       1
+Defense +2   40     0       2
+Defense +3   80     0       3`;
+
+const day21Puzzle1 = (input) => {
+  const { weapons, armorOptions, ringOptions } = parseRPGStore();
+  const [enemyHit, enemyDamage, enemyArmor] = input.split('\n').map((row) => +row.split(': ')[1]);
+
+  let minCost = Infinity;
+  let selection;
+  for (const weapon of weapons) {
+    for (const armor of armorOptions) {
+      for (const rings of ringOptions) {
+        const myDamage = weapon.damage + rings.damage;
+        const myArmor = armor.armor + rings.armor;
+
+        if (playRPG({ enemyHit, enemyArmor, enemyDamage, myHit: 100, myDamage, myArmor })) {
+          const cost = weapon.cost + armor.cost + rings.cost;
+          if (cost < minCost) {
+            selection = { weapon, armor, rings };
+            minCost = cost;
+          }
+        }
+      }
+    }
+  }
+
+  console.log(selection);
+  return minCost;
+};
+
+const parseRPGStore = () => {
+  const [weapons, armor, rings] = day21store.split('\n\n').map((list) =>
+    list
+      .split('\n')
+      .slice(1)
+      .map((row) => {
+        const [name, cost, damage, armor] = row.split(/\s\s+/);
+        return { name, cost: +cost, damage: +damage, armor: +armor };
+      }),
+  );
+  const none = { name: 'none', cost: 0, damage: 0, armor: 0 };
+  const armorOptions = [none, ...armor];
+
+  const ringOptions = [none, ...rings];
+  for (let i = 0; i < rings.length; i++) {
+    for (let j = i + 1; j < rings.length; j++) {
+      const ring1 = rings[i];
+      const ring2 = rings[j];
+      ringOptions.push({
+        name: `${ring1.name},${ring2.name}`,
+        cost: ring1.cost + ring2.cost,
+        damage: ring1.damage + ring2.damage,
+        armor: ring1.armor + ring2.armor,
+      });
+    }
+  }
+
+  return { weapons, armorOptions, ringOptions };
+};
+
+/**
+ * Simulates the RPG game for day 21, and returns whether or not the player wins
+ * True - player wins, False - enemy wins
+ */
+const playRPG = ({ enemyHit, enemyDamage, enemyArmor, myHit, myDamage, myArmor }) => {
+  let myTurn = true;
+
+  while (enemyHit > 0 && myHit > 0) {
+    if (myTurn) {
+      enemyHit -= Math.max(myDamage - enemyArmor, 1);
+    } else {
+      myHit -= Math.max(enemyDamage - myArmor, 1);
+    }
+
+    myTurn = !myTurn;
+  }
+  return enemyHit <= 0;
+};
+
+const day21Puzzle2 = (input) => {
+  const { weapons, armorOptions, ringOptions } = parseRPGStore();
+  const [enemyHit, enemyDamage, enemyArmor] = input.split('\n').map((row) => +row.split(': ')[1]);
+
+  let maxCost = 0;
+  let selection;
+  for (const weapon of weapons) {
+    for (const armor of armorOptions) {
+      for (const rings of ringOptions) {
+        const myDamage = weapon.damage + rings.damage;
+        const myArmor = armor.armor + rings.armor;
+
+        if (!playRPG({ enemyHit, enemyArmor, enemyDamage, myHit: 100, myDamage, myArmor })) {
+          const cost = weapon.cost + armor.cost + rings.cost;
+          if (cost > maxCost) {
+            selection = { weapon, armor, rings };
+            maxCost = cost;
+          }
+        }
+      }
+    }
+  }
+
+  console.log(selection);
+  return maxCost;
 };

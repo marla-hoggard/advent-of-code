@@ -51,6 +51,22 @@ const lcmArray = (arr) => {
 };
 
 /**
+ * Returns an array of the all numbers that divide evenly into `num`
+ */
+const findAllDivisors = (num) => {
+  let divisors = [1];
+  for (let i = 2; i <= num / 2; i++) {
+    if (num % i === 0) {
+      divisors.push(i);
+    }
+  }
+  if (num > 1) {
+    divisors.push(num);
+  }
+  return divisors;
+};
+
+/**
  * Return the sum of the values in an array
  * For each element in @param arr, Number(el) must return a number
  */
